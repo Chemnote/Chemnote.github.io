@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://chemnote.github.io/sitemap.xml
