@@ -43,6 +43,13 @@ h1{margin:0;font-size:1.75rem;font-weight:700;letter-spacing:-.01em;text-wrap:ba
 .alt{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:.85rem;color:var(--muted)}
 .alt input{width:80px}
 .alt b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+.phead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;margin-bottom:4px}
+.phead h2{margin:0}
+.tsel{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted)}
+.tseg{display:inline-flex;gap:2px;background:var(--surface2);border-radius:8px;padding:2px}
+.tseg button{appearance:none;border:0;background:transparent;color:var(--muted);font:600 .88rem var(--mono);padding:4px 10px;border-radius:6px;cursor:pointer;min-width:36px}
+.tseg button[aria-pressed="true"]{background:var(--heat);color:#fff}
+.tseg button:focus-visible{outline:2px solid var(--wet);outline-offset:2px}
 .grid{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:20px;align-items:start}
 @media (max-width:880px){.grid{grid-template-columns:minmax(0,1fr)}}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
@@ -133,7 +140,16 @@ math .t{color:var(--heat)} math .w{color:var(--wet)}
 
 <div class="grid">
   <section class="panel" aria-label="상태값">
-    <h2>입력 · 두 개 선택</h2>
+    <div class="phead">
+      <h2>입력 · 두 개 선택</h2>
+      <div class="tsel" role="group" aria-label="온도 단위">온도 단위
+        <div class="tseg">
+          <button type="button" id="tu-C" aria-pressed="true">℃</button>
+          <button type="button" id="tu-F" aria-pressed="false">℉</button>
+          <button type="button" id="tu-K" aria-pressed="false">K</button>
+        </div>
+      </div>
+    </div>
     <p class="hint" id="hint"></p>
     <div class="rows" id="inputs"></div>
     <div class="sep">계산값</div>
@@ -145,7 +161,7 @@ math .t{color:var(--heat)} math .w{color:var(--wet)}
     <div class="chart-wrap"><svg id="chart" viewBox="0 0 680 460" role="img" aria-label="습공기선도에 현재 상태점 표시"></svg></div>
     <div class="legend">
       <span><i style="border-color:var(--wet)"></i>상대습도 10 % 간격</span>
-      <span><i style="border-color:var(--grid2);border-top-style:dashed"></i>습구온도 5 ℃ 간격</span>
+      <span><i style="border-color:var(--grid2);border-top-style:dashed"></i><span id="wbLegend">습구온도 5 ℃ 간격</span></span>
       <span><i style="border-color:var(--heat)"></i>현재 상태 (습구온도선 → 포화점)</span>
     </div>
   </section>
@@ -154,7 +170,7 @@ math .t{color:var(--heat)} math .w{color:var(--wet)}
 <details class="formulas" id="formulas">
   <summary><h2>사용한 식</h2><span class="sumhint">기호 · 상수 · 조합별 풀이</span></summary>
   <div class="fbody">
-  <p class="lead"><span style="color:var(--heat)">빨간 기호</span>는 온도, <span style="color:var(--wet)">파란 기호</span>는 수분량입니다. t 건구온도 [℃], t′ 습구온도 [℃], T = t + 273.15 [K], x 절대습도 [kg/kg′], P 대기압 [Pa], P<sub>w</sub> 수증기분압 [Pa], φ 상대습도 [%], h 엔탈피 [J/kg′]</p>
+  <p class="lead"><span style="color:var(--heat)">빨간 기호</span>는 온도, <span style="color:var(--wet)">파란 기호</span>는 수분량입니다. t 건구온도 [℃], t′ 습구온도 [℃], T = t + 273.15 [K], x 절대습도 [kg/kg′], P 대기압 [Pa], P<sub>w</sub> 수증기분압 [Pa], φ 상대습도 [%], h 엔탈피 [J/kg′]. 온도 단위를 ℉나 K로 골라도 계산은 ℃로 바꿔서 하고, 결과만 고른 단위로 보여 줍니다(℉ = ℃ × 9/5 + 32, K = ℃ + 273.15).</p>
   <div class="consts">
     <span><b>C<sub>pa</sub></b>1005 J/kg·K</span>
     <span><b>C<sub>pv</sub></b>1846 J/kg·K</span>
@@ -316,16 +332,28 @@ function wbDbX(t,x){const h=hDbX(t,x);
   const f=T=>{const xs=xFromPw(Pws(T));return hDbX(T,xs)-h-(xs-x)*hc(T);};
   return newton(f,t,0.02);}
 
+/* ---------- 온도 단위 ---------- */
+const TUNITS={
+  C:{s:'℃',to:c=>c,from:v=>v,d:1,step:'0.1',tick:5},
+  F:{s:'℉',to:c=>c*9/5+32,from:f=>(f-32)*5/9,d:1,step:'0.1',tick:10},
+  K:{s:'K',to:c=>c+273.15,from:k=>k-273.15,d:2,step:'0.01',tick:5},
+};
+let tu='C';
+try{const s=localStorage.getItem('humid-air-tu');if(s&&TUNITS[s])tu=s;}catch(e){}
+const TU=()=>TUNITS[tu];
+const tDisp=c=>TU().to(c).toFixed(TU().d);
+const TEMPS=['db','wb'];
+
 /* ---------- UI ---------- */
 const VARS=[
-  {k:'db',n:'건구온도',u:'℃',kind:'heat',d:1,step:'0.1'},
-  {k:'wb',n:'습구온도',u:'℃',kind:'heat',d:1,step:'0.1'},
+  {k:'db',n:'건구온도',u:'℃',kind:'heat',d:1,step:'0.1',temp:true},
+  {k:'wb',n:'습구온도',u:'℃',kind:'heat',d:1,step:'0.1',temp:true},
   {k:'x', n:'절대습도',u:"kg/kg'",kind:'wet',d:4,step:'0.0001'},
   {k:'rh',n:'상대습도',u:'%',kind:'wet',d:1,step:'0.1'},
   {k:'h', n:'엔탈피',u:"kJ/kg'",kind:'heat',d:2,step:'0.1'},
 ];
 const OUTS=[
-  {k:'td',n:'노점온도',u:'℃',f:v=>v.toFixed(1)},
+  {k:'td',n:'노점온도',u:'℃',f:v=>tDisp(v)},
   {k:'pw',n:'수증기분압',u:'Pa',f:v=>v.toFixed(2)},
   {k:'hJ',n:'엔탈피',u:"J/kg'",f:v=>Math.round(v).toLocaleString()},
   {k:'di',n:'불쾌지수',u:'',f:v=>v.toFixed(1)},
@@ -340,7 +368,7 @@ VARS.forEach(v=>{
   const r=document.createElement('div');r.className='row';r.dataset.kind=v.kind;r.id='row-'+v.k;
   r.innerHTML=`<button class="pick" type="button" id="pick-${v.k}" aria-pressed="false">${v.n}</button>
     <input id="in-${v.k}" type="number" step="${v.step}" inputmode="decimal" aria-label="${v.n}">
-    <span class="unit">${v.u}</span>`;
+    <span class="unit" id="u-${v.k}">${v.u}</span>`;
   inBox.appendChild(r);
   r.querySelector('button').addEventListener('click',()=>toggle(v.k));
   r.querySelector('input').addEventListener('input',calc);
@@ -352,7 +380,23 @@ OUTS.forEach(o=>{
   outBox.appendChild(r);
 });
 const DEF={db:20,wb:15};
-VARS.forEach(v=>{$('in-'+v.k).value=DEF[v.k]!==undefined?DEF[v.k].toFixed(v.d):'';});
+VARS.forEach(v=>{$('in-'+v.k).value=DEF[v.k]===undefined?'':(v.temp?tDisp(DEF[v.k]):DEF[v.k].toFixed(v.d));});
+
+function applyTU(){
+  ['C','F','K'].forEach(u=>$('tu-'+u).setAttribute('aria-pressed',u===tu));
+  TEMPS.forEach(k=>{$('u-'+k).textContent=TU().s;$('in-'+k).step=TU().step;});
+  $('unit-td').textContent=TU().s;
+  $('wbLegend').textContent=`습구온도 ${tu==='F'?'9 ℉':tu==='K'?'5 K':'5 ℃'} 간격`;
+}
+function setTU(u){
+  if(u===tu)return;
+  // 직접 입력 중인 온도는 새 단위로 바꿔서 그대로 유지
+  const keep={};TEMPS.forEach(k=>{if(sel.includes(k)){const v=parseFloat($('in-'+k).value);if(Number.isFinite(v))keep[k]=TU().from(v);}});
+  tu=u;try{localStorage.setItem('humid-air-tu',u);}catch(e){}
+  Object.entries(keep).forEach(([k,c])=>$('in-'+k).value=tDisp(c));
+  applyTU();calc();
+}
+['C','F','K'].forEach(u=>$('tu-'+u).addEventListener('click',()=>setTU(u)));
 
 function toggle(k,keepFocus){
   if(sel.includes(k)){sel=sel.filter(s=>s!==k);}
@@ -389,7 +433,7 @@ function validate(I){
   if('rh' in I&&(I.rh<=0||I.rh>100))return '상대습도는 0 초과 100 % 이하로 입력하세요.';
   if('x' in I&&I.x<0)return '절대습도는 0 이상이어야 합니다.';
   if('db' in I&&'wb' in I&&I.wb>I.db)return '습구온도는 건구온도보다 높을 수 없습니다.';
-  for(const k of ['db','wb'])if(k in I&&(I[k]<-40||I[k]>90))return `${NAME[k]}는 −40 ~ 90 ℃ 범위에서 계산합니다.`;
+  for(const k of ['db','wb'])if(k in I&&(I[k]<-40||I[k]>90))return `${NAME[k]}는 ${tDisp(-40)} ~ ${tDisp(90)} ${TU().s} 범위에서 계산합니다.`;
   return null;
 }
 function diLabel(d){
@@ -406,14 +450,14 @@ function calc(){
   $('patm').textContent=Patm.toFixed(0);$('patm2').textContent=(Patm/1000).toFixed(1);
   document.body.classList.toggle('stale',sel.length<2);
   if(sel.length<2){hint.textContent=sel.length?`${NAME[sel[0]]} 외에 하나를 더 고르세요.`:'계산할 상태값 두 개를 고르세요.';return;}
-  const I={};sel.forEach(k=>{const v=parseFloat($('in-'+k).value);I[k]=k==='h'?v*1000:v;});
+  const I={};sel.forEach(k=>{const v=parseFloat($('in-'+k).value);I[k]=k==='h'?v*1000:TEMPS.includes(k)?TU().from(v):v;});
   const err=validate(I);
   if(err){hint.textContent=err;hint.classList.add('err');document.body.classList.add('stale');return;}
   const S=solve(I);
   const bad=!Object.values(S).every(Number.isFinite)||S.rh>100.05||S.x<-1e-6||S.pw>=Patm;
   if(bad){hint.textContent='이 조합은 포화선을 넘거나 해가 없습니다. 값을 조정하세요.';hint.classList.add('err');document.body.classList.add('stale');return;}
   hint.textContent=`${NAME[sel[0]]} + ${NAME[sel[1]]} 기준으로 계산했습니다.`;
-  VARS.forEach(v=>{if(!sel.includes(v.k))$('in-'+v.k).value=S[v.k].toFixed(v.d);});
+  VARS.forEach(v=>{if(!sel.includes(v.k))$('in-'+v.k).value=v.temp?tDisp(S[v.k]):S[v.k].toFixed(v.d);});
   OUTS.forEach(o=>{$('out-'+o.k).textContent=o.f(S[o.k]);});
   const [lab,col]=diLabel(S.di);
   $('unit-di').innerHTML=`<span class="pill" style="background:${col}">${lab}</span>`;
@@ -428,9 +472,11 @@ function path(pts){return pts.filter(p=>Number.isFinite(p[1])).map((p,i)=>(i?'L'
 function draw(S){
   let g='<defs><clipPath id="clip"><rect x="'+m.l+'" y="'+m.t+'" width="'+(W-m.l-m.r)+'" height="'+(H-m.t-m.b)+'"/></clipPath></defs>';
   g+=`<rect x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}" fill="var(--surface2)"/>`;
-  for(let t=TMIN;t<=TMAX;t+=5){g+=`<line x1="${sx(t)}" x2="${sx(t)}" y1="${m.t}" y2="${H-m.b}" stroke="var(--grid)"/><text x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${t}</text>`;}
+  const st=TU().tick, dmin=TU().to(TMIN), dmax=TU().to(TMAX);
+  for(let v=Math.ceil(dmin/st-1e-9)*st;v<=dmax+1e-9;v+=st){const t=TU().from(v);
+    g+=`<line x1="${sx(t)}" x2="${sx(t)}" y1="${m.t}" y2="${H-m.b}" stroke="var(--grid)"/><text x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${+v.toFixed(2)}</text>`;}
   for(let x=0;x<=XMAX+1e-9;x+=0.005){g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${sy(x)}" y2="${sy(x)}" stroke="var(--grid)"/><text x="${W-m.r+6}" y="${sy(x)+4}">${x.toFixed(3)}</text>`;}
-  g+=`<text class="ttl" x="${(m.l+W-m.r)/2}" y="${H-6}" text-anchor="middle">건구온도 [℃]</text>`;
+  g+=`<text class="ttl" x="${(m.l+W-m.r)/2}" y="${H-6}" text-anchor="middle">건구온도 [${TU().s}]</text>`;
   g+=`<text class="ttl" x="${W-12}" y="${(m.t+H-m.b)/2}" text-anchor="middle" transform="rotate(90 ${W-12} ${(m.t+H-m.b)/2})">절대습도 [kg/kg']</text>`;
   g+='<g clip-path="url(#clip)">';
   // wet-bulb lines
@@ -449,21 +495,21 @@ function draw(S){
     const px=sx(S.db),py=sy(S.x);
     g+=`<line x1="${px}" x2="${px}" y1="${py}" y2="${H-m.b}" stroke="var(--heat)" stroke-dasharray="3 3"/>`;
     g+=`<line x1="${sx(Math.max(S.td,TMIN))}" x2="${W-m.r}" y1="${py}" y2="${py}" stroke="var(--wet)" stroke-dasharray="3 3"/>`;
-    if(S.td>=TMIN)g+=`<circle cx="${sx(S.td)}" cy="${py}" r="3.5" fill="var(--surface)" stroke="var(--wet)" stroke-width="1.5"/><text x="${sx(S.td)-6}" y="${py-6}" text-anchor="end" style="fill:var(--wet)">노점 ${S.td.toFixed(1)}</text>`;
+    if(S.td>=TMIN)g+=`<circle cx="${sx(S.td)}" cy="${py}" r="3.5" fill="var(--surface)" stroke="var(--wet)" stroke-width="1.5"/><text x="${sx(S.td)-6}" y="${py-6}" text-anchor="end" style="fill:var(--wet)">노점 ${tDisp(S.td)}</text>`;
     const pts=[];for(let t=S.wb;t<=S.db+0.001;t+=Math.max((S.db-S.wb)/30,0.01))pts.push([t,xDbWb(t,S.wb)]);pts.push([S.db,S.x]);
     g+=`<path d="${path(pts)}" fill="none" stroke="var(--heat)" stroke-width="1.8"/>`;
     g+=`<circle cx="${sx(S.wb)}" cy="${sy(xFromPw(Pws(S.wb)))}" r="3.5" fill="var(--surface)" stroke="var(--heat)" stroke-width="1.5"/>`;
-    g+=`<text x="${sx(S.wb)-6}" y="${sy(xFromPw(Pws(S.wb)))-8}" text-anchor="end" style="fill:var(--heat)">습구 ${S.wb.toFixed(1)}</text>`;
+    g+=`<text x="${sx(S.wb)-6}" y="${sy(xFromPw(Pws(S.wb)))-8}" text-anchor="end" style="fill:var(--heat)">습구 ${tDisp(S.wb)}</text>`;
     g+=`<circle cx="${px}" cy="${py}" r="6.5" fill="var(--heat)" stroke="var(--surface)" stroke-width="2"/>`;
     const right=px>W-m.r-120;
-    g+=`<text class="ttl" x="${px+(right?-12:12)}" y="${py+18}" text-anchor="${right?'end':'start'}">${S.db.toFixed(1)} ℃ · ${S.rh.toFixed(1)} %</text>`;
+    g+=`<text class="ttl" x="${px+(right?-12:12)}" y="${py+18}" text-anchor="${right?'end':'start'}">${tDisp(S.db)} ${TU().s} · ${S.rh.toFixed(1)} %</text>`;
   } else {
-    g+=`<text class="ttl" x="${(m.l+W-m.r)/2}" y="${m.t+24}" text-anchor="middle">상태점이 선도 범위(−10~50 ℃, x ≤ 0.030) 밖에 있습니다</text>`;
+    g+=`<text class="ttl" x="${(m.l+W-m.r)/2}" y="${m.t+24}" text-anchor="middle">상태점이 선도 범위(${tDisp(TMIN)}~${tDisp(TMAX)} ${TU().s}, x ≤ 0.030) 밖에 있습니다</text>`;
   }
   $('chart').innerHTML=g;
 }
 $('alt').addEventListener('input',calc);
-syncSel();calc();
+applyTU();syncSel();calc();
 </script>
 
 
