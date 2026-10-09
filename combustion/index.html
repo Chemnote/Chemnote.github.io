@@ -54,7 +54,7 @@ sub{font-size:.72em;line-height:0}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 
 /* masthead */
-.mast{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 24px;border-bottom:2px solid var(--accent);padding-bottom:16px}
+.mast{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;border-bottom:2px solid var(--accent);padding-bottom:16px}
 .eyebrow{margin:0 0 4px;font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent-2)}
 h1{font-size:28px;font-weight:700;letter-spacing:-.01em}
 .lede{margin:6px 0 0;color:var(--muted);max-width:62ch}
@@ -76,7 +76,8 @@ h1{font-size:28px;font-weight:700;letter-spacing:-.01em}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 .seg.hint{border-color:var(--warn);box-shadow:0 0 0 3px var(--warn-soft)}
 .hint-text{color:var(--warn);font-weight:600;font-size:13px}
-.bar .spacer{flex:1}
+.bar .spacer,.comp-bar .spacer{flex:1}
+.comp-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 10px}
 
 /* panels */
 .panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;box-shadow:var(--shadow);padding:18px 18px 16px;min-width:0}
@@ -89,7 +90,7 @@ h1{font-size:28px;font-weight:700;letter-spacing:-.01em}
 /* composition table */
 .scroll{overflow-x:auto;border:1px solid var(--rule);border-radius:8px}
 table{border-collapse:collapse;width:100%}
-.comp{min-width:980px}
+.comp{min-width:940px}
 .comp .stick{position:sticky;left:0;z-index:1;background:var(--sheet);box-shadow:inset -1px 0 0 var(--rule)}
 .comp tr.fixed td.stick{background:var(--fixed)}
 .comp thead th.stick{background:var(--accent);z-index:2}
@@ -99,11 +100,20 @@ table{border-collapse:collapse;width:100%}
 .comp thead tr.group th{background:var(--accent);color:var(--accent-ink);font-weight:600;height:30px}
 .comp thead tr.group th + th{border-left:1px solid rgba(255,255,255,.25)}
 .comp td.coef{color:var(--muted);font-family:var(--mono);font-size:13px}
+.comp td.rxn{font-family:var(--mono);font-size:12.5px;text-align:left;padding-inline:14px;white-space:nowrap;min-width:190px}
+.rate-in{display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-family:var(--sans);font-size:11.5px;color:var(--muted);white-space:nowrap}
+.rate-in .in{width:50px;padding:3px 4px;font-size:12px}
+.comp td.rxn .arw{color:var(--muted);margin:0 6px}
+.comp td.rxn.none{color:var(--faint)}
+.comp th.rxn-h{text-align:center}
 .comp td.val{text-align:center;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
 .comp td.sep,.comp th.sep{border-left:1px solid var(--rule)}
 .comp td.zero{color:var(--faint)}
 .comp tfoot td{background:var(--label);font-weight:600;border-top:2px solid var(--accent);border-bottom:0}
 .namecell{display:flex;align-items:center;gap:6px;justify-content:flex-start;min-width:136px}
+.namecell .rate-in{margin-left:auto}
+.namecell .del{margin-left:auto}
+.namecell .rate-in + .del{margin-left:6px}
 .name-fixed{font-weight:600;padding-left:4px;min-width:52px;text-align:left}
 tr.fixed td:first-child{background:var(--fixed)}
 .in{width:100%;border:1px solid transparent;background:var(--input);color:var(--input-ink);border-radius:4px;padding:5px 7px;font-family:var(--mono);font-size:13px;text-align:center}
@@ -117,13 +127,15 @@ td.fuel,td.flue{width:96px;padding:0 5px}
 .del{border:0;background:transparent;color:var(--faint);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;border-radius:4px}
 .del:hover{color:var(--bad)}
 .badname{color:var(--bad);font-size:11px}
+.comp tr.addrow td{background:var(--label);border-bottom:0;height:40px}
+.comp tr.addrow .btn{padding:5px 10px;font-size:12.5px}
 .status{margin-top:10px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;justify-content:space-between}
 .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:600}
 .pill.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .pill.warn{color:var(--warn);background:var(--warn-soft)}
 .pill.bad{color:var(--bad);background:var(--bad-soft)}
 .pill.info{color:var(--muted);background:var(--label)}
-.row-unit{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:6px 10px;margin:-4px 0 10px;font-size:12.5px;color:var(--muted)}
+.row-unit{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:12.5px;color:var(--muted)}
 .comp td.val:not(.zero){cursor:help}
 .comp td.val:not(.zero):hover{background:var(--accent-soft)}
 .res td[data-r]{cursor:help}
@@ -141,7 +153,8 @@ td.fuel,td.flue{width:96px;padding:0 5px}
 .gas td small{color:var(--muted);margin-left:8px;font-size:11.5px}
 .gas td.dash{color:var(--faint);background:transparent;font-family:var(--sans)}
 
-.gas td[data-g]{cursor:help}
+.gas td[data-g],.gas td[data-sym]{cursor:help}
+.gas td[data-sym]:hover{background:var(--accent-soft)}
 .gas-ctl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
 .dust-rate{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--muted)}
 .dust-rate[hidden]{display:none}
@@ -161,6 +174,33 @@ td.fuel,td.flue{width:96px;padding:0 5px}
 .panel.collapsed .panel-head > .fold-sum{display:inline}
 .fold-sum b{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
 .fold-sum b.need{font-family:var(--sans);font-size:13px;color:var(--warn)}
+.prac-q p{margin:0}
+.q-ans{display:flex;flex-direction:column;gap:8px;margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule)}
+.q-line{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.q-line label{font-weight:600}
+.q-ans.multi .q-line label{min-width:150px}
+.q-head{display:flex;align-items:flex-start;gap:14px}
+.q-head p{flex:1}
+.q-head .btn{flex:0 0 auto}
+.q-ans label{font-weight:600}
+.q-ans .in{width:110px}
+.q-unit{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+/* 문제에서 묻는 값 강조 */
+.target{outline:2px solid var(--bad);outline-offset:-2px;border-radius:6px}
+tr.target td,tr.target th{background:var(--bad-soft)}
+.prac-q{margin:0;padding:14px 16px;border-radius:8px;background:var(--label);border:1px solid var(--rule-soft);font-size:15px;line-height:1.9}
+.prac-q b{color:var(--accent)}
+.prac-q i{color:var(--warn);font-style:normal;font-weight:600}
+#qPanel[hidden]{display:none}
+.sym-ctl{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.sym-ctl label{font-weight:600;font-size:13px}
+.sym-ctl .in{width:120px}
+.sym-ctl #symM{width:80px}
+.sym-rxn{margin:0 0 12px;padding:10px 12px;border-radius:8px;background:var(--label);border:1px solid var(--rule-soft);font-family:var(--mono);font-size:14px;text-align:center}
+.sym-rxn .arw{color:var(--muted);margin:0 8px}
+.gas.sym{min-width:420px}
+.gas.sym tbody th{text-align:center;width:180px;color:var(--accent)}
+.gas.sym td{text-align:left;padding-inline:16px}
 .hour-ctl{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .hour-ctl label{font-weight:600;font-size:13px}
 .hour-ctl .in{width:120px}
@@ -176,8 +216,8 @@ td.fuel,td.flue{width:96px;padding:0 5px}
 .hour-note{margin:10px 0 0;color:var(--muted);font-size:12.5px}
 .hour-note:empty{display:none}
 /* 결과 가림 */
-.masked-on :is(#compBody td.val, #sumOo, #sumAo, #sumWet, #sumDry, #resBody td, #gasBody td, #hourBody td):not(.dash):not(.need){position:relative;color:transparent!important;user-select:none;cursor:default!important}
-.masked-on :is(#compBody td.val, #sumOo, #sumAo, #sumWet, #sumDry, #resBody td, #gasBody td, #hourBody td):not(.dash):not(.need)::after{content:"";position:absolute;inset:7px 10px;border-radius:7px;background:var(--mask)}
+.masked-on :is(#compBody td.val, #sumOo, #sumAo, #sumWet, #sumDry, #resBody td, #gasBody td, #hourBody td, #symBody td):not(.dash):not(.need){position:relative;color:transparent!important;user-select:none;cursor:default!important}
+.masked-on :is(#compBody td.val, #sumOo, #sumAo, #sumWet, #sumDry, #resBody td, #gasBody td, #hourBody td, #symBody td):not(.dash):not(.need)::after{content:"";position:absolute;inset:7px 10px;border-radius:7px;background:var(--mask)}
 .masked-on :is(#compBody td.val, #resBody td, #gasBody td, #hourBody td) *{visibility:hidden}
 .masked-on :is(#airCalc, #mApplied, #airSumV, #mMix, #rho):not(.need){display:inline-block;min-width:64px;border-radius:7px;background:var(--mask);color:transparent!important;user-select:none}
 .masked-on #mApplied:not(.need){min-width:96px}
@@ -199,6 +239,14 @@ td.fuel,td.flue{width:96px;padding:0 5px}
 .air-row.wide{flex-basis:340px;grid-template-columns:1fr 190px}
 .a-in{display:flex;gap:6px;align-items:center}
 .a-in .in{min-width:0;flex:1}
+.a-in .a-suffix{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.air-row[data-tip]{cursor:help}
+/* 배출가스로 계산은 좁게, 성분 역산 줄은 입력·성분·기준이 한 줄에 들어가도록 넓게 */
+#airCalcRow{flex:0 1 190px;grid-template-columns:minmax(0,1fr) 54px}
+#airCo2Row{flex:3 1 520px;grid-template-columns:minmax(0,auto) minmax(0,1fr)}
+#airCo2Row .a-in{flex-wrap:nowrap;justify-content:flex-end}
+#airCo2Row .in{flex:0 0 68px;width:68px}
+#airCo2Row .unit-sel{flex:0 0 auto}
 .unit-sel{border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:6px;padding:4px 6px;font-family:var(--mono);font-size:12.5px;cursor:pointer}
 .unit-sel:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
 .air-row .lbl{display:flex;flex-direction:column;gap:1px}
@@ -280,8 +328,23 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
 .btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
 .btn.danger:hover{filter:brightness(1.08);border-color:var(--bad)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+/* ===== 시작 잠금(로그인) ===== */
+.gate{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:24px;background:var(--paper)}
+.gate.on{display:flex}
+.gate-card{width:min(340px,100%);background:var(--sheet);border:1px solid var(--rule);border-radius:14px;box-shadow:var(--shadow);padding:28px 26px 22px;text-align:center}
+.gate-card h2{margin:0 0 6px;font-size:19px;font-weight:700;letter-spacing:-.01em}
+.gate-sub{margin:0 0 18px;font-size:12.5px;color:var(--muted)}
+.gate-in{width:100%;box-sizing:border-box;height:38px;text-align:center;font-family:var(--mono);font-size:15px;letter-spacing:.3em;background:var(--input);color:var(--input-ink);border:1px solid var(--rule);border-radius:7px;padding:0 10px}
+.gate-in:focus{border-color:var(--input-focus);outline:none}
+.gate-in::placeholder{letter-spacing:normal;font-family:var(--sans);color:var(--faint)}
+.gate-btn{width:100%;margin-top:10px;height:38px;font-size:14px}
+.gate-msg{margin:10px 0 0;min-height:16px;font-size:12px;font-weight:500;color:var(--bad)}
+.gate-foot{margin:14px 0 0;font-size:11px;color:var(--faint)}
+.gate-card.shake{animation:gshake .28s}
+@keyframes gshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
 </style>
 <!--BODY-->
+
 <div class="page">
   <div class="topnote"><p class="notice" role="note">⚠ 본 계산기의 무단 복제·배포 및 상업적 이용을 금합니다.</p></div>
   <header class="mast">
@@ -290,49 +353,53 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       <h1>연소 공기량 계산기</h1>
       <p class="lede">연료 조성을 넣으면 이론·실제 공기량과 연소가스량을 Sm³/kg · kg/kg · Sm³/Sm³ · kg/Sm³ 네 단위로 계산합니다. 노란 칸만 입력하면 됩니다.</p>
     </div>
-  </header>
-
-  <section class="bar" aria-label="조성 기준">
-    <div class="basis">
-      <label id="basisLabel">조성 기준</label>
-      <div class="seg" id="basisSeg" role="group" aria-labelledby="basisLabel">
-        <button type="button" id="basisWt" data-basis="wt">질량 wt%</button>
-        <button type="button" id="basisVol" data-basis="vol">부피 vol%</button>
-      </div>
-      <span class="hint-text" id="basisHint" hidden>고체 성분(C, S)이 없습니다 · 기체연료라면 부피 vol%로 바꾸세요</span>
-    </div>
-    <div class="spacer"></div>
-    <button class="btn" id="addRow" type="button">＋ 성분 추가</button>
-    <button class="btn" id="resetComp" type="button">조성 초기화</button>
-    <button class="btn" id="randomData" type="button">랜덤 데이터</button>
     <span class="mask-grp">
       <span class="pill ok" id="maskPill">결과 표시 중</span>
       <button class="btn" id="maskOn" type="button">결과 가림</button>
       <button class="btn" id="maskOff" type="button">결과 보기</button>
     </span>
+  </header>
+
+  <section class="panel" id="qPanel" aria-labelledby="qTitle">
+    <div class="panel-head"><h2 id="qTitle">랜덤 문제</h2><button class="btn" id="randomData" type="button">랜덤 데이터</button></div>
+    <div class="prac-q">
+      <div class="q-head"><p id="qText"></p><button class="btn primary" id="qCheck" type="button">채점</button></div>
+      <div class="q-ans" id="qRows"></div>
+    </div>
   </section>
 
   <section class="panel" aria-labelledby="compTitle">
     <div class="panel-head">
       <h2 id="compTitle">연료 성분 및 조성</h2>
-      <p>성분명을 입력하면 분자량과 반응 계수가 자동으로 계산됩니다 (C, H, N, O, S)</p>
     </div>
-    <div class="row-unit">
-      <span id="rowUnitLabel">성분별 계산값 단위</span>
+    <div class="comp-bar">
+      <div class="basis">
+        <label id="basisLabel">조성 기준</label>
+        <div class="seg" id="basisSeg" role="group" aria-labelledby="basisLabel">
+          <button type="button" id="basisWt" data-basis="wt">질량 wt%</button>
+          <button type="button" id="basisVol" data-basis="vol">부피 vol%</button>
+        </div>
+        <span class="hint-text" id="basisHint" hidden>고체 성분(C, S)이 없습니다 · 기체연료라면 부피 vol%로 바꾸세요</span>
+      </div>
+      <div class="spacer"></div>
+      <span class="row-unit">
+        <span id="rowUnitLabel">성분별 계산값 단위</span>
       <span class="unit-tabs" id="rowTabs" role="group" aria-labelledby="rowUnitLabel"><button type="button" data-u="vk">Sm³/kg</button><button type="button" data-u="mk">kg/kg</button><button type="button" data-u="vv">Sm³/Sm³</button><button type="button" data-u="mv">kg/Sm³</button></span>
+      </span>
+      <button class="btn" id="resetComp" type="button">조성 초기화</button>
     </div>
     <div class="scroll">
       <table class="comp">
         <thead>
           <tr class="group">
             <th rowspan="2" class="stick">성분</th>
-            <th colspan="7">분자량 · 반응 계수 (자동)</th>
+            <th colspan="2">분자량 · 연소 반응식 (자동)</th>
             <th colspan="2">조성 (입력)</th>
             <th colspan="4" id="perRowHead">성분별 계산값 [Sm³/kg]</th>
-            <th rowspan="2" style="background:var(--accent)"><span class="sr" hidden>삭제</span></th>
+
           </tr>
           <tr>
-            <th>분자량</th><th>O<sub>2</sub></th><th>CO<sub>2</sub></th><th>SO<sub>2</sub></th><th>NO</th><th>N<sub>2</sub></th><th>H<sub>2</sub>O</th>
+            <th>분자량</th><th class="rxn-h">연소 반응식</th>
             <th class="sep" id="fuelHead">연료 (wt%)</th><th>배출가스 (vol%)</th>
             <th class="sep">Oo 이론산소</th><th>Ao 이론공기</th><th>습윤 생성물</th><th>건조 생성물</th>
           </tr>
@@ -340,9 +407,9 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
         <tbody id="compBody"></tbody>
         <tfoot>
           <tr>
-            <td class="stick">합계</td><td colspan="7"></td>
+            <td class="stick">합계</td><td colspan="2"></td>
             <td class="val sep" id="sumFuel"></td><td class="val" id="sumFlue"></td>
-            <td class="val sep" id="sumOo"></td><td class="val" id="sumAo"></td><td class="val" id="sumWet"></td><td class="val" id="sumDry"></td><td></td>
+            <td class="val sep" id="sumOo"></td><td class="val" id="sumAo"></td><td class="val" id="sumWet"></td><td class="val" id="sumDry"></td>
           </tr>
         </tfoot>
       </table>
@@ -350,47 +417,58 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
     <div class="status">
       <span id="statusPill" class="pill info"></span>
     </div>
-    <ul class="foot">
-      <li>※ O<sub>2</sub> 행의 Oo는 연료 중 산소만큼 차감되어 음수로 표시됩니다.</li>
-      <li>※ 질소 성분에 연료 조성을 입력하면 처리 방식을 묻습니다. 행의 표시를 누르면 N<sub>2</sub> 배출 → NO 생성 → 질소 제외(문제에 "질소는 고려하지 않는다" 조건이 있을 때) 순으로 바뀝니다.</li>
-    </ul>
+  </section>
+
+  <section class="panel" aria-labelledby="airTitle">
+    <div class="panel-head"><h2 id="airTitle">공기비 m</h2><span class="fold-sum" id="airSum">적용 공기비 m = <b id="airSumV">—</b></span></div>
+    <div class="air">
+      <div class="air-row" id="airCalcRow" data-tip="mcalc">
+        <div class="lbl"><b>배출가스로 계산<span class="tag" id="airCalcTag" hidden>적용 중</span></b></div>
+        <div class="v" id="airCalc">—</div>
+      </div>
+      <div class="air-row wide" id="airCo2Row" data-tip="mco2">
+        <div class="lbl"><b><label for="co2In">배출가스 성분으로 계산</label><span class="tag" id="airCo2Tag" hidden>적용 중</span></b></div>
+        <div class="a-in">
+          <input class="in" id="co2In" inputmode="decimal" autocomplete="off" placeholder="농도">
+          <span class="a-suffix" id="co2Unit">%</span>
+          <select class="unit-sel" id="co2Sp" aria-label="성분">
+            <option value="co2">CO₂ %</option>
+            <option value="so2">SO₂ %</option>
+            <option value="so2ppm">SO₂ ppm</option>
+            <option value="h2o">H₂O %</option>
+            <option value="noppm">NO ppm</option>
+          </select>
+          <select class="unit-sel" id="co2Basis" aria-label="농도 기준">
+            <option value="dry">건 배출가스 중</option>
+            <option value="wet">습 배출가스 중</option>
+          </select>
+        </div>
+      </div>
+      <div class="air-row wide" id="airAirRow" data-tip="mair">
+        <div class="lbl"><b><label for="aActual">실제 공기량으로 계산</label><span class="tag" id="airAirTag" hidden>적용 중</span></b></div>
+        <div class="a-in">
+          <input class="in" id="aActual" inputmode="decimal" autocomplete="off" placeholder="A">
+          <select class="unit-sel" id="aUnit" aria-label="실제 공기량 단위">
+            <option value="vk">Sm³/kg</option>
+            <option value="mk">kg/kg</option>
+            <option value="vv">Sm³/Sm³</option>
+            <option value="mv">kg/Sm³</option>
+          </select>
+        </div>
+      </div>
+      <div class="air-row" id="airDirectRow" data-tip="mdirect">
+        <div class="lbl"><b><label for="mDirect">직접 입력</label><span class="tag" id="airDirectTag" hidden>적용 중</span></b></div>
+        <input class="in" id="mDirect" inputmode="decimal" autocomplete="off" placeholder="예: 1.2">
+      </div>
+      <div class="applied">
+        <b>적용 공기비 m</b>
+        <span class="big" id="mApplied">—</span>
+      </div>
+
+    </div>
   </section>
 
   <div class="grid2">
-    <section class="panel" aria-labelledby="airTitle">
-      <div class="panel-head"><h2 id="airTitle">공기비 m</h2><span class="fold-sum" id="airSum">적용 공기비 m = <b id="airSumV">—</b></span></div>
-      <div class="air">
-        <div class="air-row" id="airCalcRow">
-          <div class="lbl"><b>배출가스로 계산<span class="tag" id="airCalcTag" hidden>적용 중</span></b><small id="airCalcNote">배출가스 조성을 입력하면 계산됩니다</small></div>
-          <div class="v" id="airCalc">—</div>
-        </div>
-        <div class="air-row wide" id="airAirRow">
-          <div class="lbl"><b><label for="aActual">실제 공기량으로 계산</label><span class="tag" id="airAirTag" hidden>적용 중</span></b><small id="airAirNote">A를 입력하면 m = A / Ao</small></div>
-          <div class="a-in">
-            <input class="in" id="aActual" inputmode="decimal" autocomplete="off" placeholder="A">
-            <select class="unit-sel" id="aUnit" aria-label="실제 공기량 단위">
-              <option value="vk">Sm³/kg</option>
-              <option value="mk">kg/kg</option>
-              <option value="vv">Sm³/Sm³</option>
-              <option value="mv">kg/Sm³</option>
-            </select>
-          </div>
-        </div>
-        <div class="air-row" id="airDirectRow">
-          <div class="lbl"><b><label for="mDirect">직접 입력</label><span class="tag" id="airDirectTag" hidden>적용 중</span></b><small>배출가스·실제 공기량 값이 있으면 그 값이 우선합니다</small></div>
-          <input class="in" id="mDirect" inputmode="decimal" autocomplete="off" placeholder="예: 1.2">
-        </div>
-        <div class="applied">
-          <b>적용 공기비 m</b>
-          <span class="big" id="mApplied">—</span>
-        </div>
-        <ul class="formula-list">
-          <li>O<sub>2</sub>만 있을 때: m = 21 / (21 − O<sub>2</sub>)</li>
-          <li>N<sub>2</sub>가 있을 때: m = N<sub>2</sub> / (N<sub>2</sub> − 3.76(O<sub>2</sub> − 0.5CO))</li>
-          <li>실제 공기량이 주어질 때: m = A / Ao</li>
-        </ul>
-      </div>
-    </section>
 
     <section class="panel" aria-labelledby="resTitle">
       <div class="panel-head">
@@ -423,9 +501,6 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
     <div class="panel-head">
       <h2 id="gasTitle">배출가스 조성</h2>
       <div class="gas-ctl">
-        <label class="dust-rate" id="dustRateBox" hidden>회분 중 먼지 배출률
-          <input class="in" id="dustRate" inputmode="decimal" autocomplete="off" placeholder="100"><span>%</span>
-        </label>
         <span class="unit-tabs" id="gasTabs" role="group" aria-label="배출량 단위"><button type="button" data-u="vk">Sm³/kg</button><button type="button" data-u="mk">kg/kg</button><button type="button" data-u="vv">Sm³/Sm³</button><button type="button" data-u="mv">kg/Sm³</button></span>
         <div class="seg small" id="gasSeg" role="group" aria-label="공기비 조건">
           <button type="button" data-g="theo">이론 (m = 1)</button>
@@ -440,6 +515,7 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       </table>
     </div>
   </section>
+
 
   <section class="panel" aria-labelledby="hourTitle">
     <div class="panel-head">
@@ -464,6 +540,26 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       </table>
     </div>
     <p class="hour-note" id="hourNote"></p>
+  </section>
+
+  <section class="panel" aria-labelledby="symTitle">
+    <div class="panel-head">
+      <h2 id="symTitle">미지수 연료 (C<sub>m</sub>H<sub>n</sub>)</h2>
+      <div class="sym-ctl">
+        <label for="symF">화학식</label>
+        <input class="in" id="symF" autocomplete="off" spellcheck="false" placeholder="예: CmHn">
+        <label for="symM">공기비</label>
+        <input class="in" id="symM" inputmode="decimal" autocomplete="off" placeholder="예: 1.2">
+      </div>
+    </div>
+    <div class="sym-rxn" id="symRxn"></div>
+    <div class="scroll">
+      <table class="gas sym">
+        <thead><tr><th>구분</th><th>식 [Sm³/Sm³]</th></tr></thead>
+        <tbody id="symBody"></tbody>
+      </table>
+    </div>
+    <p class="hour-note" id="symNote"></p>
   </section>
 
   <section class="panel">
@@ -497,22 +593,6 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
   </form>
 </dialog>
 
-<dialog id="randDialog" class="wide" aria-labelledby="randDlgTitle">
-  <form method="dialog" class="dlg">
-    <h3 id="randDlgTitle">랜덤 데이터 생성</h3>
-    <p>어떤 상황의 데이터를 만들까요? 지금 입력한 값은 새 데이터로 바뀝니다.</p>
-    <div class="choices two">
-      <button value="solid" type="submit"><b>고체·액체연료</b><small>석탄·중유 조성(질량%) + 공기비</small></button>
-      <button value="gas" type="submit"><b>기체연료</b><small>기체 조성(부피%) + 공기비</small></button>
-      <button value="flue" type="submit"><b>배출가스 분석</b><small>연료 조성 + 배출가스 CO₂·O₂·N₂ → 공기비</small></button>
-      <button value="air" type="submit"><b>실제 공기량</b><small>연료 조성 + 실제 공기량 A → m = A / Ao</small></button>
-      <button value="ash" type="submit"><b>회분(먼지) 포함</b><small>석탄 조성 + 회분 → 배출가스 중 먼지 농도</small></button>
-      <button value="any" type="submit"><b>아무거나</b><small>위 상황 중 하나를 무작위로</small></button>
-    </div>
-    <div class="actions"><button class="btn" value="cancel" type="submit">취소</button></div>
-  </form>
-</dialog>
-
 <dialog id="confirmDialog" aria-labelledby="confirmTitle">
   <form method="dialog" class="dlg">
     <h3 id="confirmTitle"></h3>
@@ -540,7 +620,7 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
     flue:  { basis: 'wt', m: '', fuel: { C: 85, H2: 12, S: 3 }, flue: { CO2: 12, O2: 4, CO: 0.5, N2: 83.5 } },
   };
 
-  let state = { basis: 'wt', mDirect: '', aActual: '', aUnit: '', dustRate: '', solUnit: '', rowUnit: '', gasUnit: '', gasMode: '', masked: false, fuelRate: '', fuelUnit: '', fuelSg: '', folded: [], rows: blankRows() };
+  let state = { basis: 'wt', mDirect: '', aActual: '', aUnit: '', co2In: '', co2Sp: '', co2Basis: '', dustRate: '', sootRate: '', solUnit: '', rowUnit: '', gasUnit: '', gasMode: '', masked: false, question: '', qTargets: [], fuelRate: '', fuelUnit: '', fuelSg: '', symF: '', symM: '', folded: [], rows: blankRows() };
 
   // ── 화학식 ─────────────────────────────────────────
   const norm = v => String(v ?? '').replace(/\s+/g, '').toUpperCase();
@@ -586,6 +666,38 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
   }
   const coefText = x => x === 0 ? '–' : trim(x);
 
+  // 성분별 연소 반응식 (계수 대신 식으로 보여 준다)
+  const rxnNum = x => x === 1 ? '' : trim(x);
+  const rxnTerm = (x, f) => `${rxnNum(x)}${chemHTML(f)}`;
+  function rxnHTML(k, nMode) {
+    if (!k) return null;
+    const s = k.s;
+    if (s === 'O2') return 'O<sub>2</sub> <span class="arw">→</span> ✕';   // 연료 중 산소: 이론산소에서 차감
+    if (s === 'N2') {
+      if (nMode === 'skip') return '';                                      // 질소 제외: 빈칸
+      if (nMode === 'no') return 'N<sub>2</sub> + O<sub>2</sub> <span class="arw">→</span> 2NO';
+      return 'N<sub>2</sub> <span class="arw">→</span> N<sub>2</sub>';
+    }
+    const left = chemHTML(s) + (k.o2 > 0 ? ` + ${rxnTerm(k.o2, 'O2')}` : '');
+    const out = [];
+    if (k.co2 > 0) out.push(rxnTerm(k.co2, 'CO2'));
+    if (k.so2 > 0) out.push(rxnTerm(k.so2, 'SO2'));
+    if (k.no > 0) out.push(rxnTerm(k.no, 'NO'));
+    if (k.n2 > 0) out.push(rxnTerm(k.n2, 'N2'));
+    if (k.h2o > 0) out.push(rxnTerm(k.h2o, 'H2O'));
+    if (!out.length) return '';
+    return `${left} <span class="arw">→</span> ${out.join(' + ')}`;
+  }
+
+  // 배출가스 역산에 쓰는 성분: key = T의 성분량, scale = 농도 단위(100 = %, 1e6 = ppm)
+  const SPECIES = {
+    co2: { key: 'co2', label: 'CO₂', unit: '%', scale: 100 },
+    so2: { key: 'so2', label: 'SO₂', unit: '%', scale: 100 },
+    so2ppm: { key: 'so2', label: 'SO₂', unit: 'ppm', scale: 1e6 },
+    h2o: { key: 'h2o', label: 'H₂O', unit: '%', scale: 100 },
+    noppm: { key: 'no', label: 'NO', unit: 'ppm', scale: 1e6 },
+  };
+
   // ── 계산 ────────────────────────────────────────────
   function compute(st = state) {
     const vol = st.basis === 'vol';
@@ -602,6 +714,9 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
     const drx = parseFloat(String(st.dustRate ?? '').replace(',', '.'));
     const dustRate = Number.isFinite(drx) && drx >= 0 && drx <= 100 ? drx / 100 : 1;
     const dustG = ashF * dustRate * 1000; // 연료 1 kg당 먼지 g
+    // 탄소 중 그을음(미연탄소) 비율: 그만큼의 탄소는 CO₂가 되지 않는다
+    const srx = parseFloat(String(st.sootRate ?? '').replace(',', '.'));
+    const sootRate = Number.isFinite(srx) && srx > 0 && srx < 100 ? srx / 100 : 0;
 
     // 질량 분율 w (부피 기준이면 y·M / Σ(y·M))
     const syM = valid.reduce((a, it) => a + it.f * it.k.mw, 0);
@@ -610,7 +725,7 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       if (!it.k || !(it.k.mw > 0)) continue;
       it.w = vol ? (syM > 0 ? it.f * it.k.mw / syM : 0) : it.f;
     }
-    const T = { oo: 0, wet: 0, dry: 0, wetM: 0, dryM: 0, co2: 0 };
+    const T = { oo: 0, wet: 0, dry: 0, wetM: 0, dryM: 0, co2: 0, so2: 0, h2o: 0, no: 0, cMass: 0 };
     for (const it of items) {
       const k = it.k;
       it.v = { oo: 0, ao: 0, wet: 0, dry: 0, wetM: 0, dryM: 0 };
@@ -619,14 +734,19 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       const w = it.w;
       it.v.oo = 22.4 * k.o2 / k.mw * w * sign;
       it.v.ao = it.v.oo / 0.21;
-      it.v.wet = 22.4 * (k.co2 + k.so2 + k.no + k.n2 + k.h2o) / k.mw * w;
-      it.v.dry = 22.4 * (k.co2 + k.so2 + k.no + k.n2) / k.mw * w;
+      const kco2 = k.co2 * (1 - sootRate);   // 그을음으로 빠지는 탄소는 CO₂가 되지 않는다
+      it.v.wet = 22.4 * (kco2 + k.so2 + k.no + k.n2 + k.h2o) / k.mw * w;
+      it.v.dry = 22.4 * (kco2 + k.so2 + k.no + k.n2) / k.mw * w;
       T.oo += it.v.oo; T.wet += it.v.wet; T.dry += it.v.dry;
-      it.v.wetM = (44 * k.co2 + 64 * k.so2 + 30 * k.no + 28 * k.n2 + 18 * k.h2o) / k.mw * w;
-      it.v.dryM = (44 * k.co2 + 64 * k.so2 + 30 * k.no + 28 * k.n2) / k.mw * w;
+      it.v.wetM = (44 * kco2 + 64 * k.so2 + 30 * k.no + 28 * k.n2 + 18 * k.h2o) / k.mw * w;
+      it.v.dryM = (44 * kco2 + 64 * k.so2 + 30 * k.no + 28 * k.n2) / k.mw * w;
       T.wetM += it.v.wetM;
       T.dryM += it.v.dryM;
-      T.co2 += 22.4 * k.co2 / k.mw * w;
+      T.co2 += 22.4 * kco2 / k.mw * w;
+      T.cMass += 12 * k.co2 / k.mw * w;      // 연료 1 kg 중 탄소 질량
+      T.so2 += 22.4 * k.so2 / k.mw * w;
+      T.h2o += 22.4 * k.h2o / k.mw * w;
+      T.no += 22.4 * k.no / k.mw * w;
     }
     const sw = valid.reduce((a, it) => a + it.w, 0);
     const swm = valid.reduce((a, it) => a + it.w / it.k.mw, 0);
@@ -636,7 +756,7 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
 
     // 공기비
     const byName = nm => items.filter(it => norm(it.r.name) === nm).reduce((a, it) => a + it.g, 0);
-    const O2 = byName('O2'), N2 = byName('N2'), CO = byName('CO');
+    const O2 = byName('O2'), N2 = byName('N2'), CO = byName('CO'), CO2f = byName('CO2');
     let mCalc = null, mCalcNote = '배출가스 조성을 입력하면 계산됩니다';
     if (N2 > 0) {
       const den = N2 - 3.76 * (O2 - 0.5 * CO);
@@ -653,6 +773,24 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
     const ooV = T.oo, ooM = ooV * 32 / 22.4;
     const aoV = ooV / 0.21, aoM = ooM / 0.232;
 
+    // 배출가스 성분 농도 → 공기비 역산 (완전연소 가정, 연료 조성이 있어야 한다)
+    // 성분 / [(m − 0.21)Ao + 생성물] = 농도  →  m = 0.21 + (성분량/농도 − 생성물) / Ao
+    const cx = parseFloat(String(st.co2In ?? '').replace(',', '.'));
+    const co2In = Number.isFinite(cx) && cx > 0 ? cx : null;
+    const co2Sp = SPECIES[st.co2Sp] ? st.co2Sp : 'co2';
+    const SP = SPECIES[co2Sp];
+    const co2Basis = SP.key === 'h2o' ? 'wet' : (st.co2Basis === 'wet' ? 'wet' : 'dry');
+    const co2Prod = co2Basis === 'wet' ? T.wet : T.dry;
+    const spV = T[SP.key];
+    let mCo2 = null, mCo2Note = '성분 농도를 넣으면 연료 조성으로 m을 역산합니다', co2Max = null;
+    if (co2In != null) {
+      co2Max = aoV > 0 ? spV / (0.79 * aoV + co2Prod) * SP.scale : 0;
+      if (!(aoV > 0)) mCo2Note = '연료 조성을 먼저 입력하세요';
+      else if (!(spV > 0)) mCo2Note = `연료에 ${SP.label}을(를) 만드는 성분이 없습니다`;
+      else if (co2In > co2Max + 1e-9) mCo2Note = `${SP.label}은(는) 최대 ${trim(+co2Max.toFixed(SP.scale > 100 ? 0 : 2))} ${SP.unit}입니다 (m = 1일 때)`;
+      else { mCo2 = 0.21 + (spV / (co2In / SP.scale) - co2Prod) / aoV; mCo2Note = `m = 0.21 + (${SP.label} / 농도 − 생성물) / Ao`; }
+    }
+
     // 실제 공기량 A 입력 → m = A / Ao (A와 같은 단위의 Ao로 나눈다)
     const ax = parseFloat(String(st.aActual ?? '').replace(',', '.'));
     const aIn = Number.isFinite(ax) && ax > 0 ? ax : null;
@@ -664,7 +802,7 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       else if (!(aoForA > 0)) mAirNote = '연료 조성을 먼저 입력하세요';
       else { mAir = aIn / aoForA; mAirNote = `m = A / Ao = ${trim(aIn)} / ${aoForA.toFixed(4)}`; }
     }
-    const m = mCalc ?? mAir ?? mDirect;
+    const m = mCalc ?? mCo2 ?? mAir ?? mDirect;
     const R = {
       oo: [ooV, ooM], ao: [aoV, aoM],
       a: m == null ? null : [m * aoV, m * aoM],
@@ -673,10 +811,15 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       god: [0.79 * aoV + T.dry, 0.768 * aoM + T.dryM],
       gd: m == null ? null : [(m - 0.21) * aoV + T.dry, (m - 0.232) * aoM + T.dryM],
     };
+    const sootG = T.cMass * sootRate * 1000;   // 연료 1 kg당 그을음 g
     const godV = R.god[0];
     const co2max = godV > 0 ? T.co2 / godV * 100 : 0;
+    // 배출가스 분석(오르자트)만으로 구하는 CO₂max = 21(CO₂+CO) / (21 − O₂ + 0.395CO)
+    const p2 = x => x * 100;
+    const co2maxDen = 21 - p2(O2) + 0.395 * p2(CO);
+    const co2maxF = (CO2f + CO) > 0 && co2maxDen > 0 ? 21 * (p2(CO2f) + p2(CO)) / co2maxDen : null;
 
-    return { vol, items, sumFuel, sumFlue, solid, T, syM, mMix, rho, rhoAny, flue: { O2, N2, CO }, mCalc, mCalcNote, mDirect, aIn, aUnit, aoForA, mAir, mAirNote, m, R, co2max, sumY: sumFuel, ashF, dustRate, dustG };
+    return { vol, items, sumFuel, sumFlue, solid, T, syM, mMix, rho, rhoAny, flue: { O2, N2, CO, CO2: CO2f }, mCalc, mCalcNote, mDirect, aIn, aUnit, aoForA, mAir, mAirNote, co2In, co2Sp, co2Basis, co2Max, spV, mCo2, mCo2Note, m, R, co2max, co2maxF, sumY: sumFuel, ashF, dustRate, dustG, sootRate, sootG };
   }
 
   // ── 표 그리기 ───────────────────────────────────────
@@ -693,17 +836,20 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
         ? `<span class="name-fixed">${chemHTML(esc(r.name))}</span>`
         : `<input class="in name" id="name-${r.id}" value="${esc(r.name)}" aria-label="성분명" autocomplete="off" spellcheck="false" placeholder="예: C2H6">`;
       tr.innerHTML = `
-        <td class="stick"><div class="namecell">${nameCell}<span class="nslot"></span></div></td>
-        <td class="coef" data-k="mw"></td><td class="coef" data-k="o2"></td><td class="coef" data-k="co2"></td>
-        <td class="coef" data-k="so2"></td><td class="coef" data-k="no"></td><td class="coef" data-k="n2"></td><td class="coef" data-k="h2o"></td>
+        <td class="stick"><div class="namecell">${nameCell}<span class="nslot"></span>${r.fixed && norm(r.name) === 'C' ? `<span class="rate-in">그을음 <input class="in" id="sootRate" inputmode="decimal" autocomplete="off" placeholder="0">%</span>` : r.fixed && parse(r.name).ash ? `<span class="rate-in">먼지 <input class="in" id="dustRate" inputmode="decimal" autocomplete="off" placeholder="100">%</span>` : ''}${r.fixed ? '' : `<button class="del" type="button" aria-label="${esc(r.name || '성분')} 행 삭제">×</button>`}</div></td>
+        <td class="coef" data-k="mw"></td><td class="rxn"></td>
         <td class="fuel sep"><input class="in" id="fuel-${r.id}" inputmode="decimal" autocomplete="off" value="${esc(r.fuel)}" aria-label="${esc(r.name || '성분')} 연료 조성 %"></td>
         ${parse(r.name).ash
           ? '<td class="flue zero" title="먼지는 배출가스 조성표에서 따로 계산합니다">—</td>'
           : `<td class="flue"><input class="in" id="flue-${r.id}" inputmode="decimal" autocomplete="off" value="${esc(r.flue)}" aria-label="${esc(r.name || '성분')} 배출가스 조성 %"></td>`}
-        <td class="val sep" data-v="oo"></td><td class="val" data-v="ao"></td><td class="val" data-v="wet"></td><td class="val" data-v="dry"></td>
-        <td>${r.fixed ? '' : `<button class="del" type="button" aria-label="${esc(r.name || '성분')} 행 삭제">×</button>`}</td>`;
+        <td class="val sep" data-v="oo"></td><td class="val" data-v="ao"></td><td class="val" data-v="wet"></td><td class="val" data-v="dry"></td>`;
       body.appendChild(tr);
     }
+    // 표 맨 아래: 성분 추가 버튼
+    const add = document.createElement('tr');
+    add.className = 'addrow';
+    add.innerHTML = '<td class="stick"><button class="btn small" id="addRow" type="button">＋ 성분 추가</button></td><td colspan="8"></td>';
+    body.appendChild(add);
   }
 
   function render() {
@@ -741,12 +887,18 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       const p = parse(it.r.name);
       const nameIn = tr.querySelector('input.name');
       if (nameIn) nameIn.classList.toggle('bad', !!p.invalid);
-      for (const td of tr.querySelectorAll('td.coef')) {
-        const key = td.dataset.k;
-        if (!k) { td.textContent = p.invalid ? '' : '–'; continue; }
-        td.textContent = key === 'mw' ? trim(k.mw) : coefText(k[key]);
+      const mwTd = tr.querySelector('td.coef');
+      mwTd.textContent = k ? trim(k.mw) : (p.invalid ? '' : '–');
+      if (p.invalid) mwTd.innerHTML = '<span class="badname">C·H·N·O·S만</span>';
+      const rxnTd = tr.querySelector('td.rxn');
+      const rx = rxnHTML(k, it.r.nMode);
+      rxnTd.innerHTML = rx || (p.ash ? '연소하지 않음' : rx === '' ? '' : '–');
+      rxnTd.classList.toggle('none', !rx);
+      const rateIn = tr.querySelector('.rate-in input');     // 그을음·먼지 비율 (성분 칸)
+      if (rateIn) {
+        const want = rateIn.id === 'sootRate' ? state.sootRate : state.dustRate;
+        if (document.activeElement !== rateIn && rateIn.value !== want) rateIn.value = want;
       }
-      if (p.invalid) tr.querySelector('td.coef').innerHTML = '<span class="badname">C·H·N·O·S만</span>';
       for (const td of tr.querySelectorAll('td.val')) cellNum(td, rowVal(it, td.dataset.v));
       // 질소 참여 표시
       const slot = tr.querySelector('.nslot');
@@ -779,11 +931,18 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
 
     // 공기비
     $('airCalc').textContent = c.mCalc == null ? '—' : c.mCalc.toFixed(4);
-    $('airCalcNote').textContent = c.mCalcNote;
-    const calcOn = c.mCalc != null, airOn = !calcOn && c.mAir != null, directOn = !calcOn && !airOn && c.mDirect != null;
+    const calcOn = c.mCalc != null, co2On = !calcOn && c.mCo2 != null,
+      airOn = !calcOn && !co2On && c.mAir != null, directOn = !calcOn && !co2On && !airOn && c.mDirect != null;
     $('airCalcRow').classList.toggle('active', calcOn); $('airCalcTag').hidden = !calcOn;
+    $('airCo2Row').classList.toggle('active', co2On); $('airCo2Tag').hidden = !co2On;
+    // 설명과 풀이는 커서를 올리면 보여 주고, 값이 잘못되면 입력칸만 붉게 표시한다
+    $('co2In').classList.toggle('bad', c.co2In != null && c.mCo2 == null);
+    $('co2Sp').value = c.co2Sp;
+    $('co2Unit').textContent = SPECIES[c.co2Sp].unit;
+    $('co2Basis').value = c.co2Basis;
+    $('co2Basis').disabled = SPECIES[c.co2Sp].key === 'h2o';   // H₂O는 습 기준만 의미가 있다
     $('airAirRow').classList.toggle('active', airOn); $('airAirTag').hidden = !airOn;
-    $('airAirNote').textContent = c.mAir != null && !state.masked ? `${c.mAirNote} = ${c.mAir.toFixed(4)}` : c.mAirNote;
+    $('aActual').classList.toggle('bad', c.aIn != null && c.mAir == null);
     $('aUnit').value = c.aUnit;
     $('airDirectRow').classList.toggle('active', directOn); $('airDirectTag').hidden = !directOn;
     const ma = $('mApplied');
@@ -814,7 +973,9 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       }
       return `<tr class="${strong ? 'key' : ''}"><th class="sym">${sym}</th><th>${label}</th>${cells}</tr>`;
     }).join('') +
-      `<tr class="key co2"><th class="sym">CO<sub>2</sub>max</th><th>최대 탄산가스율</th><td colspan="4" data-r="co2" data-u="${c.vol && c.rho != null ? 'vv' : 'vk'}"><span class="num">${c.co2max.toFixed(2)} %</span><small>건연소가스 중 CO₂ 부피비 · 단위 무관</small></td></tr>`;
+      `<tr class="key co2"><th class="sym">CO<sub>2</sub>max</th><th>최대 탄산가스율</th><td colspan="4" data-r="co2" data-u="${c.vol && c.rho != null ? 'vv' : 'vk'}"><span class="num">${c.co2max.toFixed(2)} %</span><small>연료 조성 기준 · 건연소가스 중 CO₂ 부피비</small></td></tr>`
+      + (c.co2maxF == null ? ''
+        : `<tr class="key co2"><th class="sym">CO<sub>2</sub>max</th><th>최대 탄산가스율 (배출가스 분석)</th><td colspan="4" data-r="co2f"><span class="num">${c.co2maxF.toFixed(2)} %</span><small>21(CO₂+CO) / (21 − O₂ + 0.395CO)</small></td></tr>`);
 
     $('mMix').textContent = c.solid || c.mMix == null ? '—' : c.mMix.toFixed(2);
     $('rho').textContent = c.rho == null ? '—' : c.rho.toFixed(4);
@@ -822,6 +983,11 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
 
     renderGas(c);
     renderHour(c);
+    renderSym();
+    $('qText').innerHTML = state.question || '<span class="eq">[랜덤 데이터] 버튼을 누르면 무작위 문제가 나옵니다.</span>';
+    $('qCheck').hidden = !state.question;
+    renderQRows();
+    markTarget();
     renderSteps(c);
     const masked = !!state.masked;
     $('maskPill').textContent = masked ? '결과 가림 중' : '결과 표시 중';
@@ -868,12 +1034,13 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
     const divideFor = uu => uu.perSm3 && c.vol && Math.abs(sy - 1) > 0.00005;
 
     function coefExpr(uu, k, kind) {
+      const kv = kk => kk === 'co2' ? k.co2 * (1 - (c.sootRate || 0)) : k[kk];   // 그을음으로 빠진 탄소 반영
       if (kind === 'o2') return k.o2 ? trim(k.o2) : null;
-      if (kind === 'co2') return k.co2 ? trim(k.co2) : null;
+      if (kind === 'co2') return k.co2 ? trim(kv('co2')) : null;
       const parts = MASS.filter(([, key]) => k[key] && !(kind === 'dry' && key === 'h2o'));
       if (!parts.length) return null;
-      if (!uu.mass) return trim(parts.reduce((a, [, key]) => a + k[key], 0));
-      const s = parts.map(([m, key]) => `${m}×${trim(k[key])}`).join(' + ');
+      if (!uu.mass) return trim(parts.reduce((a, [, key]) => a + kv(key), 0));
+      const s = parts.map(([m, key]) => `${m}×${trim(kv(key))}`).join(' + ');
       return parts.length > 1 ? `(${s})` : s;
     }
     function sumExpr(uu, kind) {
@@ -937,6 +1104,8 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
         ? `m = ${fr('N₂', 'N₂ − 3.76(O₂ − 0.5CO)')} = ${fr(p(N2), `${p(N2)} − 3.76×(${p(O2)} − 0.5×${p(CO)})`)}`
         : `m = ${fr('21', '21 − O₂')} = ${fr('21', `21 − ${p(O2)}`)}`;
       steps.push(['m', '공기비 (배출가스)', expr + ` <span class="eq">=</span> <b>${c.mCalc.toFixed(4)}</b>`, 'm']);
+    } else if (c.mCo2 != null) {
+      steps.push(['m', `공기비 (${c.co2Basis === 'wet' ? '습' : '건'}배출가스 ${SPECIES[c.co2Sp].label})`, mCo2Expr(c), 'm']);
     } else if (c.mAir != null) {
       const au = UNITS[c.aUnit] ? UNITS[c.aUnit].label : '';
       steps.push(['m', '공기비 (실제 공기량)',
@@ -978,7 +1147,8 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       const k = it.k;
       if (!k || !(k.mw > 0) || !it.w) continue;
       const f = 22.4 * it.w / k.mw;
-      P.co2 += k.co2 * f; P.so2 += k.so2 * f; P.no += k.no * f; P.n2f += k.n2 * f; P.h2o += k.h2o * f;
+      P.co2 += k.co2 * (1 - (c.sootRate || 0)) * f;   // 그을음으로 빠진 탄소는 CO₂가 되지 않는다
+      P.so2 += k.so2 * f; P.no += k.no * f; P.n2f += k.n2 * f; P.h2o += k.h2o * f;
     }
     const ao = c.T.oo / 0.21;
     const n2a = 0.79 * m * ao;
@@ -994,7 +1164,8 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       const k = it.k;
       if (!k || !(k.mw > 0) || !(it.f > 0) || !k[key]) continue;
       const x = trim(+(perSm3 ? it.f : (c.vol ? it.w : it.f)).toFixed(4));
-      const body = perSm3 ? `${trim(k[key])}×${x}` : `${fr(`22.4×${trim(k[key])}`, trim(k.mw))}×${x}`;
+      const kc = key === 'co2' ? k.co2 * (1 - (c.sootRate || 0)) : k[key];   // 그을음 반영
+      const body = perSm3 ? `${trim(kc)}×${x}` : `${fr(`22.4×${trim(kc)}`, trim(k.mw))}×${x}`;
       terms.push(body + `<span class="eq">(${chemHTML(esc(k.s))})</span>`);
     }
     if (!terms.length) return '0';
@@ -1004,7 +1175,6 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
   }
 
   function renderGas(c) {
-    $('dustRateBox').hidden = !(c.ashF > 0);
     const real = state.gasMode === 'real' ? true : state.gasMode === 'theo' ? false : c.m != null;
     const useReal = real && c.m != null;
     for (const b of document.querySelectorAll('#gasSeg button')) {
@@ -1045,12 +1215,20 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
     const dustRow = dustOn
       ? `<tr class="dust"><th>먼지</th><td data-g="dust" data-c="amt">${c.dustG.toFixed(4)} <small>g/kg</small></td>${dustCell('wet', g.wet)}${dustCell('dry', g.dry)}</tr>`
       : '';
+    // 그을음(미연탄소): 먼지와 같은 방식으로 질량 농도를 보여 준다
+    const sootCell = (col, G) => {
+      const v = G > 0 ? c.sootG / G : 0;
+      return `<td data-g="soot" data-c="${col}">${v.toFixed(4)} g/Sm³<small>${Math.round(v * 1000).toLocaleString()} mg/Sm³</small></td>`;
+    };
+    const sootRow = c.sootG > 0
+      ? `<tr class="dust"><th>그을음</th><td data-g="soot" data-c="amt">${c.sootG.toFixed(4)} <small>g/kg</small></td>${sootCell('wet', g.wet)}${sootCell('dry', g.dry)}</tr>`
+      : '';
     body.innerHTML = GAS_ROWS
       .filter(([key]) => !((key === 'so2' || key === 'no') && !g.parts[key]))
       .map(([key, name]) => {
         const x = g.parts[key];
         return `<tr><th>${name}</th><td data-g="${key}" data-c="amt">${f4(x * factor * massK(key))}</td>${cell(key, 'wet', x, g.wet)}${key === 'h2o' ? '<td class="dash">—</td>' : cell(key, 'dry', x, g.dry)}</tr>`;
-      }).join('') + dustRow;
+      }).join('') + dustRow + sootRow;
   }
 
   function gasTip(key, col) {
@@ -1067,6 +1245,18 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
     const G = { wet: g.wet * factor, dry: g.dry * factor };
     const Gname = { wet: g.m === 1 ? 'Gow' : 'Gw', dry: g.m === 1 ? 'God' : 'Gd' };
     const rows = [];
+    if (key === 'soot') {
+      const pctC = trim(+(c.T.cMass * 100).toFixed(4)), rate = trim(+(c.sootRate * 100).toFixed(2));
+      const line = `탄소 × 그을음 비율 × 1000 = ${fr(pctC, 100)} × ${fr(rate, 100)} × 1000` + eqv(c.sootG, 'g/kg');
+      if (col === 'amt') return `<div class="tip-h">그을음 발생량 <span>[g/kg]</span></div>`
+        + `<div class="tip-row"><div class="tip-k">그을음</div><div class="tip-e">${line}</div></div>`
+        + `<div class="tip-row"><div class="tip-k">참고</div><div class="tip-e"><span class="eq">이 탄소는 CO₂가 되지 않아 생성물에서 빠집니다. 이론산소량 Oo는 교재와 같이 탄소 전량 기준입니다.</span></div></div>`;
+      const tot0 = G[col], v0 = tot0 > 0 ? c.sootG / tot0 : 0;
+      return `<div class="tip-h">${col === 'wet' ? '습' : '건'} 배출가스 중 그을음 농도 <span>[g/Sm³]</span></div>`
+        + [['그을음', line], [Gname[col], `${f4(tot0)} ${unit}`],
+           ['농도', `${fr('그을음', Gname[col])} = ${fr(f4(c.sootG), f4(tot0))} <span class="eq">=</span> <b>${v0.toFixed(4)}</b> g/Sm³ <span class="eq">=</span> <b>${Math.round(v0 * 1000).toLocaleString()}</b> mg/Sm³`]]
+          .map(([k, e]) => `<div class="tip-row"><div class="tip-k">${k}</div><div class="tip-e">${e}</div></div>`).join('');
+    }
     if (key === 'dust') {
       const pctA = trim(+(c.ashF * 100).toFixed(4)), rate = trim(+(c.dustRate * 100).toFixed(2));
       const dustLine = `회분 × 배출률 × 1000 = ${fr(pctA, 100)} × ${fr(rate, 100)} × 1000` + eqv(c.dustG, 'g/kg');
@@ -1197,6 +1387,89 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       + row('시간당', `연료 사용량 × 단위량 = ${qTxt} ${qUnit} × ${f4(unitVal)} ${perU[col]}` + eqv(Q * unitVal));
   }
 
+  // ── 미지수 연료 (CmHn) ──────────────────────────────
+  // 아래 첨자가 문자면 그 문자를 미지수로 둔다. 연료 1 Sm³ 기준 값은 모두 미지수의 1차식이다.
+  // 식 표현: { c: 상수, s: { m: 계수, n: 계수 } }
+  const E0 = () => ({ c: 0, s: {} });
+  const eAdd = (a, b) => { const r = { c: a.c + b.c, s: { ...a.s } }; for (const k in b.s) r.s[k] = (r.s[k] || 0) + b.s[k]; return r; };
+  const eMul = (a, x) => { const r = { c: a.c * x, s: {} }; for (const k in a.s) r.s[k] = a.s[k] * x; return r; };
+  const eZero = a => Math.abs(a.c) < 1e-12 && Object.values(a.s).every(v => Math.abs(v) < 1e-12);
+  const eTerms = (a, order) => {
+    const t = [];
+    for (const k of order) {
+      const v = a.s[k];
+      if (!v || Math.abs(v) < 1e-12) continue;
+      t.push({ neg: v < 0, txt: `${Math.abs(Math.abs(v) - 1) < 1e-12 ? '' : trim(+Math.abs(v).toFixed(4))}${k}` });
+    }
+    if (Math.abs(a.c) > 1e-12) t.push({ neg: a.c < 0, txt: trim(+Math.abs(a.c).toFixed(4)) });
+    return t;
+  };
+  function eText(a, order) {
+    const t = eTerms(a, order);
+    if (!t.length) return '0';
+    return t.map((x, i) => i === 0 ? (x.neg ? `−${x.txt}` : x.txt) : (x.neg ? ` − ${x.txt}` : ` + ${x.txt}`)).join('');
+  }
+  // CmHn · CmHnOp · C2H6 · CmH2n 같은 표기를 읽는다
+  function parseSym(text) {
+    const s = String(text ?? '').replace(/\s+/g, '');
+    if (!s) return null;
+    if (!/^([CHNOS](\d+)?[a-z]?)+$/.test(s)) return { bad: '지원하지 않는 표기입니다 (예: CmHn, CmHnOp, C2H6)' };
+    const el = { C: E0(), H: E0(), N: E0(), O: E0(), S: E0() };
+    const order = [];
+    for (const mt of s.matchAll(/([CHNOS])(\d+)?([a-z])?/g)) {
+      const [, e, num, sym] = mt;
+      const k = num ? +num : 1;
+      let term;
+      if (sym) { term = { c: 0, s: { [sym]: k } }; if (!order.includes(sym)) order.push(sym); }
+      else term = { c: k, s: {} };
+      el[e] = eAdd(el[e], term);
+    }
+    if (!order.length) return { bad: '미지수가 없습니다 (예: CmHn) · 숫자만 있는 화학식은 위 조성표를 쓰세요' };
+    return { el, order, s };
+  }
+  let lastSym = null;
+  function renderSym() {
+    const body = $('symBody'), rxn = $('symRxn'), note = $('symNote');
+    const p = parseSym(state.symF);
+    lastSym = null;
+    if (!p || p.bad) {
+      rxn.textContent = p ? p.bad : 'C, H, N, O, S의 아래 첨자에 문자를 쓰면 미지수로 계산합니다 (예: CmHn)';
+      body.innerHTML = '<tr><td colspan="2" class="dash">화학식을 입력하면 표시됩니다</td></tr>';
+      note.textContent = '';
+      return;
+    }
+    const { el, order } = p;
+    const oo = eAdd(eAdd(el.C, eMul(el.H, 0.25)), eAdd(el.S, eMul(el.O, -0.5)));   // C + H/4 + S − O/2
+    const ao = eMul(oo, 1 / 0.21);
+    const co2 = el.C, h2o = eMul(el.H, 0.5), so2 = el.S, n2f = eMul(el.N, 0.5);
+    const wet = eAdd(eAdd(co2, h2o), eAdd(so2, n2f));
+    const dry = eAdd(eAdd(co2, so2), n2f);
+    // 반응식
+    // 항이 하나면 괄호 없이, 1이면 계수 자체를 생략
+    const wrap = e => eTerms(e, order).length > 1 ? `(${eText(e, order)})` : eText(e, order);
+    const term = (e, f) => eZero(e) ? null : `${eZero(eAdd(e, { c: -1, s: {} })) ? '' : wrap(e)}${chemHTML(f)}`;
+    const left = chemHTML(p.s) + (eZero(oo) ? '' : ` + ${wrap(oo)}O<sub>2</sub>`);
+    const right = [term(co2, 'CO2'), term(so2, 'SO2'), term(n2f, 'N2'), term(h2o, 'H2O')].filter(Boolean).join(' + ');
+    rxn.innerHTML = `${left} <span class="arw">→</span> ${right || '–'}`;
+    // 공기비
+    const mx = parseFloat(String(state.symM ?? '').replace(',', '.'));
+    const k = Number.isFinite(mx) && mx > 0 ? mx : null;
+    const rows = [
+      ['oo', 'Oo', '이론 산소량', oo],
+      ['ao', 'Ao', '이론 공기량', ao],
+      ['gow', 'Gow', '이론 습연소가스량', eAdd(eMul(ao, 0.79), wet)],
+      ['god', 'God', '이론 건연소가스량', eAdd(eMul(ao, 0.79), dry)],
+    ];
+    if (k != null) {
+      rows.splice(2, 0, ['a', 'A', `실제 공기량 (공기비 ${trim(k)})`, eMul(ao, k)]);
+      rows.push(['gw', 'Gw', '실제 습연소가스량', eAdd(eMul(ao, k - 0.21), wet)]);
+      rows.push(['gd', 'Gd', '실제 건연소가스량', eAdd(eMul(ao, k - 0.21), dry)]);
+    }
+    lastSym = { order, oo, ao, wet, dry, k, co2, h2o, so2, n2f, s: p.s };
+    body.innerHTML = rows.map(([id, sym, label, e]) => `<tr><th>${chemHTML(sym)} <small>${label}</small></th><td data-sym="${id}">${eText(e, order)}</td></tr>`).join('');
+    note.textContent = `연료 1 Sm³ 기준입니다. 미지수: ${order.join(', ')} · 분자량을 모르므로 kg 기준(kg/kg, kg/Sm³)은 계산할 수 없습니다.`;
+  }
+
   // ── 랜덤 데이터 ─────────────────────────────────────
   const rnd = (a, b, d = 1) => +(a + Math.random() * (b - a)).toFixed(d);
   const pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -1224,7 +1497,8 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
   const NEEDS_M = ['a', 'gw', 'gd', 'so2ppm', 'h2o', 'co2dry'];
 
   function rowsFrom(data) {
-    const rows = blankRows();
+    // 고정 성분 + 문제에 실제로 쓰인 성분만 (쓰지 않는 예시 성분은 넣지 않는다)
+    const rows = FIXED.map(n => row(n, true));
     for (const [name, v] of Object.entries(data.fuel || {})) {
       let r = rows.find(x => x.name === name);
       if (!r) { r = row(name, false); rows.push(r); }
@@ -1283,9 +1557,9 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       + (skipN ? ' <i>(단, 연료 중 질소는 고려하지 않는다.)</i>' : '');
     return { q, text, data: { basis: 'vol', m: needM ? String(m) : '', fuel, flue: {}, nMode: skipN ? 'skip' : 'inert' } };
   }
-  // 계산기용 랜덤 입력 — kind: solid · gas · flue(배출가스 분석) · air(실제 공기량) · ash(회분·먼지) · any
+  // 계산기용 랜덤 입력 — kind: solid · gas · flue(배출가스 분석) · air(실제 공기량) · ash(회분·먼지) · conc(배출가스 농도) · any
   function randomData(kind = 'any') {
-    if (kind === 'any') kind = pick(['solid', 'solid', 'gas', 'flue', 'air', 'ash']);
+    if (kind === 'any') kind = pick(['solid', 'solid', 'gas', 'flue', 'air', 'ash', 'conc', 'soot']);
     const m = rnd(1.1, 1.6, 2);
 
     // 회분이 들어간 석탄: 나머지 조성이 100%가 되도록 회분을 채운다
@@ -1311,6 +1585,26 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
         d.flue = { CO2: p('co2'), O2: p('o2'), N2: p('n2') };
         d.flue.N2 = +(d.flue.N2 + (100 - d.flue.CO2 - d.flue.O2 - d.flue.N2)).toFixed(1);
         return d;
+      }
+    }
+
+    // 그을음: 액체연료(C·H만) + 탄소 일부가 미연탄소로 빠지는 상황
+    if (kind === 'soot') {
+      const H = rnd(12, 16);
+      const fuel = { C: +(100 - H).toFixed(1), H2: H };
+      return { basis: 'wt', fuel, nMode: 'inert', m: String(rnd(1.05, 1.35, 2)), flue: {}, sootRate: String(rnd(0.5, 2, 1)) };
+    }
+
+    // 배출가스 농도: 그 연료를 공기비 m으로 태웠을 때의 CO₂ %(또는 SO₂ ppm)만 주고 공기비는 비워 둔다
+    if (kind === 'conc') {
+      const c = compute({ basis: d.basis, mDirect: String(m), rows: rowsFrom(d) });
+      const ao = c.R.ao[0];
+      if (ao > 0) {
+        const useSo2 = c.T.so2 > 0 && Math.random() < 0.4;
+        const basis = Math.random() < 0.75 ? 'dry' : 'wet';
+        const G = (m - 0.21) * ao + (basis === 'wet' ? c.T.wet : c.T.dry);
+        const v = useSo2 ? c.T.so2 / G * 1e6 : c.T.co2 / G * 100;
+        if (v > 0) return { ...d, co2In: String(+v.toFixed(useSo2 ? 0 : 2)), co2Sp: useSo2 ? 'so2ppm' : 'co2', co2Basis: basis };
       }
     }
 
@@ -1370,14 +1664,16 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       expr = `${fr('Oo', a)} = ${fr(f4(rowVal(it, 'oo')), a)}`;
       note = RU.mass ? '공기 중 O₂ 질량비 23.2%' : '공기 중 O₂ 부피비 21%';
     } else {
+      const kv = kk => kk === 'co2' ? k.co2 * (1 - (c.sootRate || 0)) : k[kk];   // 그을음으로 빠진 탄소 반영
       const prods = MASS.filter(([, kk]) => k[kk] && !(key === 'dry' && kk === 'h2o'));
-      const pSum = prods.reduce((a, [, kk]) => a + k[kk], 0);
-      const pVol = prods.length > 1 ? `(${prods.map(([, kk]) => trim(k[kk])).join(' + ')})` : trim(pSum);
-      const pMass = prods.map(([m, kk]) => `${m}×${trim(k[kk])}`).join(' + ');
+      const pSum = prods.reduce((a, [, kk]) => a + kv(kk), 0);
+      const pVol = prods.length > 1 ? `(${prods.map(([, kk]) => trim(kv(kk))).join(' + ')})` : trim(pSum);
+      const pMass = prods.map(([m, kk]) => `${m}×${trim(kv(kk))}`).join(' + ');
       if (!RU.perSm3) expr = RU.mass ? `${fr(pMass, M)}×${xs}` : `${fr(`22.4×${pVol}`, M)}×${xs}`;
       else expr = RU.mass ? `${fr(1, 22.4)} × ${byY(`${prods.length > 1 ? `(${pMass})` : pMass}×${xs}`)}` : byY(`${pVol}×${xs}`);
       note = '연료 1 mol당 생성: ' + prods.map(([, kk]) => `${PNAME[kk]} ${trim(k[kk])}`).join(' + ') + ' mol'
-        + (key === 'dry' && k.h2o ? ' (H₂O 제외)' : '');
+        + (key === 'dry' && k.h2o ? ' (H₂O 제외)' : '')
+        + (c.sootRate > 0 && k.co2 ? ` · 탄소의 ${trim(+(c.sootRate * 100).toFixed(2))}%는 그을음이 되어 CO₂ 계수에 ${trim(1 - c.sootRate)}을 곱합니다` : '');
     }
     return `<div class="tip-h">${chemHTML(esc(k.s))} · ${KEYNAME[key]} <span>[${RU.label}]</span></div>`
       + (xLine ? `<div class="tip-x">${xLine}</div>` : '')
@@ -1411,6 +1707,14 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
   const RES_NAME = { oo: '이론 산소량 Oo', ao: '이론 공기량 Ao', a: '실제 공기량 A', gow: '이론 습연소가스량 Gow', gw: '실제 습연소가스량 Gw', god: '이론 건연소가스량 God', gd: '실제 건연소가스량 Gd', co2: '최대 탄산가스율 CO₂max' };
   const STEP_NAME = { wet: '습윤 생성물', dry: '건조 생성물' };
   function resTip(r, u) {
+    if (r === 'co2f') {
+      const c = lastView.c, p = x => trim(+(x * 100).toFixed(4));
+      const { O2, CO, CO2 } = c.flue;
+      const row = (k, e) => `<div class="tip-row"><div class="tip-k">${k}</div><div class="tip-e">${e}</div></div>`;
+      return '<div class="tip-h">최대 탄산가스율 CO₂max <span>[%] · 배출가스 분석 기준</span></div>'
+        + row('식', `${fr('21(CO₂ + CO)', '21 − O₂ + 0.395CO')} = ${fr(`21(${p(CO2)} + ${p(CO)})`, `21 − ${p(O2)} + 0.395×${p(CO)}`)} <span class="eq">=</span> <b>${c.co2maxF.toFixed(2)}</b> %`)
+        + row('유도', '<span class="eq">과잉공기와 함께 들어온 N₂를 빼면 God = 100 − 4.76O₂ + 1.88CO 이고, 여기에 0.21을 곱해 정리한 식입니다. 연료 조성을 몰라도 배출가스 분석값만으로 구할 수 있습니다.</span>');
+    }
     const b = buildSteps(lastView.c, u);
     if (b.msg) return null;
     const list = RES_STEPS[r].map(id => b.steps.find(st => st[3] === id)).filter(Boolean);
@@ -1419,11 +1723,103 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       + list.map(([k, , expr, id]) => `<div class="tip-row"><div class="tip-k">${chemHTML(STEP_NAME[id] || k)}</div><div class="tip-e">${expr}</div></div>`).join('');
   }
 
+  // 배출가스 성분 → 공기비 역산 대입식 (풀이와 툴팁에서 함께 쓴다)
+  function mCo2Expr(c) {
+    const SP = SPECIES[c.co2Sp], wet = c.co2Basis === 'wet';
+    const fac = c.vol && c.rho != null ? c.rho : 1;          // 기체연료면 연료 1 Sm³ 기준으로 보여 준다
+    const u = fac === 1 ? 'Sm³/kg' : 'Sm³/Sm³';
+    const spV = c.spV * fac, prodV = (wet ? c.T.wet : c.T.dry) * fac, aoV = c.R.ao[0] * fac;
+    const p = c.co2In / SP.scale;
+    const G = wet ? 'Gw' : 'Gd';
+    return `${fr(SP.label, G)} = ${trim(c.co2In)} ${SP.unit} → m = 0.21 + ${fr(`${SP.label} / 농도 − ${wet ? '습윤' : '건조'} 생성물`, 'Ao')}`
+      + `<br>= 0.21 + ${fr(`${fr(`${f4(spV)} ${u}`, trim(+p.toFixed(8)))} − ${f4(prodV)}`, `${f4(aoV)} ${u}`)}`
+      + ` <span class="eq">=</span> <b>${c.mCo2.toFixed(4)}</b>`;
+  }
+  function mCo2Tip() {
+    const c = lastView && lastView.c;
+    if (!c) return null;
+    const SP = SPECIES[c.co2Sp], wet = c.co2Basis === 'wet';
+    const row = (k, e) => `<div class="tip-row"><div class="tip-k">${k}</div><div class="tip-e">${e}</div></div>`;
+    const head = `<div class="tip-h">공기비 m <span>[${wet ? '습' : '건'}배출가스 중 ${SP.label} ${SP.unit}]</span></div>`;
+    if (c.mCo2 == null) return head + row('안내', `<span class="eq">${c.mCo2Note}</span>`);
+    return head + row('m', mCo2Expr(c))
+      + row('뜻', `<span class="eq">${wet ? '습' : '건'}배출가스 ${wet ? 'Gw' : 'Gd'} = (m − 0.21)Ao + ${wet ? '습윤' : '건조'} 생성물 이므로, ${SP.label} 농도를 만족하는 m을 거꾸로 구한 값입니다. 완전연소(CO 없음) 기준입니다.</span>`)
+      + (c.co2Max != null ? row('최대', `<span class="eq">m = 1일 때 ${SP.label} = ${trim(+c.co2Max.toFixed(SP.scale > 100 ? 0 : 2))} ${SP.unit}</span>`) : '');
+  }
+
+  // 배출가스 조성(오르자트) · 실제 공기량 줄의 풀이
+  function mRowTip(kind) {
+    const c = lastView && lastView.c;
+    if (!c) return null;
+    const row = (k, e) => `<div class="tip-row"><div class="tip-k">${k}</div><div class="tip-e">${e}</div></div>`;
+    const note = e => `<span class="eq">${e}</span>`;
+    if (kind === 'mdirect') {
+      const head = '<div class="tip-h">공기비 m <span>[직접 입력]</span></div>';
+      return head + row('안내', note('공기비를 아는 문제에서 바로 넣습니다. 배출가스 조성·성분 농도·실제 공기량으로 계산된 값이 있으면 그 값이 우선합니다.'));
+    }
+    if (kind === 'mcalc') {
+      const head = '<div class="tip-h">공기비 m <span>[배출가스 조성]</span></div>';
+      if (c.mCalc == null) return head + row('안내', note(c.mCalcNote));
+      const p = x => trim(+(x * 100).toFixed(4));
+      const { O2, N2, CO } = c.flue;
+      const expr = N2 > 0
+        ? `m = ${fr('N₂', 'N₂ − 3.76(O₂ − 0.5CO)')} = ${fr(p(N2), `${p(N2)} − 3.76×(${p(O2)} − 0.5×${p(CO)})`)}`
+        : `m = ${fr('21', '21 − O₂')} = ${fr('21', `21 − ${p(O2)}`)}`;
+      return head + row('m', expr + ` <span class="eq">=</span> <b>${c.mCalc.toFixed(4)}</b>`)
+        + row('뜻', note('배출가스 중 남은 O₂(또는 N₂)로 구하는 오르자트 식입니다. 연료 조성 없이도 계산됩니다.'));
+    }
+    const head = '<div class="tip-h">공기비 m <span>[실제 공기량 A]</span></div>';
+    if (c.mAir == null) return head + row('안내', note(c.mAirNote));
+    const au = UNITS[c.aUnit] ? UNITS[c.aUnit].label : '';
+    return head + row('m', `m = ${fr('A', 'Ao')} = ${fr(`${trim(c.aIn)} ${au}`, `${f4(c.aoForA)} ${au}`)} <span class="eq">=</span> <b>${c.mAir.toFixed(4)}</b>`)
+      + row('뜻', note('실제로 넣은 공기량을 같은 단위의 이론 공기량으로 나눈 값입니다.'));
+  }
+
+  // 미지수 연료 항목의 풀이
+  function symTip(key) {
+    if (!lastSym) return null;
+    const { order, oo, ao, wet, dry, k, co2, h2o, so2, n2f, s } = lastSym;
+    const E = e => eText(e, order);
+    const row = (a, b) => `<div class="tip-row"><div class="tip-k">${a}</div><div class="tip-e">${b}</div></div>`;
+    const prod = (e, label) => {
+      const parts = [[co2, 'CO₂'], [so2, 'SO₂'], [n2f, 'N₂'], ...(label === '습윤' ? [[h2o, 'H₂O']] : [])]
+        .filter(([x]) => !eZero(x)).map(([x, f]) => `${f} ${E(x)}`);
+      return parts.join(' + ') || '0';
+    };
+    const NAME = { oo: 'Oo 이론 산소량', ao: 'Ao 이론 공기량', a: 'A 실제 공기량', gow: 'Gow 이론 습연소가스량', god: 'God 이론 건연소가스량', gw: 'Gw 실제 습연소가스량', gd: 'Gd 실제 건연소가스량' };
+    const head = `<div class="tip-h">${NAME[key]} <span>[Sm³/Sm³]</span> · ${chemHTML(s)}</div>`;
+    const lines = [];
+    if (key === 'oo') {
+      lines.push(['식', 'C + 0.25H + S − 0.5O <span class="eq">(아래 첨자 기준 · 연료 중 O는 차감)</span>']);
+      lines.push(['대입', `${E(oo)}`]);
+    } else if (key === 'ao') {
+      lines.push(['식', `${fr('Oo', '0.21')} = ${fr(E(oo), '0.21')}`]);
+      lines.push(['결과', `<b>${E(ao)}</b>`]);
+    } else if (key === 'a') {
+      lines.push(['식', `공기비 × Ao = ${trim(k)} × (${E(ao)})`]);
+      lines.push(['결과', `<b>${E(eMul(ao, k))}</b>`]);
+    } else {
+      const isWet = key === 'gow' || key === 'gw';
+      const real = key === 'gw' || key === 'gd';
+      const base = isWet ? wet : dry;
+      const coef = real ? k - 0.21 : 0.79;
+      lines.push([isWet ? '습윤 생성물' : '건조 생성물', prod(base, isWet ? '습윤' : '건조') + ` <span class="eq">=</span> ${E(base)}`]);
+      lines.push(['식', real
+        ? `(공기비 − 0.21)Ao + 생성물 = (${trim(k)} − 0.21)(${E(ao)}) + (${E(base)})`
+        : `0.79Ao + 생성물 = 0.79(${E(ao)}) + (${E(base)})`]);
+      lines.push(['결과', `<b>${E(eAdd(eMul(ao, coef), base))}</b>`]);
+    }
+    return head + lines.map(([a, b]) => row(a, b)).join('');
+  }
+
   function showTip(td) {
     if (!lastView || state.masked || td.classList.contains('zero')) return hideTip();
     let html = null;
-    if (td.dataset.g) html = gasTip(td.dataset.g, td.dataset.c);
+    if (td.dataset.tip === 'mco2') html = mCo2Tip();
+    else if (td.dataset.tip) html = mRowTip(td.dataset.tip);
+    else if (td.dataset.g) html = gasTip(td.dataset.g, td.dataset.c);
     else if (td.dataset.h) html = hourTip(td.dataset.h, td.dataset.c);
+    else if (td.dataset.sym) html = symTip(td.dataset.sym);
     else if (td.dataset.r) html = resTip(td.dataset.r, td.dataset.u);
     else if (SUMKEY[td.id]) html = sumTip(SUMKEY[td.id]);
     else {
@@ -1447,7 +1843,7 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
   }
   function hideTip() { tip.hidden = true; tipCell = null; }
 
-  const TIP_CELL = 'td.val, td[data-r], td[data-g], td[data-h]';
+  const TIP_CELL = 'td.val, td[data-r], td[data-g], td[data-h], td[data-sym]';
   for (const table of document.querySelectorAll('table.comp, table.res, table.gas')) {
     table.addEventListener('mouseover', e => {
       const td = e.target.closest(TIP_CELL);
@@ -1464,6 +1860,11 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       if (td === tipCell && !tip.hidden && Date.now() - shownAt > 400) hideTip(); else showTip(td);
     });
     table.closest('.scroll').addEventListener('scroll', hideTip, { passive: true });
+  }
+  // 공기비 패널의 역산 줄도 커서를 올리면 풀이를 보여 준다
+  for (const box of document.querySelectorAll('[data-tip]')) {
+    box.addEventListener('mouseover', () => { if (box !== tipCell) showTip(box); });
+    box.addEventListener('mouseleave', hideTip);
   }
   window.addEventListener('scroll', hideTip, { passive: true });
 
@@ -1491,6 +1892,8 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
 
   // ── 이벤트 ─────────────────────────────────────────
   body.addEventListener('input', e => {
+    if (e.target.id === 'sootRate') { state.sootRate = e.target.value; render(); return; }
+    if (e.target.id === 'dustRate') { state.dustRate = e.target.value; render(); return; }
     const r = findRow(e.target);
     if (!r) return;
     if (e.target.id.startsWith('fuel-')) r.fuel = e.target.value;
@@ -1537,21 +1940,29 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
   $('mDirect').addEventListener('input', e => { state.mDirect = e.target.value; render(); });
   $('aActual').addEventListener('input', e => { state.aActual = e.target.value; render(); });
   $('aUnit').addEventListener('change', e => { state.aUnit = e.target.value; render(); });
-  $('dustRate').addEventListener('input', e => { state.dustRate = e.target.value; render(); });
+  $('co2In').addEventListener('input', e => { state.co2In = e.target.value; render(); });
+  $('co2Basis').addEventListener('change', e => { state.co2Basis = e.target.value; render(); });
+  $('co2Sp').addEventListener('change', e => { state.co2Sp = e.target.value; render(); });
   $('fuelRate').addEventListener('input', e => { state.fuelRate = e.target.value; render(); });
   $('fuelSg').addEventListener('input', e => { state.fuelSg = e.target.value; render(); });
+  $('symF').addEventListener('input', e => { state.symF = e.target.value; render(); });
+  $('symM').addEventListener('input', e => { state.symM = e.target.value; render(); });
   $('fuelUnit').addEventListener('change', e => { state.fuelUnit = e.target.value; render(); });
   for (const b of document.querySelectorAll('#basisSeg button')) b.addEventListener('click', () => { state.basis = b.dataset.basis; render(); });
-  $('addRow').addEventListener('click', () => {
+  body.addEventListener('click', e => {
+    if (!e.target.closest('#addRow')) return;
     const r = row('', false);
     state.rows.push(r); buildRows(); render();
     document.getElementById(`name-${r.id}`)?.focus();
   });
   function resetComposition() {
-    for (const r of state.rows) { r.fuel = ''; r.flue = ''; r.asked = false; r.nMode = 'inert'; }
+    // 고정 성분만 남기고, 직접 입력하는 행은 빈 행 하나로 되돌린다
+    state.rows = [...FIXED.map(n => row(n, true)), row('', false)];
     state.mDirect = ''; $('mDirect').value = '';
     state.aActual = ''; state.aUnit = ''; $('aActual').value = '';
-    state.dustRate = ''; $('dustRate').value = '';
+    state.question = ''; state.qTargets = [];
+    state.co2In = ''; state.co2Sp = ''; state.co2Basis = ''; $('co2In').value = '';
+    state.dustRate = ''; state.sootRate = '';
     state.fuelRate = ''; $('fuelRate').value = '';
     state.fuelSg = ''; $('fuelSg').value = '';
     buildRows(); render();
@@ -1576,10 +1987,10 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
     '입력한 연료·배출가스 조성, 공기비, 실제 공기량이 모두 지워집니다.<br>되돌릴 수 없습니다. 계속할까요?',
     '초기화', resetComposition));
   function loadData(ex) {
-    state = { ...state, basis: ex.basis, mDirect: ex.m, aActual: ex.aActual ?? '', aUnit: ex.aUnit ?? '', dustRate: ex.dustRate ?? '', solUnit: '', rowUnit: '', gasUnit: '', gasMode: '', fuelRate: ex.fuelRate ?? '', fuelUnit: ex.fuelUnit ?? '', fuelSg: ex.fuelSg ?? '', rows: rowsFrom(ex) };
+    state = { ...state, basis: ex.basis, mDirect: ex.m, aActual: ex.aActual ?? '', aUnit: ex.aUnit ?? '', question: ex.q ?? '', qTargets: ex.qTargets ?? [], co2In: ex.co2In ?? '', co2Sp: ex.co2Sp ?? '', co2Basis: ex.co2Basis ?? '', dustRate: ex.dustRate ?? '', sootRate: ex.sootRate ?? '', solUnit: '', rowUnit: '', gasUnit: '', gasMode: '', fuelRate: ex.fuelRate ?? '', fuelUnit: ex.fuelUnit ?? '', fuelSg: ex.fuelSg ?? '', rows: rowsFrom(ex) };
     $('mDirect').value = ex.m;
     $('aActual').value = state.aActual;
-    $('dustRate').value = state.dustRate;
+    $('co2In').value = state.co2In;
     $('fuelRate').value = state.fuelRate;
     $('fuelSg').value = state.fuelSg;
     buildRows(); render();
@@ -1598,6 +2009,125 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
     state.gasMode = b.dataset.g;
     render();
   });
+  // 생성된 데이터로 문항 글을 만든다
+  const FUEL_UNIT_TXT = { kgh: 'kg/h', th: 'ton/h', sm3h: 'Sm³/h', lh: 'L/h', klh: 'kL/h' };
+  function makeQ(kind, d) {
+    const vol = d.basis === 'vol';
+    const list = Object.entries(d.fuel).map(([k, v]) => `${vol ? chemHTML(k) : (ELEM[k] || chemHTML(k))} ${v}%`).join(', ');
+    const name = vol ? '기체연료' : (d.fuel['회분'] || d.fuel.H2O ? '석탄' : '중유');
+    const u = vol ? '1 Sm³' : '1 kg';
+    const head = `${name}의 조성이 ${list}(${vol ? '부피' : '질량'}%)이다.`;
+    const flueList = Object.entries(d.flue || {}).map(([k, v]) => `${chemHTML(k)} ${v}%`).join(', ');
+    let body, targets;
+    if (kind === 'flue') { body = `이 연료를 완전연소한 배출가스를 분석하니 ${flueList}였다. 이때 <b>공기비 m</b>과 <b>실제 공기량</b>을 구하시오.`; targets = [{ k: 'm', u: '', label: '공기비 m', unit: '' }, { k: 'a', u: vol ? 'vv' : 'vk', label: '실제 공기량', unit: vol ? 'Sm³/Sm³' : 'Sm³/kg' }]; }
+    else if (kind === 'air') { body = `이 연료 ${u}을 완전연소하는 데 실제 공기량이 ${trim(+d.aActual)} ${UNITS[d.aUnit].label}였다. 이때 <b>공기비 m</b>을 구하시오.`; targets = [{ k: 'm', u: '', label: '공기비 m', unit: '' }]; }
+    else if (kind === 'conc') {
+      const SP = SPECIES[d.co2Sp];
+      body = `이 연료를 완전연소한 결과 ${d.co2Basis === 'wet' ? '습' : '건조'} 배출가스 중 ${SP.label} 농도가 ${d.co2In} ${SP.unit}였다. 이때 <b>공기비 m</b>을 구하시오.`;
+      targets = [{ k: 'm', u: '', label: '공기비 m', unit: '' }];
+    } else if (kind === 'soot') {
+      body = `이 연료 ${u}을 공기비 ${d.m}${ro(d.m)} 연소할 때 탄소의 ${trim(+d.sootRate)}%가 그을음(미연탄소)으로 된다면 <b>건조 배기가스 중 그을음 농도</b>(g/Sm³)를 구하시오.`;
+      targets = [{ k: 'soot', u: '', label: '그을음 농도', unit: 'g/Sm³' }];
+    } else if (kind === 'ash') {
+      const r = d.dustRate ? `회분 중 ${trim(+d.dustRate)}%가 먼지로 비산될 때` : '회분이 전량 먼지로 비산될 때';
+      body = `이 연료를 공기비 ${d.m}${ro(d.m)} 완전연소하고 ${r}, <b>건조 배출가스 중 먼지 농도</b>(g/Sm³)를 구하시오.`;
+      targets = [{ k: 'dust', u: '', label: '먼지 농도', unit: 'g/Sm³' }];
+    } else {
+      const q = pick(vol ? Q_GAS : Q_SOLID);
+      body = `이 연료 ${u}을 공기비 ${d.m}${ro(d.m)} 완전연소할 때 <b>${q[2]}</b>(${q[3]})${eun(q[2])}?`;
+      targets = [{ k: q[0], u: q[1], label: q[2], unit: q[3] }];
+    }
+    let extra = '';
+    if (d.fuelRate) {
+      const fu = FUEL_UNIT_TXT[d.fuelUnit] || 'kg/h';
+      const sg = d.fuelSg ? `(비중 ${d.fuelSg})` : '';
+      extra = ` 또한 연료 사용량이 ${d.fuelRate} ${fu}${sg}일 때 <b>1시간당 실제 공기량</b>도 구하시오.`;
+      targets.push({ k: 'hourA', u: '', label: '1시간당 실제 공기량', unit: 'Sm³/h' });
+    }
+    const skipN = d.nMode === 'skip' ? ' <i>(단, 연료 중 질소는 고려하지 않는다.)</i>' : '';
+    return { text: head + ' ' + body + extra + skipN, targets };
+  }
+
+  // 문제에서 묻는 값 → 현재 계산 결과
+  function answerOf(c, t) {
+    if (!t) return null;
+    if (t.k === 'm') return c.m;
+    if (t.k === 'hourA') return lastHour && c.R.a ? lastHour.Q * lastHour.per * c.R.a[0] : null;
+    if (t.k === 'co2') return c.co2max;
+    const g = gasComp(c, true);
+    if (g.bad) return null;
+    if (t.k === 'dust') return g.dry > 0 ? c.dustG / g.dry : null;
+    if (t.k === 'soot') return g.dry > 0 ? c.sootG / g.dry : null;
+    if (t.k === 'so2ppm') return g.dry > 0 ? g.parts.so2 / g.dry * 1e6 : null;
+    if (t.k === 'h2o') return g.wet > 0 ? g.parts.h2o / g.wet * 100 : null;
+    if (t.k === 'co2dry') return g.dry > 0 ? g.parts.co2 / g.dry * 100 : null;
+    const v = c.R[t.k];
+    if (!v) return null;
+    return t.u === 'mk' ? v[1] : t.u === 'vv' ? (c.rho != null ? v[0] * c.rho : null) : v[0];
+  }
+
+  // 문제에서 묻는 값이 들어 있는 칸을 빨간 테두리로 표시
+  function markTarget() {
+    for (const el of document.querySelectorAll('.target')) el.classList.remove('target');
+    if (state.masked) return;
+    const mark = el => el && el.classList.add('target');
+    for (const t of state.qTargets || []) {
+      if (t.k === 'm') mark($('mApplied').closest('.applied'));
+      else if (t.k === 'hourA') mark(document.querySelector('#hourBody td[data-h="a"][data-c="v"]'));
+      else if (t.k === 'co2') mark(document.querySelector('#resBody td[data-r="co2"]')?.closest('tr'));
+      else if (t.k === 'dust') mark(document.querySelector('#gasBody td[data-g="dust"][data-c="dry"]'));
+      else if (t.k === 'soot') mark(document.querySelector('#gasBody td[data-g="soot"][data-c="dry"]'));
+      else if (t.k === 'so2ppm') mark(document.querySelector('#gasBody td[data-g="so2"][data-c="dry"]'));
+      else if (t.k === 'h2o') mark(document.querySelector('#gasBody td[data-g="h2o"][data-c="wet"]'));
+      else if (t.k === 'co2dry') mark(document.querySelector('#gasBody td[data-g="co2"][data-c="dry"]'));
+      else mark(document.querySelector(`#resBody td[data-r="${t.k}"][data-u="${t.u}"]`));
+    }
+  }
+
+  // 묻는 값마다 답 칸을 하나씩 만든다 (문제가 바뀔 때만 다시 그린다)
+  let qSig = null;
+  function renderQRows() {
+    const ts = state.qTargets || [];
+    const sig = JSON.stringify([state.question, ts]);
+    if (sig === qSig) return;
+    qSig = sig;
+    $('qRows').classList.toggle('multi', ts.length > 1);
+    $('qRows').innerHTML = ts.map((t, i) =>
+      `<div class="q-line"><label for="qIn${i}">${ts.length > 1 ? t.label : '답'}</label>`
+      + `<input class="in" id="qIn${i}" data-qi="${i}" inputmode="decimal" autocomplete="off" placeholder="값 입력">`
+      + `<span class="q-unit">${t.unit || ''}</span><span class="pill" hidden></span></div>`).join('');
+  }
+
+  function checkAnswer() {
+    const c = compute();
+    (state.qTargets || []).forEach((t, i) => {
+      const inp = $(`qIn${i}`), res = inp && inp.parentElement.querySelector('.pill');
+      if (!inp || !res) return;
+      const v = parseFloat(String(inp.value).replace(/,/g, ''));
+      const ans = answerOf(c, t);
+      res.hidden = false;
+      if (ans == null) { res.className = 'pill info'; res.textContent = '아직 계산할 수 없습니다'; return; }
+      const shown = t.unit === 'ppm' ? Math.round(ans).toLocaleString() : ans.toFixed(t.unit === '%' ? 2 : 4);
+      const withUnit = `${shown}${t.unit ? ' ' + t.unit : ''}`;
+      if (!Number.isFinite(v)) {   // 답을 비워 두고 눌렀으면 정답만 보여 준다
+        res.className = 'pill info';
+        res.textContent = `정답 ${withUnit}`;
+        return;
+      }
+      const ok = Math.abs(v - ans) <= Math.max(Math.abs(ans) * 0.01, 0.005);
+      res.className = `pill ${ok ? 'ok' : 'bad'}`;
+      res.textContent = ok ? `✔ 정답 (${withUnit})` : `✘ 오답 · 정답 ${withUnit}`;
+    });
+  }
+
+  // 무작위 상황 하나를 골라 데이터와 문항을 함께 만든다
+  function randomCase() {
+    const kind = pick(['solid', 'solid', 'gas', 'gas', 'flue', 'air', 'ash', 'conc', 'conc', 'soot']);
+    const d = withFuelRate(randomData(kind));
+    const made = makeQ(kind, d);
+    return { ...d, q: made.text, qTargets: made.targets };
+  }
+
   // 절반은 연료 사용량도 함께 준다 (시간당 환산 연습)
   function withFuelRate(d) {
     if (Math.random() < 0.5) return d;
@@ -1613,17 +2143,18 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       ? { ...d, fuelRate: String(pick([100, 200, 300, 500, 1000, 1500, 2000])), fuelUnit: 'kgh' }
       : { ...d, fuelRate: String(pick([0.5, 1, 2, 3, 5, 10])), fuelUnit: 'th' };
   }
-  // 랜덤 데이터: 어떤 상황을 만들지 고르게 한다
-  $('randomData').addEventListener('click', () => {
-    const dlg = $('randDialog');
-    if (!dlg.showModal) { loadData(withFuelRate(randomData('any'))); return; }
-    dlg.returnValue = '';
-    dlg.addEventListener('close', () => {
-      const v = dlg.returnValue;
-      if (v && v !== 'cancel') loadData(withFuelRate(randomData(v)));
-    }, { once: true });
-    dlg.showModal();
-  });
+  // 랜덤 데이터: 누르면 바로 무작위 상황 + 문항을 만든다
+  $('qCheck').addEventListener('click', checkAnswer);
+  $('qRows').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input')) { e.preventDefault(); checkAnswer(); } });
+  $('randomData').addEventListener('click', () => askConfirm(
+    '랜덤 데이터 생성',
+    '지금 입력한 연료 조성·공기비·사용량이 새 문제의 값으로 모두 바뀝니다.<br>계속할까요?',
+    '생성',
+    () => {
+      loadData(randomCase());
+      $('qPanel').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    },
+    false));
   // 패널 접기: 제목(h2)을 눌러 접고 편다. 접은 패널은 저장해 둔다
   function syncFolds() {
     for (const sec of document.querySelectorAll('section.panel')) {
@@ -1660,16 +2191,24 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
         mDirect: String(s.mDirect ?? ''),
         aActual: String(s.aActual ?? ''),
         aUnit: ['vk', 'mk', 'vv', 'mv'].includes(s.aUnit) ? s.aUnit : '',
+        co2In: String(s.co2In ?? ''),
+        co2Sp: SPECIES[s.co2Sp] ? s.co2Sp : '',
+        co2Basis: s.co2Basis === 'wet' ? 'wet' : '',
         dustRate: String(s.dustRate ?? ''),
+        sootRate: String(s.sootRate ?? ''),
         solUnit: typeof s.solUnit === 'string' ? s.solUnit : '',
         rowUnit: typeof s.rowUnit === 'string' ? s.rowUnit : '',
         gasUnit: typeof s.gasUnit === 'string' ? s.gasUnit : '',
         gasMode: typeof s.gasMode === 'string' ? s.gasMode : '',
         masked: !!s.masked,
+        question: String(s.question ?? ''),
+        qTargets: Array.isArray(s.qTargets) ? s.qTargets : [],
         folded: Array.isArray(s.folded) ? s.folded.filter(x => typeof x === 'string') : [],
         fuelRate: String(s.fuelRate ?? ''),
         fuelUnit: ['kgh', 'th', 'sm3h', 'lh', 'klh'].includes(s.fuelUnit) ? s.fuelUnit : '',
         fuelSg: String(s.fuelSg ?? ''),
+        symF: String(s.symF ?? ''),
+        symM: String(s.symM ?? ''),
         rows: s.rows.map(r => ({ ...row(String(r.name ?? ''), !!r.fixed), fuel: String(r.fuel ?? ''), flue: String(r.flue ?? ''), nMode: ['no', 'skip'].includes(r.nMode) ? r.nMode : 'inert', asked: !!r.asked })),
       };
       // 회분 행이 없던 예전 저장본이면 H2O 다음에 끼워 넣는다
@@ -1679,9 +2218,11 @@ dialog.wide{max-width:min(580px,calc(100vw - 32px))}
       }
       $('mDirect').value = state.mDirect;
       $('aActual').value = state.aActual;
-      $('dustRate').value = state.dustRate;
+      $('co2In').value = state.co2In;
       $('fuelRate').value = state.fuelRate;
       $('fuelSg').value = state.fuelSg;
+      $('symF').value = state.symF;
+      $('symM').value = state.symM;
       return true;
     } catch (e) { return false; }
   }
