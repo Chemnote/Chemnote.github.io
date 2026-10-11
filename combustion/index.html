@@ -230,9 +230,9 @@ tr.target td,tr.target th{background:var(--bad-soft)}
 .hour-note{margin:10px 0 0;color:var(--muted);font-size:12.5px}
 .hour-note:empty{display:none}
 /* 결과 가림 */
-.masked-on :is(#compBody td.val, #sumOo, #sumAo, #sumWet, #sumDry, #resBody td, #gasBody td, #hourBody td, #symBody td, #heatBody td):not(.dash):not(.need){position:relative;color:transparent!important;user-select:none;cursor:default!important}
-.masked-on :is(#compBody td.val, #sumOo, #sumAo, #sumWet, #sumDry, #resBody td, #gasBody td, #hourBody td, #symBody td, #heatBody td):not(.dash):not(.need)::after{content:"";position:absolute;inset:7px 10px;border-radius:7px;background:var(--mask)}
-.masked-on :is(#compBody td.val, #resBody td, #gasBody td, #hourBody td, #heatBody td) *{visibility:hidden}
+.masked-on :is(#compBody td.val, #sumOo, #sumAo, #sumWet, #sumDry, #resBody td, #gasBody td, #hourBody td, #symBody td, #heatBody td, #o2Body td):not(.dash):not(.need){position:relative;color:transparent!important;user-select:none;cursor:default!important}
+.masked-on :is(#compBody td.val, #sumOo, #sumAo, #sumWet, #sumDry, #resBody td, #gasBody td, #hourBody td, #symBody td, #heatBody td, #o2Body td):not(.dash):not(.need)::after{content:"";position:absolute;inset:7px 10px;border-radius:7px;background:var(--mask)}
+.masked-on :is(#compBody td.val, #resBody td, #gasBody td, #hourBody td, #heatBody td, #o2Body td) *{visibility:hidden}
 .masked-on :is(#airCalc, #mApplied, #airSumV, #heatSumV, #mMix, #rho):not(.need){display:inline-block;min-width:64px;border-radius:7px;background:var(--mask);color:transparent!important;user-select:none}
 .masked-on #mApplied:not(.need){min-width:96px}
 .mask-grp{display:inline-flex;align-items:center;gap:8px;flex-wrap:nowrap}
@@ -417,6 +417,15 @@ a.need-go:hover{color:var(--warn)}
 .cond-rxn tfoot th{border-top:1px solid var(--rule);font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);padding-top:5px}
 .cond-rxn .sub{font-family:var(--sans);font-size:12px;color:var(--faint)}
 .cond-empty{color:var(--faint);font-size:13px}
+/* ===== 표준산소 보정 ===== */
+.o2-sub{margin-top:12px}
+.o2-sub .o2-hint{margin-left:12px;font-size:11.5px;font-weight:500;color:var(--faint)}
+.o2-sub .heat-in{margin:12px 0 14px}
+.o2-in select#o2Pick:disabled,.o2-in select#o2MeasPick:disabled{opacity:.45}
+.o2-in .heat-row{grid-template-columns:104px 200px}       /* 단위 칸이 mg/m³·Sm³/min을 잘리지 않고 담도록 */
+.o2-in .a-in{grid-template-columns:86px minmax(0,1fr)}
+.o2tbl td:last-child{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.o2tbl tbody th.sym{width:84px;padding-inline:6px;font-family:var(--mono);font-weight:600;color:var(--accent)}
 /* 조성 없이 Ao만으로 환산한 [시간당 환산]은 그 문제의 답이 맞으므로 줄을 긋지 않는다 */
 .heat-skip.hour-heat #hourBody td:not(.dash):not(.need){text-decoration:none!important;color:var(--ink);cursor:help}
 .heat-skip.hour-heat #hourBody td:not(.dash):not(.need):hover{background:var(--result)}
@@ -484,6 +493,7 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
         <button class="btn" type="button" data-rk="heat">발열량</button>
         <button class="btn" type="button" data-rk="temp">연소온도</button>
         <button class="btn" type="button" data-rk="rosin">Rosin 식</button>
+        <button class="btn" type="button" data-rk="o2">표준산소</button>
       </span>
     </div>
     <div class="prac-q">
@@ -663,6 +673,47 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
       </table>
     </div>
     <p class="skip-note">이 표는 연료 조성만으로 계산한 값입니다. 지금은 [발열량 · 연소온도] 패널이 Rosin 식(또는 직접 입력한 Ao·Go)으로 가스량을 구하고 있어, 이 표의 값은 이 문제의 답이 아닙니다.</p>
+    <details class="sol o2-sub" id="o2Box">
+      <summary><span class="sol-title">표준산소 보정</span><span class="o2-hint">측정 조건은 위 온도·압력 칸을 씁니다</span></summary>
+      <div class="heat-in o2-in">
+      <div class="heat-box">
+        <span class="heat-cap">산소농도</span>
+        <div class="heat-row">
+          <label for="o2Meas">실측 O<sub>2</sub></label>
+          <div class="a-in"><input class="in" id="o2Meas" inputmode="decimal" autocomplete="off" placeholder="예: 11"><span class="a-suffix">%</span></div>
+        </div>
+        <div class="heat-row">
+          <label for="o2Std">표준 O<sub>2</sub></label>
+          <div class="a-in"><input class="in" id="o2Std" inputmode="decimal" autocomplete="off" placeholder="예: 6"><span class="a-suffix">%</span></div>
+        </div>
+        <div class="heat-row">
+          <label for="o2MeasPick">가져오기</label>
+          <div class="a-in sel"><select class="unit-sel" id="o2MeasPick" aria-label="배출가스 조성에서 실측 산소농도 가져오기"></select></div>
+        </div>
+      </div>
+      <div class="heat-box">
+        <span class="heat-cap">실측값 · 측정 조건 기준</span>
+        <div class="heat-row">
+          <label for="o2Conc">농도 C<sub>a</sub></label>
+          <div class="a-in"><input class="in" id="o2Conc" inputmode="decimal" autocomplete="off" placeholder="값"><select class="unit-sel" id="o2ConcUnit" aria-label="농도 단위"><option value="ppm">ppm</option><option value="mg">mg/m³</option><option value="pct">%</option></select></div>
+        </div>
+        <div class="heat-row">
+          <label for="o2Flow">유량 Q<sub>a</sub></label>
+          <div class="a-in"><input class="in" id="o2Flow" inputmode="decimal" autocomplete="off" placeholder="값"><select class="unit-sel" id="o2FlowUnit" aria-label="유량 단위"><option value="m3h">m³/h</option><option value="m3min">m³/min</option><option value="m3d">m³/일</option></select></div>
+        </div>
+        <div class="heat-row">
+          <label for="o2Pick">가져오기</label>
+          <div class="a-in sel"><select class="unit-sel" id="o2Pick" aria-label="배출가스 조성에서 농도 가져오기"></select></div>
+        </div>
+      </div>
+      </div>
+    <div class="scroll">
+      <table class="gas o2tbl">
+        <thead><tr><th colspan="2">구분</th><th>값</th></tr></thead>
+        <tbody id="o2Body"></tbody>
+      </table>
+    </div>
+    </details>
   </section>
 
 
@@ -834,7 +885,7 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
     flue:  { basis: 'wt', m: '', fuel: { C: 85, H2: 12, S: 3 }, flue: { CO2: 12, O2: 4, CO: 0.5, N2: 83.5 } },
   };
 
-  let state = { basis: 'wt', mDirect: '', aActual: '', aUnit: '', co2In: '', co2Sp: '', co2Basis: '', co2maxIn: '', co2fIn: '', coIn: '', hourPer: 'h', dustRate: '', sootRate: '', solUnit: '', rowUnit: '', gasUnit: '', gasMode: '', masked: false, question: '', qTargets: [], fuelRate: '', fuelUnit: '', fuelSg: '', symF: '', symM: '', hhIn: '', hlIn: '', fuelPhase: '', aoIn: '', goIn: '', cpIn: '', t1In: '', etaIn: '', volIn: '', gasT: '', gasP: '', folded: ['symTitle'], symFold: true, rows: blankRows() };
+  let state = { basis: 'wt', mDirect: '', aActual: '', aUnit: '', co2In: '', co2Sp: '', co2Basis: '', co2maxIn: '', co2fIn: '', coIn: '', hourPer: 'h', o2Meas: '', o2Std: '', o2Conc: '', o2ConcUnit: '', o2Flow: '', o2FlowUnit: '', dustRate: '', sootRate: '', solUnit: '', rowUnit: '', gasUnit: '', gasMode: '', masked: false, question: '', qTargets: [], fuelRate: '', fuelUnit: '', fuelSg: '', symF: '', symM: '', hhIn: '', hlIn: '', fuelPhase: '', aoIn: '', goIn: '', cpIn: '', t1In: '', etaIn: '', volIn: '', gasT: '', gasP: '', folded: ['symTitle'], symFold: true, rows: blankRows() };
   const HEAT_IN = ['hhIn', 'hlIn', 'aoIn', 'goIn', 'cpIn', 't1In', 'etaIn', 'volIn'];
 
   // ── 화학식 ─────────────────────────────────────────
@@ -1252,6 +1303,7 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
     $('rho').textContent = c.rho == null ? '—' : c.rho.toFixed(4);
 
     renderGas(c);
+    renderO2();
     renderHour(c);
     renderSym();
     renderHeat(c);
@@ -1271,7 +1323,8 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
     applyAutoShut(skip, c.items.some(it => it.k && it.k.mw > 0 && it.f > 0), hourHeatOnly);
     for (const p of document.querySelectorAll('.skip-note')) {       // 값이 없는 표에는 안내를 띄우지 않는다
       const sec = p.closest('section');
-      const tb = sec.querySelector('tbody');
+      // 안내는 조성 기반 표에만 띄운다 · 하위 표(#o2Body)는 제외
+      const tb = sec.querySelector('#resBody, #gasBody, #hourBody');
       // 조성 없이 Ao로만 환산한 [시간당 환산]은 이 문제의 답이므로 안내를 띄우지 않는다
       const mine = !(hourHeatOnly && sec.contains($('hourTitle')));
       p.style.display = skip && mine && tb && tb.querySelector('td:not(.dash):not(.need)') ? 'block' : 'none';
@@ -1305,6 +1358,9 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
       if (k === 'm') return c.mCalc != null ? mRowTip('mcalc') : c.mCo2 != null ? mCo2Tip()
         : c.mAir != null ? mRowTip('mair') : mRowTip('mdirect');
       if (k === 'hourA') return hourTip('a', 'v');
+      if (k === 'o2c') return o2Tip('c');
+      if (k === 'o2q') return o2Tip('q');
+      if (k === 'o2link') return o2LinkTip(c);
       if (k === 'dust' || k === 'soot') return gasTip(k, 'dry');
       if (k === 'so2ppm') return gasTip('so2', 'dry');
       if (k === 'h2o') return gasTip('h2o', 'wet');
@@ -1326,6 +1382,7 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
     for (const td of document.querySelectorAll('#heatBody td[data-x]')) add(td, `#heatBody td[data-x='${td.dataset.x}']`);
     for (const td of document.querySelectorAll('#gasBody td[data-g][data-c]')) add(td, `#gasBody td[data-g='${td.dataset.g}'][data-c='${td.dataset.c}']`);
     for (const td of document.querySelectorAll('#hourBody td[data-h][data-c]')) add(td, `#hourBody td[data-h='${td.dataset.h}'][data-c='${td.dataset.c}']`);
+    for (const td of document.querySelectorAll('#o2Body td[data-o]')) add(td, `#o2Body td[data-o='${td.dataset.o}']`);
     for (const td of document.querySelectorAll('#compBody td.val[data-v]')) {
       const tr = td.closest('tr');
       add(td, `#compBody tr[data-id='${tr.dataset.id}'] td[data-v='${td.dataset.v}']`);
@@ -1583,7 +1640,7 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
     const massK = key => U.mass ? GAS_MW[key] / 22.4 : 1;
     $('gasAmtHead').textContent = `배출량 [${unit}]`;
     $('gasT').value = state.gasT; $('gasP').value = state.gasP;
-    document.querySelector('.cond').classList.toggle('on', cnd.vf !== 1);
+    for (const el of document.querySelectorAll('.cond')) el.classList.toggle('on', cnd.vf !== 1);
     const body = $('gasBody');
     const hasFuel = c.items.some(it => it.k && it.k.mw > 0 && it.f > 0);
     const g = hasFuel ? gasComp(c, useReal) : null;
@@ -1600,14 +1657,14 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
     // 먼지(회분): 기체가 아니므로 % 합계에는 넣지 않고, 배출가스 1 Sm³당 질량 농도로 표시
     const dustOn = c.dustG > 0;
     const conc = G => G > 0 ? c.dustG / (G * cnd.vf) : 0; // g/Sm³ (조건을 넣으면 g/m³)
-    const dustCell = (col, G) => `<td data-g="dust" data-c="${col}">${conc(G).toFixed(4)} g/${cUnit}<small>${Math.round(conc(G) * 1000).toLocaleString()} mg/${cUnit}</small></td>`;
+    const dustCell = (col, G) => `<td data-g="dust" data-c="${col}">${conc(G).toFixed(4)} g/${cUnit}<small>${Math.round(conc(G) * 1000).toLocaleString()} mg/m³${cUnit}</small></td>`;
     const dustRow = dustOn
       ? `<tr class="dust"><th>먼지</th><td data-g="dust" data-c="amt">${c.dustG.toFixed(4)} <small>g/kg</small></td>${dustCell('wet', g.wet)}${dustCell('dry', g.dry)}</tr>`
       : '';
     // 그을음(미연탄소): 먼지와 같은 방식으로 질량 농도를 보여 준다
     const sootCell = (col, G) => {
       const v = G > 0 ? c.sootG / (G * cnd.vf) : 0;
-      return `<td data-g="soot" data-c="${col}">${v.toFixed(4)} g/${cUnit}<small>${Math.round(v * 1000).toLocaleString()} mg/${cUnit}</small></td>`;
+      return `<td data-g="soot" data-c="${col}">${v.toFixed(4)} g/${cUnit}<small>${Math.round(v * 1000).toLocaleString()} mg/m³${cUnit}</small></td>`;
     };
     const sootRow = c.sootG > 0
       ? `<tr class="dust"><th>그을음</th><td data-g="soot" data-c="amt">${c.sootG.toFixed(4)} <small>g/kg</small></td>${sootCell('wet', g.wet)}${sootCell('dry', g.dry)}</tr>`
@@ -1665,7 +1722,7 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
       const tot0 = g[col] * cnd.vf, v0 = tot0 > 0 ? c.sootG / tot0 : 0;
       return `<div class="tip-h">${col === 'wet' ? '습' : '건'} 배출가스 중 그을음 농도 <span>[g/${cUnit}]</span></div>`
         + [['그을음', line], [Gname[col], `${jump(f4(g[col]), resSel(Gname[col].toLowerCase(), 'vk'))} Sm³/kg`], cndRow(),
-           ['농도', `${fr('그을음', Gname[col])} = ${fr(f4(c.sootG), f4(tot0))} <span class="eq">=</span> <b>${v0.toFixed(4)}</b> g/${cUnit} <span class="eq">=</span> <b>${Math.round(v0 * 1000).toLocaleString()}</b> mg/${cUnit}`]]
+           ['농도', `${fr('그을음', Gname[col])} = ${fr(f4(c.sootG), f4(tot0))} <span class="eq">=</span> <b>${v0.toFixed(4)}</b> g/${cUnit} <span class="eq">=</span> <b>${Math.round(v0 * 1000).toLocaleString()}</b> mg/m³${cUnit}`]]
           .filter(Boolean).map(([k, e]) => `<div class="tip-row"><div class="tip-k">${k}</div><div class="tip-e">${e}</div></div>`).join('');
     }
     if (key === 'dust') {
@@ -1675,7 +1732,7 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
       const tot = g[col] * cnd.vf, v = tot > 0 ? c.dustG / tot : 0;
       return `<div class="tip-h">${col === 'wet' ? '습' : '건'} 배출가스 중 먼지 농도 <span>[g/${cUnit}]</span></div>`
         + [['먼지', dustLine], [Gname[col], `${jump(f4(g[col]), resSel(Gname[col].toLowerCase(), 'vk'))} Sm³/kg`], cndRow(),
-           ['농도', `${fr('먼지', Gname[col])} = ${fr(f4(c.dustG), f4(tot))} <span class="eq">=</span> <b>${v.toFixed(4)}</b> g/${cUnit} <span class="eq">=</span> <b>${Math.round(v * 1000).toLocaleString()}</b> mg/${cUnit}`]]
+           ['농도', `${fr('먼지', Gname[col])} = ${fr(f4(c.dustG), f4(tot))} <span class="eq">=</span> <b>${v.toFixed(4)}</b> g/${cUnit} <span class="eq">=</span> <b>${Math.round(v * 1000).toLocaleString()}</b> mg/m³${cUnit}`]]
           .filter(Boolean).map(([k, e]) => `<div class="tip-row"><div class="tip-k">${k}</div><div class="tip-e">${e}</div></div>`).join('');
     }
     const amountLine = k => {
@@ -1790,6 +1847,195 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
     body.innerHTML = html;
   }
 
+  // ── 표준산소 보정 ───────────────────────────────────
+  // 배출허용기준은 표준산소농도 기준이라, 실측값을 그 기준으로 환산해서 비교한다.
+  //   보정농도 C = Ca × (21 − Os) / (21 − Oa)        ← 공기로 희석하면 농도가 묽어지므로 되돌린다
+  //   보정유량 Q = Qa × (21 − Oa) / (21 − Os)        ← 농도와 정확히 반대, 그래서 C×Q(배출량)는 그대로
+  // 입력은 측정 조건 기준(m³), 결과는 표준상태 기준(Sm³) — 둘을 분리해 둔다
+  const O2_CU = { ppm: 'ppm', mg: 'mg/m³', pct: '%' };          // 실측 단위
+  const O2_CU_S = { ppm: 'ppm', mg: 'mg/Sm³', pct: '%' };       // 표준상태 단위
+  const O2_FU = { m3h: 'm³/h', m3min: 'm³/min', m3d: 'm³/일' };
+  const O2_FU_S = { m3h: 'Sm³/h', m3min: 'Sm³/min', m3d: 'Sm³/일' };
+  let lastO2 = null;
+  // [배출가스 조성] 표에서 농도를 그대로 끌어온다 (문제가 "구한 농도를 표준산소로 보정하시오"로 이어질 때)
+  const O2_PICK_NAME = { co2: 'CO₂', so2: 'SO₂', no: 'NO', h2o: 'H₂O', o2: 'O₂', n2: 'N₂', dust: '먼지', soot: '그을음' };
+  function o2PickList() {
+    if (!lastGas) return [];
+    const { c, g, cnd } = lastGas;
+    const out = [];
+    const pct = (x, tot) => tot > 0 ? x / tot * 100 : 0;
+    for (const [key] of GAS_ROWS) {
+      const x = g.parts[key];
+      if (!(x > 0)) continue;
+      for (const [col, tot, ct] of [['wet', g.wet, '습'], ['dry', g.dry, '건']]) {
+        if (key === 'h2o' && col === 'dry') continue;
+        const p = pct(x, tot);
+        if (!(p > 0)) continue;
+        // SO₂·NO는 ppm이 실무 단위, 나머지는 %
+        const ppm = key === 'so2' || key === 'no';
+        out.push({ v: ppm ? +(p * 1e4).toFixed(2) : +p.toFixed(4), u: ppm ? 'ppm' : 'pct',
+          label: `${O2_PICK_NAME[key] || key} · ${ct} ${ppm ? Math.round(p * 1e4).toLocaleString() + ' ppm' : p.toFixed(2) + ' %'}` });
+      }
+    }
+    // 먼지·그을음은 질량 농도 (mg 기준으로 넘긴다)
+    for (const [key, amt] of [['dust', c.dustG], ['soot', c.sootG]]) {
+      if (!(amt > 0)) continue;
+      for (const [tot, ct] of [[g.wet, '습'], [g.dry, '건']]) {
+        if (!(tot > 0)) continue;
+        const v = amt / (tot * cnd.vf) * 1000;      // mg/Sm³ (표준상태)
+        out.push({ v: +v.toFixed(2), u: 'mg', label: `${O2_PICK_NAME[key]} · ${ct} ${Math.round(v).toLocaleString()} mg/m³${cnd.vf === 1 ? 'Sm³' : 'm³'}` });
+      }
+    }
+    return out;
+  }
+  function renderO2Pick() {
+    const sel = $('o2Pick');
+    const list = o2PickList();
+    sel.innerHTML = `<option value="">${list.length ? '배출가스에서 가져오기…' : '배출가스 조성이 계산되면 가져올 수 있습니다'}</option>`
+      + list.map((o, i) => `<option value="${i}">${o.label}</option>`).join('');
+    sel.disabled = !list.length;
+    sel.value = '';
+    o2Picks = list;
+  }
+  let o2Picks = [];
+
+  // 실측 O₂도 조성표에서 끌어온다. 배기가스 분석은 보통 건조 시료라 건 기준을 먼저 둔다.
+  function o2MeasList() {
+    if (!lastGas) return [];
+    const { g } = lastGas;
+    const x = g.parts.o2;
+    if (!(x > 0)) return [];
+    const out = [];
+    for (const [tot, ct] of [[g.dry, '건'], [g.wet, '습']]) {
+      if (!(tot > 0)) continue;
+      const p = x / tot * 100;
+      if (!(p > 0)) continue;
+      out.push({ v: +p.toFixed(4), label: `${ct} 기준 O₂ ${p.toFixed(2)} %` });
+    }
+    return out;
+  }
+  function renderO2MeasPick() {
+    const sel = $('o2MeasPick');
+    const list = o2MeasList();
+    sel.innerHTML = `<option value="">${list.length ? '배출가스에서 가져오기…' : '배출가스 중 O₂가 계산되면 가져올 수 있습니다'}</option>`
+      + list.map((o, i) => `<option value="${i}">${o.label}</option>`).join('');
+    sel.disabled = !list.length;
+    sel.value = '';
+    o2MeasPicks = list;
+  }
+  let o2MeasPicks = [];
+
+  function renderO2() {
+    const body = $('o2Body');
+    renderO2Pick();
+    renderO2MeasPick();
+    const Oa = hnum(state.o2Meas), Os = hnum(state.o2Std);
+    const Ca = hnum(state.o2Conc), Qa = hnum(state.o2Flow);
+    const cu = O2_CU[state.o2ConcUnit] ? state.o2ConcUnit : 'ppm';
+    const fu = O2_FU[state.o2FlowUnit] ? state.o2FlowUnit : 'm3h';
+    $('o2ConcUnit').value = cu; $('o2FlowUnit').value = fu;
+    // 측정 조건이 표준상태가 아니면 먼저 표준상태로 되돌린 뒤 산소 보정을 건다
+    // 표준 부피 = 실제 부피 × 273/(273+t) × P  ·  ppm·%는 부피비라 온압과 무관
+    const cnd = gasCond();
+    const std = cnd.vf === 1;
+    const massConc = cu === 'mg';
+    lastO2 = null;
+    const msg = t => { body.innerHTML = `<tr><td colspan="3" class="dash">${t}</td></tr>`; };
+    const any = [Oa, Os, Ca, Qa].some(v => v != null);
+    if (Oa == null || Os == null) return msg(!any ? '실측 산소농도와 표준 산소농도를 넣으면 보정값이 나옵니다'
+      : Oa == null && Os == null ? '실측 O₂와 표준 O₂를 모두 입력하세요'
+        : Oa == null ? '실측 O₂를 입력하세요 · 조성이 계산돼 있으면 [가져오기]로 넣을 수 있습니다' : '표준 O₂를 입력하세요');
+    if (Oa >= 21) return msg('실측 O₂는 21%보다 작아야 합니다 (21%면 공기 그대로라 보정할 수 없습니다)');
+    if (Os >= 21) return msg('표준 O₂는 21%보다 작아야 합니다');
+    if (Oa < 0 || Os < 0) return msg('산소농도는 음수일 수 없습니다');
+    const k = (21 - Os) / (21 - Oa);           // 농도에 곱하는 보정계수
+    // ① 표준상태 환산 (질량 농도와 유량만 영향을 받는다)
+    const Cs = Ca == null ? null : (massConc && !std ? Ca * cnd.vf : Ca);
+    const Qs = Qa == null ? null : (std ? Qa : Qa / cnd.vf);
+    // ② 표준산소 보정
+    const C = Cs == null ? null : Cs * k;
+    const Q = Qs == null ? null : Qs / k;
+    lastO2 = { Oa, Os, Ca, Qa, k, Cs, Qs, C, Q, cu, fu, cnd, std, massConc };
+    const rows = [];
+    const r = (key, sym, label, v, unit, dec) => rows.push(
+      `<tr><th class="sym">${sym}</th><th>${label}</th><td data-o="${key}">${dec == null ? f4(v) : trim(+v.toFixed(dec))}<small>${unit}</small></td></tr>`);
+    const cDec = cu === 'ppm' ? 2 : 4;
+    const CU = O2_CU_S[cu], FU = O2_FU_S[fu];     // 결과는 표준상태 단위로 적는다
+    r('k', '계수', '보정계수 (21 − Os)/(21 − Oa)', k, '', 4);
+    if (!std) {
+      if (Cs != null && massConc) r('cs', 'C<sub>s</sub>', `표준상태 환산 농도 · 측정 ${cnd.txt}`, Cs, CU, cDec);
+      if (Qs != null) r('qs', 'Q<sub>s</sub>', `표준상태 환산 유량 · 측정 ${cnd.txt}`, Qs, FU, 4);
+    }
+    if (C != null) r('c', 'C', '보정 농도', C, CU, cDec);
+    if (Q != null) r('q', 'Q', '보정 유량', Q, FU, 4);
+    if (C != null && Q != null) r('w', '배출량', '농도 × 유량 (보정 전후 같음)', C * Q, `${CU}·${FU}`, 2);
+    body.innerHTML = rows.join('') || `<tr><td colspan="3" class="dash">실측 농도나 유량을 넣으면 보정값이 나옵니다</td></tr>`;
+  }
+
+  // 조성에서 실측 O₂·SO₂를 직접 읽어 표준산소로 보정한다 (랜덤 문제 o2link 유형)
+  function o2Link(g) {
+    const Os = hnum(state.o2Std);
+    if (Os == null || Os >= 21 || Os < 0 || !g || g.bad || !(g.dry > 0)) return null;
+    const Oa = g.parts.o2 / g.dry * 100, Ca = g.parts.so2 / g.dry * 1e6;
+    if (!(Oa < 21) || !(Ca > 0)) return null;
+    return { Os, Oa, Ca, C: Ca * (21 - Os) / (21 - Oa) };
+  }
+  function o2LinkTip(c) {
+    const r = o2Link(gasComp(c, true));
+    if (!r) return null;
+    const { Os, Oa, Ca, C } = r;
+    const row = (a, b) => `<div class="tip-row"><div class="tip-k">${a}</div><div class="tip-e">${b}</div></div>`;
+    // 두 값 모두 [배출가스 조성] 표에서 읽어온 것이므로 그 칸으로 가는 링크를 단다
+    const go = (v, sel) => `<a class="jump" data-go="${esc(sel)}">${v}</a>`;
+    const OA = go(f4(Oa), "#gasBody td[data-g='o2'][data-c='dry']");
+    const CA = go(f4(Ca), "#gasBody td[data-g='so2'][data-c='dry']");
+    return `<div class="tip-h">보정 SO₂ 농도 <span>[ppm]</span></div>`
+      + row('① 실측 O<sub>a</sub>', `건조가스 중 O₂ <span class="eq">=</span> <b>${OA}</b> %`)
+      + row('② 실측 C<sub>a</sub>', `건조가스 중 SO₂ <span class="eq">=</span> <b>${CA}</b> ppm`)
+      + row('③ 공식', `C = C<sub>a</sub> × ${fr('21 − O<sub>s</sub>', '21 − O<sub>a</sub>')}`)
+      + row('④ 대입', `${CA} × ${fr(`21 − ${trim(Os)}`, `21 − ${OA}`)} <span class="eq">=</span> <b>${f4(C)}</b> ppm`)
+      + row('뜻', `<span class="eq">공기비가 높을수록 O₂가 높고 농도는 묽어집니다. 그 희석을 되돌려 표준산소 ${trim(Os)}% 기준으로 맞춘 값입니다</span>`);
+  }
+
+  function o2Tip(key) {
+    if (!lastO2) return null;
+    const { Oa, Os, Ca, Qa, k, Cs, Qs, C, Q, cu, fu, cnd, std, massConc } = lastO2;
+    const vfTxt = `${fr(`273 + ${trim(cnd.t)}`, 273)}${cnd.p === 1 ? '' : ` × ${fr(1, trim(cnd.p))}`}`;
+    const row = (a, b) => `<div class="tip-row"><div class="tip-k">${a}</div><div class="tip-e">${b}</div></div>`;
+    const head = (n, u) => `<div class="tip-h">${n}${u ? ` <span>[${u}]</span>` : ''}</div>`;
+    // 이 표에서 구한 값은 그 칸으로 가는 링크를 단다 (없는 행은 그냥 숫자로 둔다)
+    const go = (v, o) => `<a class="jump" data-go="#o2Body td[data-o='${o}']">${v}</a>`;
+    const CS = () => !std && massConc ? go(f4(Cs), 'cs') : f4(Cs);
+    const QS = () => !std ? go(f4(Qs), 'qs') : f4(Qs);
+    if (key === 'k') return head('보정계수', '')
+      + row('식', `${fr('21 − O<sub>s</sub>', '21 − O<sub>a</sub>')} = ${fr(`21 − ${trim(Os)}`, `21 − ${trim(Oa)}`)} <span class="eq">=</span> <b>${f4(k)}</b>`)
+      + row('뜻', `<span class="eq">실측 산소가 표준보다 ${Oa > Os ? '높으면 그만큼 공기로 묽어진 것이라 농도를 키웁니다' : '낮으면 농도를 줄입니다'}</span>`);
+    if (key === 'cs') return head('표준상태 환산 농도 C<sub>s</sub>', O2_CU_S[cu])
+      + row('측정 조건', `<span class="eq">${cnd.txt} 에서 잰 값입니다</span>`)
+      + row('공식', `C<sub>s</sub> = C<sub>a</sub> × ${fr('273 + t', 273)} × ${fr(1, 'P')}`)
+      + row('대입', `${trim(Ca)} × ${vfTxt} <span class="eq">=</span> <b>${f4(Cs)}</b> ${O2_CU_S[cu]}`)
+      + row('까닭', '<span class="eq">같은 질량이 더 작은 표준 부피에 담기므로 농도가 올라갑니다</span>');
+    if (key === 'qs') return head('표준상태 환산 유량 Q<sub>s</sub>', O2_FU_S[fu])
+      + row('측정 조건', `<span class="eq">${cnd.txt} 에서 잰 값입니다</span>`)
+      + row('공식', `Q<sub>s</sub> = Q<sub>a</sub> × ${fr(273, '273 + t')} × P`)
+      + row('대입', `${fr(trim(Qa), vfTxt)} <span class="eq">=</span> <b>${f4(Qs)}</b> ${O2_FU_S[fu]}`)
+      + row('까닭', '<span class="eq">뜨거워서 부풀어 있던 부피를 표준상태로 줄입니다</span>');
+    if (key === 'c') return head('보정 농도 C', O2_CU_S[cu])
+      + (std || !massConc ? '' : row('① 표준상태', `${trim(Ca)} × ${vfTxt} <span class="eq">=</span> ${CS()} ${O2_CU_S[cu]}`))
+      + row(std || !massConc ? '공식' : '② 산소 보정', 'C = C<sub>s</sub> × (21 − O<sub>s</sub>) / (21 − O<sub>a</sub>)')
+      + row('대입', `${CS()} × ${fr(`21 − ${trim(Os)}`, `21 − ${trim(Oa)}`)} <span class="eq">=</span> <b>${f4(C)}</b> ${O2_CU_S[cu]}`)
+      + row('쓰는 때', '<span class="eq">배출허용기준은 표준산소농도 기준이라, 실측값을 이 값으로 바꿔 비교합니다</span>')
+      + (massConc || std ? '' : row('참고', '<span class="eq">ppm·%는 부피비라 온도·압력에 영향을 받지 않습니다</span>'));
+    if (key === 'q') return head('보정 유량 Q', O2_FU_S[fu])
+      + (std ? '' : row('① 표준상태', `${fr(trim(Qa), vfTxt)} <span class="eq">=</span> ${QS()} ${O2_FU_S[fu]}`))
+      + row(std ? '공식' : '② 산소 보정', 'Q = Q<sub>s</sub> × (21 − O<sub>a</sub>) / (21 − O<sub>s</sub>)')
+      + row('대입', `${QS()} × ${fr(`21 − ${trim(Oa)}`, `21 − ${trim(Os)}`)} <span class="eq">=</span> <b>${f4(Q)}</b> ${O2_FU_S[fu]}`)
+      + row('주의', '<span class="eq">농도와 분자·분모가 반대입니다. 농도가 커지면 유량은 그만큼 작아집니다</span>');
+    return head('배출량', '')
+      + row('뜻', `<span class="eq">산소 보정은 농도와 유량을 서로 반대로 바꾸므로 곱은 변하지 않습니다. 실제로 나가는 양은 그대로니까요</span>`)
+      + row('확인', `표준상태 ${CS()} × ${QS()} = ${f4(Cs * Qs)} &nbsp;·&nbsp; 산소 보정 후 ${go(f4(C), 'c')} × ${go(f4(Q), 'q')} = ${f4(C * Q)}`);
+  }
+
   // ── 입력한 조건 점검 ────────────────────────────────
   // 문제를 만들어 주는 게 아니라, 지금 계산기에 설정된 것을 한자리에 적어 준다.
   // 앞 문제에서 남은 설정(온압·질소·Rosin·그을음 등)을 눈에 띄게 하는 것이 목적이다.
@@ -1850,6 +2096,10 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
     if (hnum(state.t1In) != null) given.push(item('공급온도 t', `${num(hnum(state.t1In))} ℃`));
     if (hnum(state.etaIn) != null) given.push(item('열효율 η', `${num(hnum(state.etaIn))} %`));
     if (hnum(state.volIn) != null) given.push(item('연소실 용적 V', `${num(hnum(state.volIn))} m³`));
+    if (hnum(state.o2Meas) != null) given.push(item('실측 O<sub>2</sub>', `${num(hnum(state.o2Meas))} %`));
+    if (hnum(state.o2Std) != null) given.push(item('표준 O<sub>2</sub>', `${num(hnum(state.o2Std))} %`));
+    if (hnum(state.o2Conc) != null) given.push(item('실측 농도 C<sub>a</sub>', `${num(hnum(state.o2Conc))} ${O2_CU[state.o2ConcUnit] || 'ppm'}`));
+    if (hnum(state.o2Flow) != null) given.push(item('실측 유량 Q<sub>a</sub>', `${num(hnum(state.o2Flow))} ${O2_FU[state.o2FlowUnit] || 'm³/h'}`));
     if (given.length) R('주어진 값', given.join(''));
     const cpRows = c.items.filter(it => hnum(it.r.cp) != null && it.k);
     if (cpRows.length) R('몰비열', cpRows.map(it => item(chemHTML(it.k.s || it.r.name), num(hnum(it.r.cp)))).join('') + '<span class="sub">kcal/kmol·℃</span>');
@@ -1895,6 +2145,13 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
     put(hd.qc != null, '연소실 열발생률', "#heatBody td[data-x='qc']",
       hd.hl == null ? '저발열량 필요' : hd.V == null ? '연소실 용적 V 필요' : '연료 사용량 필요',
       hd.hl == null ? GO.hl : hd.V == null ? GO.vol : GO.rate);
+    // 표준산소 보정은 칸을 하나라도 건드렸을 때만 줄에 올린다 (안 쓰는 문제에서 자리를 차지하지 않도록)
+    if (['o2Meas', 'o2Std', 'o2Conc', 'o2Flow'].some(k => hnum(state[k]) != null)) {
+      const noMeas = hnum(state.o2Meas) == null, noStd = hnum(state.o2Std) == null;
+      put(!!lastO2 && (lastO2.C != null || lastO2.Q != null), '표준산소 보정', '#o2Body td[data-o]',
+        noMeas ? '실측 O₂ 필요' : noStd ? '표준 O₂ 필요' : '실측 농도 또는 유량 필요',
+        noMeas ? '#o2Meas' : noStd ? '#o2Std' : '#o2Conc');
+    }
 
     if (!rows.length && !can.length) { box.hidden = true; $('qTitle').firstChild.textContent = '랜덤 문제'; return; }
     const tag = (t, cls) => `<span class="cond-tag${cls}">${t}</span>`;
@@ -2427,6 +2684,35 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
       };
     }
 
+    // 표준산소 보정: ① 조성에서 실측 O₂와 농도를 직접 읽어 보정하는 유형, ② 측정값만 주어지는 유형
+    if (kind === 'o2') {
+      const Os = pick([4, 6, 6, 6, 12, 13]);
+      // ① 연료 조성 연계 — 실측 O₂도 SO₂도 계산기가 구해 준다 (가져오기 두 번이면 끝)
+      if (Math.random() < 0.45) {
+        const S = rnd(0.8, 3.5, 1), H = rnd(10, 14);
+        return {
+          basis: 'wt', fuel: { C: +(100 - S - H).toFixed(1), H2: H, S }, nMode: 'inert',
+          m: String(rnd(1.15, 1.6, 2)), flue: {}, qkind: 'o2link', o2Std: String(Os),
+        };
+      }
+      // ② 측정값만 주는 유형. 질량 농도나 유량이 있을 때만 측정 조건(온도·압력)을 섞는다
+      const Oa = +(Os + rnd(1.5, 5, 1)).toFixed(1);
+      const mass = Math.random() < 0.6, useQ = Math.random() < 0.5;
+      const hot = (mass || useQ) && Math.random() < 0.5;
+      const d2 = {
+        basis: 'wt', fuel: {}, nMode: 'inert', m: '', flue: {}, qkind: 'o2std',
+        o2Meas: String(Oa), o2Std: String(Os),
+        o2Conc: String(mass ? pick([80, 120, 150, 200, 250, 300, 400]) : pick([60, 100, 150, 200, 250, 300, 500])),
+        o2ConcUnit: mass ? 'mg' : 'ppm',
+      };
+      if (useQ) { d2.o2Flow = String(pick([500, 800, 1000, 1200, 1500, 2000])); d2.o2FlowUnit = 'm3h'; }
+      if (hot) {
+        d2.gasT = String(pick([120, 150, 180, 200, 250]));
+        if (Math.random() < 0.3) d2.gasP = String(rnd(0.9, 1.1, 2));
+      }
+      return d2;
+    }
+
     // 발열량: 조성 + (절반은) 고발열량을 주고 저발열량을 묻는다
     if (kind === 'heat') {
       // 기체연료: 고발열량에서 수증기 잠열을 빼는 유형 (교재 03번 꼴) · HL = Hh − 480·ΣH₂O
@@ -2747,6 +3033,7 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
     else if (td.dataset.tip) html = mRowTip(td.dataset.tip);
     else if (td.dataset.g) html = gasTip(td.dataset.g, td.dataset.c);
     else if (td.dataset.h) html = hourTip(td.dataset.h, td.dataset.c);
+    else if (td.dataset.o) html = o2Tip(td.dataset.o);
     else if (td.dataset.x) html = heatTip(td.dataset.x);
     else if (td.dataset.sym) html = symTip(td.dataset.sym);
     else if (td.dataset.r) html = resTip(td.dataset.r, td.dataset.u);
@@ -2772,7 +3059,7 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
   }
   function hideTip() { tip.hidden = true; tipCell = null; }
 
-  const TIP_CELL = 'td.val, td[data-r], td[data-g], td[data-h], td[data-sym], td[data-x], td[data-need]';
+  const TIP_CELL = 'td.val, td[data-r], td[data-g], td[data-h], td[data-sym], td[data-x], td[data-o], td[data-need]';
   for (const table of document.querySelectorAll('table.comp, table.res, table.gas')) {
     table.addEventListener('mouseover', e => {
       const td = e.target.closest(TIP_CELL);
@@ -2874,6 +3161,34 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
   $('co2Basis').addEventListener('change', e => { state.co2Basis = e.target.value; render(); });
   $('co2Sp').addEventListener('change', e => { state.co2Sp = e.target.value; render(); });
   for (const id of ['co2maxIn', 'co2fIn', 'coIn']) $(id).addEventListener('input', e => { state[id] = e.target.value; render(); });
+  for (const id of ['o2Meas', 'o2Std', 'o2Conc', 'o2Flow']) $(id).addEventListener('input', e => { state[id] = e.target.value; render(); });
+  for (const id of ['o2ConcUnit', 'o2FlowUnit']) $(id).addEventListener('change', e => { state[id] = e.target.value; render(); });
+  // 배출가스 조성에서 농도를 끌어와 실측 농도 칸에 넣는다
+  $('o2Pick').addEventListener('change', e => {
+    const o = o2Picks[+e.target.value];
+    e.target.value = '';
+    if (!o) return;
+    state.o2Conc = String(o.v);
+    state.o2ConcUnit = o.u;
+    $('o2Conc').value = state.o2Conc;
+    render();
+    flash($('o2Conc'));
+  });
+  // 배출가스 중 O₂를 실측 산소농도 칸에 넣는다
+  $('o2MeasPick').addEventListener('change', e => {
+    const o = o2MeasPicks[+e.target.value];
+    e.target.value = '';
+    if (!o) return;
+    state.o2Meas = String(o.v);
+    $('o2Meas').value = state.o2Meas;
+    render();
+    flash($('o2Meas'));
+  });
+  function flash(el) {
+    for (const x of document.querySelectorAll('.flash')) x.classList.remove('flash');
+    void el.offsetWidth; el.classList.add('flash');
+    setTimeout(() => el.classList.remove('flash'), 2000);
+  }
   $('perSeg').addEventListener('click', e => {
     const b = e.target.closest('button[data-p]');
     if (!b) return;
@@ -2902,6 +3217,7 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
     state.question = ''; state.qTargets = [];
     state.co2In = ''; state.co2Sp = ''; state.co2Basis = ''; $('co2In').value = '';
     for (const id of ['co2maxIn', 'co2fIn', 'coIn']) { state[id] = ''; $(id).value = ''; }
+    for (const id of ['o2Meas', 'o2Std', 'o2Conc', 'o2Flow']) { state[id] = ''; $(id).value = ''; }
     state.dustRate = ''; state.sootRate = '';
     state.fuelRate = ''; $('fuelRate').value = '';
     state.fuelSg = ''; $('fuelSg').value = '';
@@ -2953,13 +3269,26 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
     state = { ...state, basis: ex.basis, mDirect: ex.m, aActual: ex.aActual ?? '', aUnit: ex.aUnit ?? '', question: ex.q ?? '', qTargets: ex.qTargets ?? [], co2In: ex.co2In ?? '', co2Sp: ex.co2Sp ?? '', co2Basis: ex.co2Basis ?? '', dustRate: ex.dustRate ?? '', sootRate: ex.sootRate ?? '', solUnit: '', rowUnit: '', gasUnit: '', gasMode: '', fuelRate: ex.fuelRate ?? '', fuelUnit: ex.fuelUnit ?? '', fuelSg: ex.fuelSg ?? '',
       hhIn: ex.hhIn ?? '', hlIn: ex.hlIn ?? '', fuelPhase: ex.fuelPhase ?? '', aoIn: ex.aoIn ?? '', goIn: ex.goIn ?? '',
       cpIn: ex.cpIn ?? '', t1In: ex.t1In ?? '', etaIn: ex.etaIn ?? '', volIn: ex.volIn ?? '',
-      gasT: '', gasP: '',                     // 랜덤 문제는 표준상태 기준으로 낸다
+      gasT: ex.gasT ?? '', gasP: ex.gasP ?? '',   // 측정 조건을 주는 문제만 값이 들어간다
+      o2Meas: ex.o2Meas ?? '', o2Std: ex.o2Std ?? '', o2Conc: ex.o2Conc ?? '', o2Flow: ex.o2Flow ?? '',
+      o2ConcUnit: ex.o2ConcUnit ?? 'ppm', o2FlowUnit: ex.o2FlowUnit ?? 'm3h',
       co2maxIn: ex.co2maxIn ?? '', co2fIn: ex.co2fIn ?? '', coIn: ex.coIn ?? '',
       rows: rowsFrom(ex) };
+    // 조성 연계 표준산소 문제는 실측 O₂와 농도를 조성표에서 바로 채워 둔다 ([가져오기]를 두 번 누른 것과 같다)
+    if (ex.qkind === 'o2link') {
+      const g = gasComp(compute(), true);
+      if (!g.bad && g.dry > 0) {
+        state.o2Meas = String(+(g.parts.o2 / g.dry * 100).toFixed(4));
+        state.o2Conc = String(+(g.parts.so2 / g.dry * 1e6).toFixed(4));
+        state.o2ConcUnit = 'ppm';
+      }
+    }
     $('mDirect').value = ex.m;
     $('aActual').value = state.aActual;
     $('co2In').value = state.co2In;
     for (const id of ['co2maxIn', 'co2fIn', 'coIn']) $(id).value = state[id];
+    for (const id of ['o2Meas', 'o2Std', 'o2Conc', 'o2Flow']) $(id).value = state[id];
+    if (ex.qkind === 'o2link' || ex.qkind === 'o2std') $('o2Box').open = true;   // 표준산소 문제는 하위 패널을 펴 둔다
     $('fuelRate').value = state.fuelRate;
     $('fuelSg').value = state.fuelSg;
     for (const id of HEAT_IN) $(id).value = state[id];
@@ -3000,6 +3329,31 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
           + ` 이를 공기비 ${d.m}${ro(d.m)} 연소할 때 <b>습연소가스 중 SO₂ 농도</b>(ppm)를 구하시오.`
           + ` <i>(단, Rosin 식을 적용하고 황은 전량 SO₂로 전환된다.)</i>`,
         targets: [{ k: 'so2', u: '', label: 'SO₂ 농도', unit: 'ppm' }],
+      };
+    }
+    if (kind === 'o2') {
+      // ① 조성에서 실측 O₂와 SO₂를 읽어 보정하는 유형
+      if (d.qkind === 'o2link') {
+        const list = Object.entries(d.fuel).map(([k, v]) => `${ELEM[k] || chemHTML(k)} ${v}%`).join(', ');
+        return {
+          text: `중유의 조성이 ${list}(질량%)이다. 이 연료를 공기비 ${d.m}${ro(d.m)} 완전연소할 때`
+            + ` <b>건조 배출가스 중 SO₂ 농도를 표준산소농도 ${d.o2Std}% 기준으로 보정한 값</b>(ppm)을 구하시오.`
+            + ` <i>(단, 실측 산소농도는 건조 배출가스 조성에서 구한다.)</i>`,
+          targets: [{ k: 'o2link', u: '', label: '보정 SO₂ 농도', unit: 'ppm' }],
+        };
+      }
+      // ② 측정값만 주는 유형
+      const cu = d.o2ConcUnit === 'mg' ? 'mg/m³' : 'ppm';
+      const num = x => Number(x).toLocaleString();
+      const qTxt = d.o2Flow ? `, 배출가스 유량 ${num(d.o2Flow)} m³/h` : '';
+      const cond = d.gasT || d.gasP
+        ? ` <i>(단, 측정 당시 배출가스 온도는 ${trim(+(d.gasT || 0))}℃, 압력은 ${trim(+(d.gasP || 1))} atm이다.)</i>` : '';
+      const targets = [{ k: 'o2c', u: '', label: '보정 농도', unit: d.o2ConcUnit === 'mg' ? 'mg/Sm³' : 'ppm' }];
+      if (d.o2Flow) targets.push({ k: 'o2q', u: '', label: '보정 유량', unit: 'Sm³/h' });
+      return {
+        text: `어느 배출시설의 배출가스를 측정하니 오염물질 농도 ${num(d.o2Conc)} ${cu}, 산소농도 ${d.o2Meas}%${qTxt}였다.`
+          + ` 표준산소농도가 ${d.o2Std}%일 때 <b>보정 농도</b>${d.o2Flow ? '와 <b>보정 유량</b>' : ''}${eun(d.o2Flow ? '보정 유량' : '보정 농도')}?${cond}`,
+        targets,
       };
     }
     if (kind === 'temp') {
@@ -3085,8 +3439,11 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
     if (t.k === 'm') return c.m;
     if (t.k === 'hourA') return lastHour && c.R.a ? lastHour.Q * lastHour.per * c.R.a[0] : null;
     if (t.k === 'co2') return c.co2max;
+    if (t.k === 'o2c') return lastO2 ? lastO2.C : null;
+    if (t.k === 'o2q') return lastO2 ? lastO2.Q : null;
     const g = gasComp(c, true);
     if (g.bad) return null;
+    if (t.k === 'o2link') { const r = o2Link(g); return r ? r.C : null; }
     if (t.k === 'dust') return g.dry > 0 ? c.dustG / g.dry : null;
     if (t.k === 'soot') return g.dry > 0 ? c.sootG / g.dry : null;
     if (t.k === 'so2ppm') return g.dry > 0 ? g.parts.so2 / g.dry * 1e6 : null;
@@ -3112,6 +3469,8 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
       else if (t.k === 'so2ppm') mark(document.querySelector('#gasBody td[data-g="so2"][data-c="dry"]'));
       else if (t.k === 'h2o') mark(document.querySelector('#gasBody td[data-g="h2o"][data-c="wet"]'));
       else if (t.k === 'co2dry') mark(document.querySelector('#gasBody td[data-g="co2"][data-c="dry"]'));
+      else if (t.k === 'o2c' || t.k === 'o2link') mark(document.querySelector('#o2Body td[data-o="c"]'));
+      else if (t.k === 'o2q') mark(document.querySelector('#o2Body td[data-o="q"]'));
       else mark(document.querySelector(`#resBody td[data-r="${t.k}"][data-u="${t.u}"]`));
     }
   }
@@ -3156,15 +3515,16 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
   // 무작위 상황 하나를 골라 데이터와 문항을 함께 만든다
   // 버튼별로 뽑을 유형 묶음
   const KIND_GROUPS = {
-    all: ['solid', 'solid', 'gas', 'gas', 'flue', 'air', 'ash', 'conc', 'conc', 'soot', 'heat', 'heat', 'temp', 'temp', 'rosin', 'rosin'],
+    all: ['solid', 'solid', 'gas', 'gas', 'flue', 'air', 'ash', 'conc', 'conc', 'soot', 'heat', 'heat', 'temp', 'temp', 'rosin', 'rosin', 'o2', 'o2'],
     air: ['solid', 'solid', 'gas', 'gas'],
     m: ['flue', 'air', 'conc', 'conc'],
     dust: ['ash', 'soot'],
     heat: ['heat'],
     temp: ['temp'],
     rosin: ['rosin'],
+    o2: ['o2'],
   };
-  const KIND_NAME = { all: '전체', air: '공기량', m: '공기비', dust: '먼지·그을음', heat: '발열량', temp: '연소온도', rosin: 'Rosin 식' };
+  const KIND_NAME = { all: '전체', air: '공기량', m: '공기비', dust: '먼지·그을음', heat: '발열량', temp: '연소온도', rosin: 'Rosin 식', o2: '표준산소 보정' };
 
   function randomCase(group = 'all') {
     const KINDS = KIND_GROUPS[group] || KIND_GROUPS.all;
@@ -3174,7 +3534,7 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
     let kind = 'solid', d = null;
     for (let i = 0; i < 12; i++) {
       kind = pick(KINDS);
-      d = ['temp', 'heat', 'rosin'].includes(kind) ? randomData(kind) : withFuelRate(randomData(kind));
+      d = ['temp', 'heat', 'rosin', 'o2'].includes(kind) ? randomData(kind) : withFuelRate(randomData(kind));
       if (ok(kind, d)) break;
       kind = 'solid'; d = null;
     }
@@ -3208,6 +3568,7 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
     if (!el) return;
     const sec = el.closest('section.panel');
     if (sec && sec.classList.contains('collapsed')) sec.querySelector(':scope > .panel-head > h2 .fold')?.click();
+    for (let dt = el.closest('details'); dt; dt = dt.parentElement?.closest('details')) dt.open = true;   // 접힌 하위 패널도 편다
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     for (const x of document.querySelectorAll('.flash')) x.classList.remove('flash');
     void el.offsetWidth; el.classList.add('flash');
@@ -3240,10 +3601,10 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
   function applyAutoShut(skip, hasFuel, hourHeat) {
     for (const id of SKIP_PANELS) {
       const sec = $(id).closest('section');
-      const tb = sec.querySelector('tbody');
       // 조성 없이 Ao만으로 환산 중인 [시간당 환산]은 그 문제의 답이므로 접지 않는다
       const skipThis = skip && !(hourHeat && id === 'hourTitle');
-      const empty = id === 'resTitle' ? !hasFuel : !tb || !tb.querySelector('td:not(.dash):not(.need)');
+      const empty = id === 'resTitle' ? !hasFuel
+        : ![...sec.querySelectorAll('tbody')].some(b => b.querySelector('td:not(.dash):not(.need)'));
       const why = sec.querySelector('.auto-why');
       if (why) why.textContent = skipThis ? 'Rosin 식을 쓰는 중 · 이 문제에서는 쓰지 않습니다' : '아직 입력이 없습니다';
       if (!(skipThis || empty)) { autoShut.delete(id); userOpened.delete(id); }
@@ -3323,6 +3684,10 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
         gasT: String(s.gasT ?? ''), gasP: String(s.gasP ?? ''),
         co2maxIn: String(s.co2maxIn ?? ''), co2fIn: String(s.co2fIn ?? ''), coIn: String(s.coIn ?? ''),
         hourPer: s.hourPer === 'min' ? 'min' : 'h',
+        o2Meas: String(s.o2Meas ?? ''), o2Std: String(s.o2Std ?? ''),
+        o2Conc: String(s.o2Conc ?? ''), o2Flow: String(s.o2Flow ?? ''),
+        o2ConcUnit: ['ppm', 'mg', 'pct'].includes(s.o2ConcUnit) ? s.o2ConcUnit : '',
+        o2FlowUnit: ['m3h', 'm3min', 'm3d'].includes(s.o2FlowUnit) ? s.o2FlowUnit : '',
         rows: s.rows.map(r => ({ ...row(String(r.name ?? ''), !!r.fixed), fuel: String(r.fuel ?? ''), flue: String(r.flue ?? ''), cp: String(r.cp ?? ''), nMode: ['no', 'skip'].includes(r.nMode) ? r.nMode : 'inert', asked: !!r.asked })),
       };
       // 미지수 연료 패널은 기본으로 접어 둔다 (예전 저장본에는 한 번만 적용)
@@ -3339,6 +3704,7 @@ table.heat tbody tr:last-child th,table.heat tbody tr:last-child td{border-botto
       $('aActual').value = state.aActual;
       $('co2In').value = state.co2In;
       for (const id of ['co2maxIn', 'co2fIn', 'coIn']) $(id).value = state[id];
+      for (const id of ['o2Meas', 'o2Std', 'o2Conc', 'o2Flow']) $(id).value = state[id];
       $('fuelRate').value = state.fuelRate;
       $('fuelSg').value = state.fuelSg;
       $('symF').value = state.symF;
