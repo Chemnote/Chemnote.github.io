@@ -244,6 +244,8 @@ math .res{color:var(--c)}
       <div class="seg" role="group" aria-label="가스미터 종류"><button type="button" id="o-dry" aria-pressed="true">건식</button><button type="button" id="o-wet" aria-pressed="false">습식</button></div>
       <span>동압 주어진 방식</span>
       <div class="seg" role="group" aria-label="동압 방식"><button type="button" id="o-hdir" aria-pressed="true">동압 값</button><button type="button" id="o-hinc" aria-pressed="false">경사마노미터</button></div>
+      <span id="lLab">액주거리 단위</span>
+      <div class="seg" id="lSeg" role="group" aria-label="액주이동거리 단위"><button type="button" id="o-lcm" aria-pressed="true">cm</button><button type="button" id="o-lmm" aria-pressed="false">mm</button></div>
       <span>먼지량 주어진 방식</span>
       <div class="seg" role="group" aria-label="먼지량 방식"><button type="button" id="o-mdir" aria-pressed="true">먼지량 (mg)</button><button type="button" id="o-mfil" aria-pressed="false">여과지 무게 전·후</button></div>
       <span>대기압 단위</span>
@@ -264,6 +266,7 @@ math .res{color:var(--c)}
     <div class="btns" id="solveBtns">
       <button class="btn" type="button" id="b-ex08">예제 08 (수분·유속·먼지)</button>
       <button class="btn" type="button" id="b-ex03">예제 03 (경사마노미터·습식)</button>
+      <button class="btn" type="button" id="b-ex21">예제 21 (경사 6 mm·건식/습식 비교)</button>
     </div>
     <div class="btns" id="pracBtns" hidden>
       <button class="btn primary" type="button" id="b-check">채점</button>
@@ -327,7 +330,7 @@ math .res{color:var(--c)}
 
 <script>
 /* ---------- 상태 ---------- */
-const S={ask:{w:true,v:true,d:true},wet:false,hInc:false,mFil:false,paAtm:false,unitHg:false,dig:1,mode:'solve',revealed:true};
+const S={ask:{w:true,v:true,d:true},wet:false,hInc:false,Lmm:false,mFil:false,paAtm:false,unitHg:false,dig:1,mode:'solve',revealed:true};
 const Q=[
   {q:'w',name:'배출가스 중의 수분농도',u:'%',c:'var(--water)'},
   {q:'v',name:'배출가스의 유속',u:'m/s',c:'var(--press)'},
@@ -345,17 +348,18 @@ const FIELDS=[
   {k:'Pm', n:'가스미터 게이지압', s:'게이지압', u:'unitPm', use:()=>asked('w','d')},
   {k:'Pv', n:'가스미터 온도에서 물의 포화수증기압', s:'포화수증기압', u:'mmHg', use:()=>S.wet?asked('w','d'):[],
     why:()=>S.wet?'습식 가스미터 안의 물 때문에 가스가 수증기로 포화됩니다. 그만큼 압력을 빼서 건가스로 환산합니다.':'건식 가스미터는 흡습관 뒤에 있어 수증기가 없습니다. 그래서 포화수증기압을 빼지 않습니다.'},
-  {k:'mw', n:'흡습 수분의 질량', s:'흡습 수분의 질량', u:'g', use:()=>asked('w'), why:()=>S.ask.w?'':'수분농도를 묻지 않으면 쓰지 않습니다.'},
+  {k:'mw', n:'흡습 수분의 질량', s:'흡습 수분의 질량', u:'g', use:()=>asked('w'), why:()=>S.ask.w?'':'이 문제는 수분농도를 묻지 않아 쓰지 않습니다. 흡습관은 건식·습식 모두 있습니다.'},
   {k:'Pa', n:'측정 시 대기압', s:'대기압', u:'unitPa', use:()=>asked('w','d')},
   {k:'md', n:'채취된 먼지량', s:'채취된 먼지량', u:'mg', show:()=>!S.mFil, use:()=>asked('d')},
   {k:'w0', n:'여과지 무게 · 포집 전', s:'포집 전', u:'g', show:()=>S.mFil, use:()=>asked('d')},
   {k:'w1', n:'여과지 무게 · 포집 후', s:'포집 후', u:'g', show:()=>S.mFil, use:()=>asked('d')},
   {k:'C',  n:'피토관 계수', s:'피토관 계수', u:'', use:()=>asked('v')},
-  {k:'gam',n:'배출가스 밀도 γ', s:'배출가스 밀도', u:'kg/m³', use:()=>asked('v')},
+  {k:'gam',n:'배출가스 비중량 γ', s:'배출가스 비중량 γ', u:'kgf/m³', use:()=>asked('v')},
   {k:'h',  n:'동압 측정치', s:'동압 측정치', u:'mmH₂O', show:()=>!S.hInc, use:()=>asked('v')},
-  {k:'gL', n:'경사마노미터 수액 밀도', s:'수액 밀도 (물 1000)', u:'kg/m³', show:()=>S.hInc, use:()=>asked('v')},
+  {k:'gL', n:'경사마노미터 수액 비중량', s:'수액 비중량 (물 1000)', u:'kgf/m³', show:()=>S.hInc, use:()=>asked('v')},
   {k:'th', n:'경사각', s:'경사각', u:'°', show:()=>S.hInc, use:()=>asked('v')},
   {k:'L',  n:'액주이동거리', s:'액주이동거리', u:'cm', show:()=>S.hInc, use:()=>asked('v')},
+  {k:'Tout',n:'측정 시 외기온도', s:'외기온도', u:'℃', use:()=>[], why:()=>raw('Tout')?'건가스량 환산에는 가스미터 온도를 씁니다. 외기온도는 쓰지 않습니다.':''},
   {k:'mag',n:'확대율', s:'확대율 (없으면 1)', u:'', show:()=>S.hInc, use:()=>asked('v')},
   {k:'D',  n:'연도(굴뚝) 직경', s:'연도직경', u:'m', use:()=>[], why:()=>raw('D')?'유량(Q = V × πD²/4)을 물을 때만 씁니다.':''},
   {k:'dPo',n:'오리피스 압력차', s:'오리피스 압력차', u:'mmH₂O', use:()=>[], why:()=>raw('dPo')?'등속흡인 유량을 맞출 때 보는 값입니다.':''},
@@ -371,11 +375,15 @@ const GROUPS=[
   {t:null, ks:['Pa']},
   {t:null, ks:['D']},
   {t:null, ks:['dPo']},
+  {t:null, ks:['Tout']},
 ];
-const EX08={q:{w:true,v:true,d:true},wet:false,hInc:false,mFil:false,paAtm:false,unitHg:false,dig:1,
-  v:{Vm:'20',Tm:'17',Pm:'13.6',Pv:'14.53',mw:'2.0',Pa:'762',md:'2.4',w0:'',w1:'',C:'1.1',gam:'1.3',h:'6',gL:'1000',L:'',th:'',mag:'1',D:'',dPo:'13.6'}};
-const EX03={q:{w:false,v:true,d:true},wet:true,hInc:true,mFil:true,paAtm:true,unitHg:true,dig:2,
-  v:{Vm:'1200',Tm:'17',Pm:'0',Pv:'14.5',mw:'',Pa:'1',md:'',w0:'0.801',w1:'0.921',C:'0.8614',gam:'1.3',h:'',gL:'1000',L:'20',th:'30',mag:'1',D:'3',dPo:''}};
+const EX08={q:{w:true,v:true,d:true},wet:false,hInc:false,Lmm:false,mFil:false,paAtm:false,unitHg:false,dig:1,
+  v:{Vm:'20',Tm:'17',Pm:'13.6',Pv:'14.53',mw:'2.0',Pa:'762',md:'2.4',w0:'',w1:'',C:'1.1',gam:'1.3',h:'6',gL:'1000',L:'',th:'',mag:'1',D:'',dPo:'13.6',Tout:''}};
+const EX03={q:{w:false,v:true,d:true},wet:true,hInc:true,Lmm:false,mFil:true,paAtm:true,unitHg:true,dig:2,
+  v:{Vm:'1200',Tm:'17',Pm:'0',Pv:'14.5',mw:'',Pa:'1',md:'',w0:'0.801',w1:'0.921',C:'0.8614',gam:'1.3',h:'',gL:'1000',L:'20',th:'30',mag:'1',D:'3',dPo:'',Tout:''}};
+// 21번: 문제는 건식가스미터인데 포화수증기압도 줌 → 교재는 건식·습식 두 경우 답을 모두 실음
+const EX21={q:{w:true,v:true,d:true},wet:false,hInc:true,Lmm:true,mFil:false,paAtm:false,unitHg:false,dig:2,
+  v:{Vm:'20',Tm:'17',Pm:'13.6',Pv:'14.53',mw:'2.0',Pa:'762',md:'2.4',w0:'',w1:'',C:'1.1',gam:'1.3',h:'',gL:'1000',L:'6',th:'30',mag:'1',D:'',dPo:'',Tout:'17'}};
 
 const $=id=>document.getElementById(id);
 const raw=k=>$('in-'+k).value.trim();
@@ -422,7 +430,7 @@ function calc(){
   if(!S.ask.w&&!S.ask.v&&!S.ask.d)bad='묻는 것을 하나 이상 고르세요.';
   if(!bad){
     if((S.ask.w||S.ask.d)&&(V.Vm<=0||V.Pa<=0))bad='흡입가스량과 대기압은 0보다 커야 합니다.';
-    else if(S.ask.v&&(V.gam<=0||V.C<=0))bad='밀도와 피토관 계수는 0보다 커야 합니다.';
+    else if(S.ask.v&&(V.gam<=0||V.C<=0))bad='비중량과 피토관 계수는 0보다 커야 합니다.';
     else if(S.ask.d&&S.mFil&&V.w1<V.w0)bad='포집 후 무게가 포집 전보다 작습니다.';
   }
   $('msg').textContent=bad||'';
@@ -433,10 +441,18 @@ function calc(){
     r.PmHg=S.unitHg?V.Pm:V.Pm*760/10332;
     r.P=r.PaHg+r.PmHg-(S.wet?V.Pv:0);
     r.fT=273/(273+V.Tm); r.Vs=V.Vm*r.fT*r.P/760;
+    // 건식·습식이 애매한 문제 대비: 반대 경우로 계산한 값도 함께 구해 둠
+    if(Number.isFinite(V.Pv)){
+      const Palt=r.PaHg+r.PmHg-(S.wet?0:V.Pv), VsA=V.Vm*r.fT*Palt/760;
+      r.alt={Vs:VsA};
+      if(S.ask.w){const Vw=V.mw*22.4/18;r.alt.Xw=Vw/(VsA+Vw)*100;}
+      if(S.ask.d){const md=S.mFil?(V.w1-V.w0)*1000:V.md;r.alt.Cd=md/VsA*1000;}
+    }
   }
   if(S.ask.w){r.Vw=V.mw*22.4/18;r.Xw=r.Vw/(r.Vs+r.Vw)*100;}
   if(S.ask.v){
-    r.h=S.hInc?V.gL*(V.L/100)*Math.sin(V.th*Math.PI/180)/(V.mag||1):V.h;
+    r.Lm=V.L/(S.Lmm?1000:100);
+    r.h=S.hInc?V.gL*r.Lm*Math.sin(V.th*Math.PI/180)/(V.mag||1):V.h;
     r.vel=V.C*Math.sqrt(2*9.8*r.h/V.gam);
   }
   if(S.ask.d){r.md=S.mFil?(V.w1-V.w0)*1000:V.md;r.Cd=r.md/r.Vs*1000;}
@@ -454,6 +470,8 @@ function updateRows(){
   });
   $('u-Pm').textContent=S.unitHg?'mmHg':'mmH₂O';
   $('u-Pa').textContent=S.paAtm?'atm':'mmHg';
+  $('u-L').textContent=S.Lmm?'mm':'cm';
+  $('lLab').hidden=$('lSeg').hidden=!S.hInc;
   // 기록부 칸: 제목 갱신, 보일 칸만 남기고, 홀수 개면 마지막 칸을 가로로 꽉 채움
   const vis=[];
   GROUPS.forEach((gp,i)=>{const cell=$('grp-'+i);
@@ -479,7 +497,8 @@ function render(){
     if(!S.ask[x.q])return;const v=ANS[x.q]();
     $('a-'+x.q).hidden=!show;
     $('a-'+x.q).innerHTML=`${fd(v)}<small>${x.u}</small>`;
-    $('e-'+x.q).textContent=show?`계산값 ${f4(v)} → 소수 ${S.dig===1?'첫째':'둘째'} 자리 반올림`:'';
+    const alt=R.alt&&{w:R.alt.Xw,d:R.alt.Cd}[x.q];
+    $('e-'+x.q).textContent=show?`계산값 ${f4(v)} → 소수 ${S.dig===1?'첫째':'둘째'} 자리 반올림`+(Number.isFinite(alt)?` · ${S.wet?'건식':'습식'}으로 보면 ${fd(alt)} ${x.u}`:''):'';
   });
   formulas();
   if(S.ask.w||S.ask.d)figVs();
@@ -504,6 +523,7 @@ function formulas(){
     if(S.paAtm)nv.push('대기압이 atm으로 주어지면 760을 곱해 mmHg로 바꿉니다.');
     if(!S.unitHg)nv.push('게이지압이 mmH₂O로 주어지면 760/10332를 곱해 mmHg로 바꿉니다.');
     nv.push(S.wet?'습식 가스미터라서 포화수증기압 P<sub>v</sub>를 뺍니다.':'건식 가스미터라서 포화수증기압은 쓰지 않습니다.');
+    if(r.alt)nv.push(`건식인지 습식인지 애매한 문제(포화수증기압까지 주는 경우)는 두 경우 답을 모두 쓰는 게 안전합니다. ${S.wet?'건식':'습식'}으로 보면 건가스량은 ${f4(r.alt.Vs)} SL입니다.`);
     $('n-vs').innerHTML=nv.map(t=>`<li>${t}</li>`).join('');
   }
   if(S.ask.w){
@@ -517,16 +537,16 @@ function formulas(){
     const mag=V.mag||1;
     $('f-h').innerHTML=S.hInc?
       M(mi('h')+EQ+sb('γ','L')+X+mi('L')+X+mi('sin')+mi('θ')+X+mo('(')+fr(mn('1'),mtx('확대율'))+mo(')'))+
-      M(EQ+mn(raw('gL'))+un('kg/m³')+X+mn(trim(V.L/100))+un('m')+X+mi('sin')+mn(raw('th'))+mo('°')+(mag!==1?X+fr(mn('1'),mn(raw('mag'))):'')+EQ+mn(trim(r.h))+un('kg/m²')+EQ+res(trim(r.h),'mmH₂O'))
+      M(EQ+mn(raw('gL'))+un('kgf/m³')+X+mn(trim(r.Lm))+un('m')+X+mi('sin')+mn(raw('th'))+mo('°')+(mag!==1?X+fr(mn('1'),mn(raw('mag'))):'')+EQ+mn(trim(r.h))+un('kgf/m²')+EQ+res(trim(r.h),'mmH₂O'))
       :'';
     $('f-v').innerHTML=
       M(mi('V')+EQ+mi('C')+sq(fr(mn('2')+mo('·')+mi('g')+mo('·')+mi('h'),mi('γ'))))+
-      M(EQ+mn(raw('C'))+X+sq(fr(mn('2')+X+mn('9.8')+un('m/s²')+X+mn(trim(r.h))+un('mmH₂O'),mn(raw('gam'))+un('kg/m³'))))+
+      M(EQ+mn(raw('C'))+X+sq(fr(mn('2')+X+mn('9.8')+un('m/s²')+X+mn(trim(r.h))+un('mmH₂O'),mn(raw('gam'))+un('kgf/m³'))))+
       M(EQ+mn(f4(r.vel))+AP+res(fd(r.vel),'m/s'));
     const nv=[];
-    if(S.hInc)nv.push(`경사마노미터는 눈금(액주 이동거리 L)을 읽고, 실제 수직 높이차 L·sinθ로 바꿉니다. 물 1000 kg/m³ × 높이(m) = kg/m² = mmH₂O입니다.`);
+    if(S.hInc)nv.push(`경사마노미터는 눈금(액주 이동거리 L)을 읽고, 실제 수직 높이차 L·sinθ로 바꿉니다. 물 1000 kgf/m³ × 높이(m) = kgf/m² = mmH₂O입니다.${S.Lmm?' 눈금이 mm로 주어지면 m로 바꿔 넣습니다(6 mm = 0.006 m).':''}`);
     nv.push('h를 mmH₂O로 넣으면 kgf/m²와 수치가 같아서 그대로 대입합니다.');
-    nv.push('γ는 문제에 주어진 배출가스 밀도, g = 9.8 m/s²입니다. 배출가스 온도가 주어지지 않으면 밀도를 온도 보정하지 않습니다.');
+    nv.push('γ는 배출가스 비중량 [kgf/m³], g = 9.8 m/s²입니다. 문제에 "밀도 kg/m³"로 나와도 수치를 그대로 kgf/m³로 넣습니다. 배출가스 온도가 주어지지 않으면 온도 보정하지 않습니다.');
     nv.push('유속은 동압의 제곱근에 비례합니다. 동압이 4배가 되어도 유속은 2배입니다.');
     $('n-v').innerHTML=nv.map(t=>`<li>${t}</li>`).join('');
   }
@@ -576,7 +596,8 @@ function figIncl(){
   const el=$('g-incl');el.hidden=!S.hInc;if(!S.hInc)return;
   const V=R.V,th=Math.max(5,Math.min(75,V.th||30)),t=th*Math.PI/180;
   const x0=70,y0=178,len=250;
-  const Lpx=Math.max(20,Math.min(len-20,(V.L||0)/40*len));
+  const Lcm=(V.L||0)/(S.Lmm?10:1), Lu=S.Lmm?'mm':'cm';
+  const Lpx=Math.max(20,Math.min(len-20,Lcm/40*len));
   const ex=x0+len*Math.cos(t), ey=y0-len*Math.sin(t);
   const lx=x0+Lpx*Math.cos(t), ly=y0-Lpx*Math.sin(t);
   let g=`<line x1="20" x2="500" y1="${y0}" y2="${y0}" stroke="var(--line)" stroke-width="2"/>`;
@@ -588,9 +609,9 @@ function figIncl(){
   g+=`<text x="${x0+54}" y="${y0-8}" class="num">θ = ${raw('th')}°</text>`;
   const nx=-Math.sin(t)*16, ny=-Math.cos(t)*16;
   g+=`<line x1="${x0+nx}" y1="${y0+ny}" x2="${lx+nx}" y2="${ly+ny}" stroke="var(--total)" stroke-width="1.5"/>`;
-  g+=`<text x="${(x0+lx)/2+nx*2}" y="${(y0+ly)/2+ny*2}" text-anchor="middle" class="num" style="fill:var(--total)" transform="rotate(${-th} ${(x0+lx)/2+nx*2} ${(y0+ly)/2+ny*2})">눈금 L = ${raw('L')} cm</text>`;
+  g+=`<text x="${(x0+lx)/2+nx*2}" y="${(y0+ly)/2+ny*2}" text-anchor="middle" class="num" style="fill:var(--total)" transform="rotate(${-th} ${(x0+lx)/2+nx*2} ${(y0+ly)/2+ny*2})">눈금 L = ${raw('L')} ${Lu}</text>`;
   g+=`<line x1="${lx}" y1="${ly}" x2="${lx}" y2="${y0}" stroke="var(--press)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
-  g+=`<text x="${lx+8}" y="${(ly+y0)/2+4}" class="num" style="fill:var(--press)">높이차 L·sinθ = ${trim((V.L||0)*Math.sin(V.th*Math.PI/180))} cm</text>`;
+  g+=`<text x="${lx+8}" y="${(ly+y0)/2+4}" class="num" style="fill:var(--press)">높이차 L·sinθ = ${trim((V.L||0)*Math.sin(V.th*Math.PI/180))} ${Lu}</text>`;
   g+=`<text x="20" y="18" class="sm">관을 눕히면 작은 높이차도 긴 눈금으로 읽힙니다. 계산에는 수직 높이차를 씁니다.</text>`;
   el.innerHTML=g;
 }
@@ -698,7 +719,7 @@ function rigLabels(){
   $('hBot').setAttribute('y1',l);$('hBot').setAttribute('y2',l);
   $('hBar').setAttribute('y1',r);$('hBar').setAttribute('y2',l);
   $('r-h').setAttribute('y',base+4);$('r-h').textContent=`${trim(h)} mmH₂O`;
-  $('r-h2').textContent=S.hInc?`동압 h (경사마노미터 ${raw('L')} cm, ${raw('th')}°)`:'동압 h (액주 높이차)';
+  $('r-h2').textContent=S.hInc?`동압 h (경사마노미터 ${raw('L')} ${S.Lmm?'mm':'cm'}, ${raw('th')}°)`:'동압 h (액주 높이차)';
 }
 
 /* ---------- 장치 애니메이션 ---------- */
@@ -740,7 +761,7 @@ if(reduce){
 } else requestAnimationFrame(tick);
 
 /* ---------- 옵션 · 모드 ---------- */
-const PAIRS=[['o-dry','o-wet','wet'],['o-hdir','o-hinc','hInc'],['o-mdir','o-mfil','mFil'],['o-pahg','o-paatm','paAtm'],['o-h2o','o-hg','unitHg']];
+const PAIRS=[['o-dry','o-wet','wet'],['o-hdir','o-hinc','hInc'],['o-lcm','o-lmm','Lmm'],['o-mdir','o-mfil','mFil'],['o-pahg','o-paatm','paAtm'],['o-h2o','o-hg','unitHg']];
 function syncOpts(){
   PAIRS.forEach(([a,b,k])=>{$(a).setAttribute('aria-pressed',!S[k]);$(b).setAttribute('aria-pressed',S[k]);});
   $('o-d1').setAttribute('aria-pressed',S.dig===1);$('o-d2').setAttribute('aria-pressed',S.dig===2);
@@ -752,13 +773,14 @@ $('o-d2').onclick=()=>{S.dig=2;syncOpts();calc();};
 ['w','v','d'].forEach(q=>$('q-'+q).onclick=()=>{S.ask[q]=!S.ask[q];syncOpts();calc();});
 
 function load(ex){
-  Object.assign(S,{wet:ex.wet,hInc:ex.hInc,mFil:ex.mFil,paAtm:ex.paAtm,unitHg:ex.unitHg,dig:ex.dig});
+  Object.assign(S,{wet:ex.wet,hInc:ex.hInc,Lmm:ex.Lmm,mFil:ex.mFil,paAtm:ex.paAtm,unitHg:ex.unitHg,dig:ex.dig});
   S.ask={...ex.q};
   INPUTS.forEach(f=>$('in-'+f.k).value=ex.v[f.k]??'');
   syncOpts();calc();
 }
 $('b-ex08').onclick=()=>load(EX08);
 $('b-ex03').onclick=()=>load(EX03);
+$('b-ex21').onclick=()=>load(EX21);
 
 function setMode(m){
   S.mode=m;$('m-solve').setAttribute('aria-pressed',m==='solve');$('m-prac').setAttribute('aria-pressed',m==='practice');
@@ -776,7 +798,7 @@ const antoine=T=>Math.pow(10,8.07131-1730.63/(233.426+T));
 function newProblem(){
   const coin=p=>Math.random()<p;
   S.ask={w:coin(.6),v:true,d:true};
-  S.wet=coin(.45);S.hInc=coin(.5);S.mFil=coin(.5);S.paAtm=coin(.3);S.unitHg=coin(.4);S.dig=coin(.5)?1:2;
+  S.wet=coin(.45);S.hInc=coin(.5);S.Lmm=S.hInc&&coin(.4);S.mFil=coin(.5);S.paAtm=coin(.3);S.unitHg=coin(.4);S.dig=coin(.5)?1:2;
   const Tm=+rr(10,35,1), w0=+rr(0.7,0.95,0.001);
   const Vm=S.wet?rr(300,1500,10):rr(10,60,1);
   const VsEst=+Vm*273/(273+Tm)*0.98;                       // 대략적인 건가스량 SL
@@ -787,8 +809,8 @@ function newProblem(){
     mw:S.ask.w?mwG.toFixed(1):'',Pa:S.paAtm?'1':rr(740,770,1),
     md:mdMg.toFixed(1),w0:w0.toFixed(3),w1:(w0+Math.max(0.001,mdMg/1000)).toFixed(3),
     C:pick(['0.85','0.8614','0.9','0.95','1.0','1.1']),gam:pick(['1.2','1.25','1.3','1.35']),
-    h:rr(3,30,0.5),gL:'1000',L:rr(5,30,1),th:pick(['15','20','30','45']),mag:'1',
-    D:coin(.5)?rr(1,4,0.5):'',dPo:coin(.5)?rr(5,30,0.1):''};
+    h:rr(3,30,0.5),gL:'1000',L:S.Lmm?rr(4,60,1):rr(5,30,1),th:pick(['15','20','30','45']),mag:'1',
+    D:coin(.5)?rr(1,4,0.5):'',dPo:coin(.5)?rr(5,30,0.1):'',Tout:coin(.4)?rr(5,30,1):''};
   INPUTS.forEach(f=>$('in-'+f.k).value=v[f.k]);
   S.revealed=false;$('app').classList.add('hidden-sol');
   Q.forEach(x=>{$('in-a-'+x.q).value='';$('v-'+x.q).textContent='';});
