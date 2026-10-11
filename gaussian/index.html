@@ -1235,6 +1235,17 @@ mq.addEventListener?.("change", markDirty);
 new MutationObserver(markDirty).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 requestAnimationFrame(frame);
 })();
+
+/* 블로그 등에 iframe으로 넣었을 때: ?embed면 밝은 테마 고정, 홈 버튼 숨김, 높이를 부모 창에 알림 */
+(function(){
+  if(window.parent===window) return;
+  if(/[?&]embed\b/.test(location.search)) document.documentElement.setAttribute("data-theme","light");
+  const send=()=>{ try{ parent.postMessage({chemnoteHeight:Math.ceil(document.documentElement.scrollHeight)},"*"); }catch(e){} };
+  const hideHome=()=>{ const a=document.querySelector('a[aria-label="Chemnote 홈으로"]'); if(a) a.hidden=true; };
+  window.addEventListener("load",()=>{ hideHome(); send(); });
+  if(window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+  send();
+})();
 </script>
 
 
