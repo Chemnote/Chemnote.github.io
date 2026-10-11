@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}img{max-width:100%}</style>
+<title>대기환경기사 실기 가우시안 확산식 3D 시뮬레이터 | Chemnote</title>
+<meta name="description" content="대기환경기사 실기 가우시안 확산식(가우시안 모델): 유효굴뚝높이, 풍속, 확산계수 σy·σz로 연기중심선·지표농도를 계산하고, 굴뚝 연기가 x·y·z 공간에 퍼지는 모습을 3D 애니메이션으로 보여 주는 무료 시뮬레이터. 지면 반사, Deacon 풍속 보정, 최대착지농도 포함.">
+<link rel="canonical" href="https://chemnote.github.io/gaussian/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://chemnote.github.io/gaussian/">
+<meta property="og:title" content="대기환경기사 실기 가우시안 확산식 3D 시뮬레이터 | Chemnote">
+<meta property="og:description" content="대기환경기사 실기 가우시안 확산식(가우시안 모델): 유효굴뚝높이, 풍속, 확산계수 σy·σz로 연기중심선·지표농도를 계산하고, 굴뚝 연기가 x·y·z 공간에 퍼지는 모습을 3D 애니메이션으로 보여 주는 무료 시뮬레이터. 지면 반사, Deacon 풍속 보정, 최대착지농도 포함.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+
+<style>
+/* 레이아웃: 연소 공기량 계산기와 같은 '계산 시트' 체계 — 좌(입력) · 중(3D + 결과) · 우(해설), 좁으면 한 줄 */
+:root{
+  --paper:#eef1f4; --sheet:#ffffff; --ink:#17212b; --muted:#5b6773; --faint:#8b96a1;
+  --rule:#d3dae2; --rule-soft:#e6ebf0; --label:#f3f6f9; --head:#e3eaf2;
+  --accent:#1f3a5f; --accent-2:#2e6da4; --accent-ink:#ffffff; --accent-soft:#e3edf7;
+  --input:#fff3c8; --input-ink:#4d3a00; --input-focus:#d99a00;
+  --result:#e8f0f9; --warn:#c2410c; --warn-soft:#fdebdc;
+  --sky:#f6f8fa; --ground:#dfe5eb;
+  --shadow:0 1px 2px rgba(23,33,43,.06),0 8px 24px rgba(23,33,43,.06);
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --sans:"Pretendard Variable",Pretendard,"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0f151b; --sheet:#161e26; --ink:#e4eaf0; --muted:#9aa7b3; --faint:#687582;
+    --rule:#2b3642; --rule-soft:#222c36; --label:#1b242d; --head:#20303f;
+    --accent:#8fb8e8; --accent-2:#6ea6e0; --accent-ink:#0c1620; --accent-soft:#1c2c3c;
+    --input:#3a3114; --input-ink:#f5dd98; --input-focus:#e0b53a;
+    --result:#1a2836; --warn:#f0965a; --warn-soft:#3a2517;
+    --sky:#121a21; --ground:#1d2731;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0f151b; --sheet:#161e26; --ink:#e4eaf0; --muted:#9aa7b3; --faint:#687582;
+  --rule:#2b3642; --rule-soft:#222c36; --label:#1b242d; --head:#20303f;
+  --accent:#8fb8e8; --accent-2:#6ea6e0; --accent-ink:#0c1620; --accent-soft:#1c2c3c;
+  --input:#3a3114; --input-ink:#f5dd98; --input-focus:#e0b53a;
+  --result:#1a2836; --warn:#f0965a; --warn-soft:#3a2517;
+  --sky:#121a21; --ground:#1d2731;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.55;-webkit-text-size-adjust:100%}
+h1,h2,h3,h4{margin:0;text-wrap:balance}
+button,input,select{font:inherit;color:inherit}
+sub{font-size:.72em;line-height:0}
+.wrap{max-width:1500px;margin:0 auto;padding-inline:20px;padding-block:28px 56px;display:flex;flex-direction:column;gap:18px}
+@media (max-width:600px){ .wrap{padding-inline:16px} }
+
+/* ── 머리부 ── */
+.mast{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;border-bottom:2px solid var(--accent);padding-bottom:16px}
+.eyebrow{margin:0 0 4px;font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent-2)}
+.mast h1{font-size:28px;font-weight:700;letter-spacing:-.01em}
+.lede{margin:6px 0 0;color:var(--muted);max-width:62ch}
+
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.bar>label{font-weight:600;font-size:13px}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+.btn{border:1px solid var(--rule);background:var(--sheet);border-radius:6px;padding:6px 11px;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--accent-2)}
+.btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:focus-visible,.seg button:focus-visible,input:focus-visible,select:focus-visible,.tabs button:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+
+/* ── 그리드 ── */
+.shell{display:grid;grid-template-columns:290px minmax(0,1fr) 350px;gap:18px;align-items:start}
+@media (max-width:1240px){ .shell{grid-template-columns:280px minmax(0,1fr)} .explain{grid-column:1/-1} }
+@media (max-width:860px){ .shell{grid-template-columns:minmax(0,1fr)} }
+
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;box-shadow:var(--shadow);min-width:0}
+.panel-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;padding:16px 18px 12px}
+.panel h2{font-size:17px;font-weight:700;color:var(--accent)}
+.panel-head p{margin:0;color:var(--muted);font-size:12.5px}
+.pbody{padding:0 18px 16px}
+.sep{border-top:1px solid var(--rule-soft)}
+
+/* ── 입력 ── */
+.group{border-top:1px solid var(--rule-soft);padding-block:12px}
+.group:first-child{border-top:0;padding-top:0}
+.glabel{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent-2);margin-bottom:8px}
+.ctrl{margin-bottom:10px}
+.crow{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.crow label{font-size:13px;min-width:0}
+.crow label em{font-style:normal;color:var(--muted);font-size:12px}
+.cin{display:inline-flex;align-items:center;gap:5px;flex:none}
+.cin input{width:78px;text-align:center;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;padding:4px 6px;border:1px solid transparent;border-radius:4px;background:var(--input);color:var(--input-ink)}
+.cin input:focus{outline:none;border-color:var(--input-focus);box-shadow:0 0 0 2px color-mix(in srgb,var(--input-focus) 30%,transparent)}
+.cin .u{font-style:normal;font-size:12px;color:var(--muted);width:40px;font-family:var(--mono)}
+input[type=range]{width:100%;margin:5px 0 0;accent-color:var(--accent-2);height:18px}
+select{font-family:var(--mono);font-size:12.5px;padding:4px 6px;border:1px solid var(--rule);border-radius:6px;background:var(--sheet);cursor:pointer}
+.seg{display:flex;border:1px solid var(--rule);border-radius:8px;background:var(--sheet);padding:3px;gap:2px}
+.seg button{flex:1;border:0;background:transparent;border-radius:6px;padding:5px 6px;cursor:pointer;font-weight:500;font-size:13px;color:var(--muted)}
+.seg.mono button{font-family:var(--mono);font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.chk{display:flex;align-items:center;gap:7px;font-size:13px;margin-top:8px;cursor:pointer}
+.chk input{accent-color:var(--accent-2);width:15px;height:15px}
+.note{font-size:12px;color:var(--muted);margin:7px 0 0;line-height:1.55}
+.note b{font-family:var(--mono);font-weight:600;color:var(--ink)}
+
+/* ── 3D 스테이지 ── */
+.stagehead{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:16px 18px 12px}
+.toggles{display:flex;flex-wrap:wrap;gap:5px}
+.toggles button{border:1px solid var(--rule);background:var(--sheet);border-radius:999px;padding:2px 10px;font-size:12px;cursor:pointer;color:var(--muted)}
+.toggles button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent-2);color:var(--accent)}
+.viewport{position:relative;background:var(--sky);border-block:1px solid var(--rule-soft)}
+canvas#scene{display:block;width:100%;height:440px;touch-action:none;cursor:grab}
+canvas#scene:active{cursor:grabbing}
+@media (max-width:700px){ canvas#scene{height:330px} }
+.vhint{position:absolute;right:10px;bottom:8px;font-size:11.5px;color:var(--muted);background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:1px 7px;pointer-events:none}
+.legend{display:flex;align-items:center;gap:9px;padding:9px 18px;flex-wrap:wrap;border-bottom:1px solid var(--rule-soft)}
+.legend .lt{font-size:12px;color:var(--muted)}
+.ramp{height:9px;flex:1;min-width:120px;border-radius:5px;border:1px solid var(--rule)}
+.legend .num{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.camrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:4px 18px;padding:12px 18px 6px;border-bottom:1px solid var(--rule-soft)}
+
+/* ── 결과 ── */
+.result{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;padding-top:16px}
+@media (max-width:620px){ .result{grid-template-columns:1fr} }
+.big{background:var(--result);border-radius:8px;padding:12px 14px}
+.big .cap{font-size:12.5px;color:var(--muted)}
+.big .val{font-family:var(--mono);font-weight:600;font-size:30px;line-height:1.2;font-variant-numeric:tabular-nums;color:var(--accent);word-break:break-all}
+.big .val span{font-size:14px;color:var(--muted);font-weight:500;margin-left:5px}
+.big .alt{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums;line-height:1.7}
+.pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;background:var(--sheet);color:var(--accent);margin-bottom:6px;border:1px solid var(--rule)}
+.kv{width:100%;border-collapse:collapse;font-size:13px}
+.kv th,.kv td{padding:5px 8px;border-bottom:1px solid var(--rule-soft);text-align:left;vertical-align:top}
+.kv th{font-weight:500;color:var(--muted);white-space:nowrap;width:1%}
+.kv td{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.kv td small{font-family:var(--sans);color:var(--muted);font-size:11.5px}
+.subst{margin-top:12px;background:var(--label);border:1px solid var(--rule-soft);border-radius:8px;padding:10px 12px}
+.subst .t{font-size:12px;font-weight:600;color:var(--accent-2);margin-bottom:4px}
+
+/* ── 수식 ── */
+.eq{font-family:var(--mono);font-size:13px;white-space:nowrap;display:flex;align-items:center;gap:.2em;line-height:1.4}
+.eq.wrapok{white-space:normal;flex-wrap:wrap;row-gap:6px}
+.frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;margin:0 .15em}
+.frac .n{padding:0 .4em .1em}
+.frac .d{padding:.1em .4em 0;border-top:1.4px solid currentColor}
+.eqbox{overflow-x:auto;padding-block:3px}
+
+/* ── 그래프 ── */
+.tabs{display:inline-flex;flex-wrap:wrap;gap:2px;padding:3px;border:1px solid var(--rule);border-radius:8px;background:var(--sheet);font-size:13px}
+.tabs button{border:0;background:transparent;border-radius:6px;padding:4px 11px;cursor:pointer;font-weight:500;color:var(--muted)}
+.tabs button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+canvas#graph{display:block;width:100%;height:210px}
+
+/* ── 해설 ── */
+.explain .tabs{margin:0 18px 12px}
+.epanes{padding:0 18px 18px;font-size:13.5px}
+.epanes h3{font-size:14px;font-weight:700;color:var(--accent);margin:16px 0 6px}
+.epanes h3:first-child{margin-top:0}
+.epanes p{margin:0 0 9px}
+.epanes ul{margin:0 0 10px;padding-left:18px}
+.epanes li{margin-bottom:4px}
+.epanes .k{color:var(--muted);font-size:12.5px}
+.card{background:var(--label);border:1px solid var(--rule-soft);border-radius:8px;padding:11px 12px;margin-bottom:10px}
+.card .cname{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:7px}
+.card .when{font-size:12.5px;color:var(--muted);margin-top:7px}
+table.t{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+table.t th,table.t td{border:1px solid var(--rule);padding:5px 7px;text-align:center}
+table.t th{background:var(--head);font-weight:600;font-size:12px}
+table.t td.l{text-align:left}
+table.t td code{font-family:var(--mono);font-size:12px}
+.scrollx{overflow-x:auto}
+mark{background:var(--input);color:var(--input-ink);padding:0 3px;border-radius:3px}
+.foot{margin:0;font-size:12px;color:var(--faint);text-align:center}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <p class="eyebrow">대기오염 · 확산 모델링</p>
+      <h1>가우시안 확산식 3D 시뮬레이터</h1>
+      <p class="lede">굴뚝에서 나온 오염물질이 x·y·z 공간에 퍼지는 모습을 보면서, 원하는 지점의 농도를 가우시안 식으로 계산합니다.</p>
+    </div>
+  </header>
+
+  <div class="bar">
+    <label>문제 불러오기</label>
+    <nav class="presets" id="presets" aria-label="시나리오 불러오기"></nav>
+  </div>
+
+  <div class="shell">
+
+    <!-- 입력 -->
+    <section class="panel">
+      <div class="panel-head"><h2>입력 조건</h2><p>노란 칸에 직접 입력</p></div>
+      <div class="pbody" id="controls"></div>
+    </section>
+
+    <!-- 3D + 결과 -->
+    <section class="panel">
+      <div class="stagehead">
+        <h2>3차원 농도장</h2>
+        <div class="toggles" id="toggles"></div>
+      </div>
+
+      <div class="viewport">
+        <canvas id="scene" aria-label="x·y·z 3차원 공간에 그려진 연기 확산 애니메이션"></canvas>
+        <div class="vhint">드래그 = 회전</div>
+      </div>
+
+      <div class="legend">
+        <span class="lt">농도</span>
+        <div class="ramp" id="ramp"></div>
+        <span class="num" id="rampLo">—</span><span class="lt">→</span><span class="num" id="rampHi">—</span>
+      </div>
+
+      <div class="camrow">
+        <div class="ctrl">
+          <div class="crow"><label for="az">카메라 방위각</label><span class="cin"><input type="number" id="az" min="-180" max="180" step="1"><em class="u">°</em></span></div>
+          <input type="range" id="az_r" min="-180" max="180" step="1" aria-label="카메라 방위각 슬라이더">
+        </div>
+        <div class="ctrl">
+          <div class="crow"><label for="el">카메라 고도각</label><span class="cin"><input type="number" id="el" min="3" max="88" step="1"><em class="u">°</em></span></div>
+          <input type="range" id="el_r" min="3" max="88" step="1" aria-label="카메라 고도각 슬라이더">
+        </div>
+      </div>
+
+      <div class="pbody">
+        <div class="result">
+          <div class="big">
+            <span class="pill" id="formBadge">—</span>
+            <div class="cap">수용점 농도 C</div>
+            <div class="val" id="cMain">—<span>µg/m³</span></div>
+            <div class="alt" id="cAlt">—</div>
+          </div>
+          <table class="kv"><tbody id="kv"></tbody></table>
+        </div>
+
+        <div class="subst">
+          <div class="t">적용식</div>
+          <div class="eqbox"><div class="eq" id="eqForm"></div></div>
+          <div class="t" style="margin-top:8px">값 대입</div>
+          <div class="eqbox"><div class="eq" id="eqSubst"></div></div>
+        </div>
+      </div>
+
+      <div class="sep panel-head">
+        <h2>농도 분포 그래프</h2>
+        <div class="tabs" id="gtabs"></div>
+      </div>
+      <div class="pbody">
+        <canvas id="graph" aria-label="농도 분포 그래프"></canvas>
+        <p class="note" id="graphNote"></p>
+      </div>
+    </section>
+
+    <!-- 해설 -->
+    <aside class="panel explain">
+      <div class="panel-head"><h2>가우시안 식 해설</h2></div>
+      <div class="tabs" id="etabs"></div>
+      <div class="epanes" id="epanes"></div>
+    </aside>
+  </div>
+
+  <p class="foot">축척은 x·y·z가 서로 다릅니다(연직 방향 과장). 계산값은 입력한 수치 그대로이며, 그림은 이해를 돕기 위한 표현입니다.</p>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+/* ════════════ 상태 ════════════ */
+const S = {
+  preset:"base",
+  Q:50, Qunit:"g/s", M:64,
+  Hs:80, dh:20,
+  deacon:false, U:5, U0:5, Z0:10, p:0.25,
+  sigMode:"pg", pg:"D", sy:76, sz:38,
+  x:1000, y:0, z:0,
+  refl:true,
+  Xmax:3000,
+  az:20, el:24,
+  show:{ground:true, mid:true, slice:true, parts:true, grid:true, env:true},
+  gmode:"x"
+};
+
+const PRESETS = {
+  base:{ name:"기본 (Pasquill D)", v:{Q:50,Qunit:"g/s",M:64,Hs:80,dh:20,deacon:false,U:5,sigMode:"pg",pg:"D",x:1000,y:0,z:0,refl:true,Xmax:3000} },
+  p03:{ name:"교재 03 · SO₂", v:{Q:5,Qunit:"g/s",M:64,Hs:60,dh:0,deacon:false,U:7,sigMode:"manual",sy:95,sz:65,x:600,y:0,z:0,refl:true,Xmax:1200} },
+  p04:{ name:"교재 04 · 9000 g/min", v:{Q:9000,Qunit:"g/min",M:64,Hs:60,dh:20,deacon:false,U:4,sigMode:"manual",sy:110,sz:65,x:1000,y:0,z:0,refl:true,Xmax:2000} },
+  p05:{ name:"교재 05 · 지면 배출", v:{Q:4.4,Qunit:"g/s",M:64,Hs:0,dh:0,deacon:false,U:5,sigMode:"manual",sy:22.5,sz:12,x:300,y:0,z:0,refl:true,Xmax:800} },
+  p06:{ name:"교재 06 · H₂S 냄새", v:{Q:80,Qunit:"g/s",M:34,Hs:70,dh:0,deacon:false,U:10,sigMode:"manual",sy:36,sz:18.5,x:500,y:0,z:0,refl:true,Xmax:1200} },
+  p07:{ name:"교재 07 · Deacon 보정", v:{Q:5,Qunit:"g/s",M:64,Hs:60,dh:0,deacon:true,U0:5,Z0:5.5,p:0.25,sigMode:"manual",sy:37,sz:18,x:500,y:0,z:0,refl:true,Xmax:1200} },
+  pA:{ name:"불안정 A 안정도", v:{Q:50,Qunit:"g/s",M:64,Hs:60,dh:15,deacon:false,U:2,sigMode:"pg",pg:"A",x:500,y:0,z:0,refl:true,Xmax:2000} },
+  pF:{ name:"안정 F 안정도", v:{Q:50,Qunit:"g/s",M:64,Hs:60,dh:15,deacon:false,U:2,sigMode:"pg",pg:"F",x:3000,y:0,z:0,refl:true,Xmax:6000} }
+};
+
+/* ════════════ 계산 ════════════ */
+const QFAC = {"g/s":1, "g/min":1/60, "kg/h":1000/3600};
+const Qgs = () => S.Q * QFAC[S.Qunit];              // g/s
+const He  = () => S.Hs + S.dh;                      // m
+const Uef = () => {
+  if(!S.deacon) return Math.max(S.U, 0.1);
+  const h = He() > 0 ? He() : S.Z0;
+  return Math.max(S.U0 * Math.pow(h / Math.max(S.Z0,0.1), S.p), 0.1);
+};
+
+const BRIGGS = {
+  A:{y:x=>0.22*x/Math.sqrt(1+1e-4*x),  z:x=>0.20*x},
+  B:{y:x=>0.16*x/Math.sqrt(1+1e-4*x),  z:x=>0.12*x},
+  C:{y:x=>0.11*x/Math.sqrt(1+1e-4*x),  z:x=>0.08*x/Math.sqrt(1+2e-4*x)},
+  D:{y:x=>0.08*x/Math.sqrt(1+1e-4*x),  z:x=>0.06*x/Math.sqrt(1+1.5e-3*x)},
+  E:{y:x=>0.06*x/Math.sqrt(1+1e-4*x),  z:x=>0.03*x/(1+3e-4*x)},
+  F:{y:x=>0.04*x/Math.sqrt(1+1e-4*x),  z:x=>0.016*x/(1+3e-4*x)}
+};
+function sigmas(x){
+  if(S.sigMode==="manual") return {sy:Math.max(S.sy,1e-3), sz:Math.max(S.sz,1e-3)};
+  const d = Math.max(x,1), f = BRIGGS[S.pg];
+  return {sy:Math.max(f.y(d),1e-3), sz:Math.max(f.z(d),1e-3)};
+}
+
+/** 농도 [µg/m³] */
+function conc(x,y,z){
+  if(x<=0) return 0;
+  const {sy,sz}=sigmas(x), h=He(), u=Uef();
+  const base = Qgs()*1e6/(2*Math.PI*u*sy*sz);
+  const fy = Math.exp(-0.5*(y/sy)**2);
+  let fz = Math.exp(-0.5*((z-h)/sz)**2);
+  if(S.refl) fz += Math.exp(-0.5*((z+h)/sz)**2);
+  const v = base*fy*fz;
+  return isFinite(v)? v : 0;
+}
+
+function domain(){
+  const h=He(), s=sigmas(S.Xmax);
+  const Ymax = niceDom(Math.max(2.4*s.sy, Math.abs(S.y)*1.35, 50));
+  const Zmax = niceDom(Math.max(h+2.4*s.sz, S.z*1.35, 120));
+  return {Ymax, Zmax};
+}
+function niceUp(v){
+  const e=Math.pow(10,Math.floor(Math.log10(v))), m=v/e;
+  return (m<=1?1:m<=2?2:m<=2.5?2.5:m<=5?5:10)*e;
+}
+function niceDom(v){
+  const e=Math.pow(10,Math.floor(Math.log10(v))), m=v/e;
+  const st=[1,1.2,1.5,2,2.5,3,4,5,6,8,10];
+  return st.find(s=>m<=s+1e-9)*e;
+}
+
+/* 숫자 표기 */
+const SUP={"-":"⁻","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};
+const sup = n => String(n).split("").map(c=>SUP[c]||c).join("");
+function sig(v,n=4){
+  if(!isFinite(v)) return "—";
+  if(v===0) return "0";
+  const a=Math.abs(v);
+  if(a>=1e6||a<1e-4){ const e=Math.floor(Math.log10(a)); return (v/Math.pow(10,e)).toFixed(2)+"×10"+sup(e); }
+  const d=Math.max(0,Math.min(6,n-1-Math.floor(Math.log10(a))));
+  let s=v.toFixed(d);
+  if(s.indexOf(".")>=0) s=s.replace(/0+$/,"").replace(/\.$/,"");
+  return s;
+}
+
+/* ════════════ 입력 콘솔 ════════════ */
+const C_DEFS = [
+  {g:"배출 조건", items:[
+    {id:"Q",  key:"Q",  label:"배출량 Q", min:0, max:20000, step:0.1, slMax:200, unitSel:["g/s","g/min","kg/h"]},
+    {id:"Hs", key:"Hs", label:"굴뚝 실제높이 H<sub>s</sub>", min:0, max:300, step:1, unit:"m"},
+    {id:"dh", key:"dh", label:"연기상승높이 Δh", min:0, max:200, step:1, unit:"m"},
+    {id:"M",  key:"M",  label:"분자량 M <em>(ppm 환산)</em>", min:1, max:200, step:0.1, unit:"g/mol"}
+  ]},
+  {g:"기상 조건", items:[
+    {id:"U",  key:"U",  label:"풍속 u", min:0.2, max:20, step:0.1, unit:"m/s", hideIf:()=>S.deacon},
+    {id:"U0", key:"U0", label:"기준 풍속 u<sub>0</sub>", min:0.2, max:20, step:0.1, unit:"m/s", showIf:()=>S.deacon},
+    {id:"Z0", key:"Z0", label:"기준 높이 Z<sub>0</sub>", min:0.5, max:100, step:0.5, unit:"m", showIf:()=>S.deacon},
+    {id:"p",  key:"p",  label:"지수 P", min:0, max:1, step:0.01, unit:"—", showIf:()=>S.deacon}
+  ]},
+  {g:"수용점 좌표", items:[
+    {id:"x", key:"x", label:"풍하거리 x", min:0, max:20000, step:1, slMaxKey:"Xmax", unit:"m"},
+    {id:"y", key:"y", label:"횡방향 y", min:-5000, max:5000, step:1, slSym:"Ymax", unit:"m"},
+    {id:"z", key:"z", label:"높이 z", min:0, max:2000, step:1, slMaxKey:"Zmax", unit:"m"},
+    {id:"Xmax", key:"Xmax", label:"표시 거리", min:100, max:20000, step:100, unit:"m"}
+  ]}
+];
+
+function buildControls(){
+  const box = document.getElementById("controls");
+  let h = "";
+
+  C_DEFS.forEach((grp,gi)=>{
+    h += `<div class="group" data-grp="${gi}"><div class="glabel">${grp.g}</div>`;
+    if(gi===1){
+      h += `<label class="chk"><input type="checkbox" id="deacon"><span>Deacon식으로 굴뚝높이 풍속 보정</span></label>
+            <p class="note" id="deaconNote" hidden></p>`;
+    }
+    grp.items.forEach(it=>{
+      h += `<div class="ctrl" data-for="${it.id}">
+        <div class="crow"><label for="${it.id}">${it.label}</label>
+          <span class="cin"><input type="number" id="${it.id}" step="${it.step}" min="${it.min}" max="${it.max}">`
+        + (it.unitSel
+            ? `<select id="${it.id}_u" aria-label="배출량 단위">${it.unitSel.map(u=>`<option value="${u}">${u}</option>`).join("")}</select>`
+            : `<em class="u">${it.unit}</em>`)
+        + `</span></div>
+        <input type="range" id="${it.id}_r" step="${it.step}" aria-label="${it.label.replace(/<[^>]+>/g,"")} 슬라이더">
+      </div>`;
+    });
+    h += `</div>`;
+  });
+
+  // 확산계수 그룹
+  h += `<div class="group"><div class="glabel">확산계수 σ<sub>y</sub> · σ<sub>z</sub></div>
+    <div class="seg" id="sigSeg" role="group" aria-label="확산계수 입력 방식">
+      <button data-m="pg">안정도 등급</button><button data-m="manual">σ 직접입력</button>
+    </div>
+    <div class="seg mono" id="pgSeg" style="margin-top:6px" role="group" aria-label="Pasquill 안정도 등급"></div>
+    <div id="manualBox" hidden>
+      <div class="ctrl" style="margin-top:8px">
+        <div class="crow"><label for="sy">σ<sub>y</sub> 수평 표준편차</label><span class="cin"><input type="number" id="sy" min="0.1" max="3000" step="0.1"><em class="u">m</em></span></div>
+        <input type="range" id="sy_r" min="1" max="600" step="0.5" aria-label="시그마 y 슬라이더">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label for="sz">σ<sub>z</sub> 수직 표준편차</label><span class="cin"><input type="number" id="sz" min="0.1" max="3000" step="0.1"><em class="u">m</em></span></div>
+        <input type="range" id="sz_r" min="1" max="400" step="0.5" aria-label="시그마 z 슬라이더">
+      </div>
+    </div>
+    <p class="note" id="sigNote"></p>
+    <label class="chk"><input type="checkbox" id="refl"><span>지면 반사 포함 <em style="color:var(--muted)">(+(z+H<sub>e</sub>) 항)</em></span></label>
+  </div>`;
+
+  box.innerHTML = h;
+
+  // 와이어링
+  C_DEFS.forEach(grp=>grp.items.forEach(it=>{
+    const n=document.getElementById(it.id), r=document.getElementById(it.id+"_r");
+    n.addEventListener("input", ()=>{ const v=parseFloat(n.value); if(isFinite(v)){ S[it.key]=clamp(v,it.min,it.max); syncOne(it); markDirty(); } });
+    n.addEventListener("blur", ()=>{ n.value=sig(S[it.key],6); });
+    r.addEventListener("input", ()=>{ S[it.key]=parseFloat(r.value); n.value=sig(S[it.key],6); markDirty(); });
+    if(it.unitSel){
+      const u=document.getElementById(it.id+"_u");
+      u.addEventListener("change", ()=>{ S.Qunit=u.value; markDirty(); });
+    }
+  }));
+  ["sy","sz"].forEach(k=>{
+    const n=document.getElementById(k), r=document.getElementById(k+"_r");
+    n.addEventListener("input", ()=>{ const v=parseFloat(n.value); if(isFinite(v)&&v>0){ S[k]=v; r.value=Math.min(v,parseFloat(r.max)); markDirty(); } });
+    r.addEventListener("input", ()=>{ S[k]=parseFloat(r.value); n.value=sig(S[k],6); markDirty(); });
+  });
+  document.getElementById("deacon").addEventListener("change", e=>{ S.deacon=e.target.checked; markDirty(); });
+  document.getElementById("refl").addEventListener("change", e=>{ S.refl=e.target.checked; markDirty(); });
+
+  const pgSeg=document.getElementById("pgSeg");
+  pgSeg.innerHTML = ["A","B","C","D","E","F"].map(k=>`<button data-k="${k}">${k}</button>`).join("");
+  pgSeg.addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b)return; S.pg=b.dataset.k; markDirty(); });
+  document.getElementById("sigSeg").addEventListener("click", e=>{
+    const b=e.target.closest("button"); if(!b)return;
+    if(b.dataset.m==="manual"){ const s=sigmas(S.x); S.sy=+s.sy.toFixed(1); S.sz=+s.sz.toFixed(1); }
+    S.sigMode=b.dataset.m; markDirty();
+  });
+}
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+
+function syncOne(it){
+  const r=document.getElementById(it.id+"_r");
+  if(r) r.value = clamp(S[it.key], parseFloat(r.min), parseFloat(r.max));
+}
+
+function syncControls(){
+  const d=domain();
+  C_DEFS.forEach(grp=>grp.items.forEach(it=>{
+    const wrap=document.querySelector(`.ctrl[data-for="${it.id}"]`);
+    if(it.showIf) wrap.hidden = !it.showIf();
+    if(it.hideIf) wrap.hidden = it.hideIf();
+    const n=document.getElementById(it.id), r=document.getElementById(it.id+"_r");
+    let lo=it.min, hi=it.max;
+    if(it.slMax) hi=it.slMax;
+    if(it.slMaxKey) hi = it.slMaxKey==="Xmax" ? S.Xmax : d[it.slMaxKey];
+    if(it.slSym){ hi=d[it.slSym]; lo=-hi; }
+    if(it.id==="Xmax"){ lo=100; hi=10000; }
+    r.min=lo; r.max=hi;
+    r.step = (hi-lo)>2000 ? 10 : (hi-lo)>200 ? 1 : it.step;
+    r.value=clamp(S[it.key],lo,hi);
+    if(document.activeElement!==n) n.value=sig(S[it.key],6);
+    if(it.unitSel) document.getElementById(it.id+"_u").value=S.Qunit;
+  }));
+  ["sy","sz"].forEach(k=>{
+    const n=document.getElementById(k), r=document.getElementById(k+"_r");
+    if(document.activeElement!==n) n.value=sig(S[k],6);
+    r.value=Math.min(S[k],parseFloat(r.max));
+  });
+  document.getElementById("deacon").checked=S.deacon;
+  document.getElementById("refl").checked=S.refl;
+  document.getElementById("manualBox").hidden = S.sigMode!=="manual";
+  document.getElementById("pgSeg").hidden = S.sigMode!=="pg";
+  [...document.querySelectorAll("#sigSeg button")].forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.m===S.sigMode)));
+  [...document.querySelectorAll("#pgSeg button")].forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.k===S.pg)));
+
+  const dn=document.getElementById("deaconNote");
+  dn.hidden=!S.deacon;
+  if(S.deacon) dn.innerHTML = `u = u<sub>0</sub>(Z/Z<sub>0</sub>)<sup>P</sup> = ${sig(S.U0)}×(${sig(He())}/${sig(S.Z0)})<sup>${sig(S.p)}</sup> = <b>${sig(Uef())} m/s</b> &nbsp;(Z = H<sub>e</sub>)`;
+
+  const s=sigmas(S.x);
+  document.getElementById("sigNote").innerHTML = S.sigMode==="pg"
+    ? `Briggs 개활지식 · x = ${sig(S.x)} m → σ<sub>y</sub> = <b>${sig(s.sy)}</b>, σ<sub>z</sub> = <b>${sig(s.sz)}</b> m (거리에 따라 커짐)`
+    : `시험문제처럼 특정 거리의 σ만 쓰므로 <b>거리에 관계없이 일정</b>합니다. 그래서 그림의 연기 폭도 평행하게 그려집니다.`;
+
+  [...document.querySelectorAll("#presets button")].forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.p===S.preset)));
+}
+
+/* 프리셋 */
+function buildPresets(){
+  const el=document.getElementById("presets");
+  el.innerHTML = Object.entries(PRESETS).map(([k,v])=>`<button class="btn" data-p="${k}">${v.name}</button>`).join("");
+  el.addEventListener("click", e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    const pr=PRESETS[b.dataset.p]; if(!pr) return;
+    Object.assign(S, {deacon:false, dh:0, refl:true}, pr.v);
+    S.preset=b.dataset.p;
+    resetParticles(); markDirty();
+  });
+}
+
+/* ════════════ 결과 출력 ════════════ */
+const FR = (n,d)=>`<span class="frac"><span class="n">${n}</span><span class="d">${d}</span></span>`;
+
+function caseOf(){
+  const h=He(), y=S.y, z=S.z, r=S.refl;
+  if(!r) return "nr";
+  if(z===0 && y===0 && h===0) return "g0";
+  if(z===0 && y===0) return "cl";
+  if(z===0) return "gr";
+  return "gen";
+}
+
+function updateResult(){
+  const c=conc(S.x,S.y,S.z), s=sigmas(S.x), h=He(), u=Uef(), q=Qgs();
+  const kind=caseOf();
+  const names={gen:"일반식 (반사 포함)", gr:"지표면 z = 0", cl:"지표 중심선 y = 0, z = 0", g0:"지면 배출 H<sub>e</sub> = 0", nr:"반사 제외 기본식"};
+  document.getElementById("formBadge").innerHTML = names[kind];
+
+  document.getElementById("cMain").innerHTML = `${sig(c,4)}<span>µg/m³</span>`;
+  const ppm = S.M>0 ? (c/1000)*22.4/S.M : NaN;
+  document.getElementById("cAlt").innerHTML =
+    `${sig(c/1000,4)} mg/m³ · ${sig(c/1e6,4)} g/m³` +
+    (isFinite(ppm)? `<br><b style="color:var(--ink)">${sig(ppm,4)} ppm</b> = ${sig(ppm*1000,4)} ppb <span style="opacity:.75">(0℃·1atm, M=${sig(S.M)})</span>` : "");
+
+  // 최대착지농도
+  let maxRow;
+  if(S.sigMode==="pg"){
+    let bx=0,bc=0;
+    for(let i=0;i<400;i++){ const xx=10*Math.pow(20000/10, i/399); const cc=conc(xx,0,0); if(cc>bc){bc=cc;bx=xx;} }
+    maxRow = `${sig(bc,4)} µg/m³<br><small>x<sub>max</sub> ≈ ${sig(bx,3)} m 지점</small>`;
+  }else{
+    const cm = h>0 ? 2*q*1e6/(Math.E*Math.PI*u*h*h)*(s.sz/s.sy) : NaN;
+    maxRow = h>0
+      ? `${sig(cm,4)} µg/m³<br><small>공식값 · σ<sub>z</sub>=H<sub>e</sub>/√2 가정</small>`
+      : `<small>지면 배출은 오염원 바로 옆이 최대</small>`;
+  }
+  const rows=[
+    [`H<sub>e</sub>`, `${sig(S.Hs)} + ${sig(S.dh)} = ${sig(h)} m`],
+    [`u`, `${sig(u)} m/s${S.deacon?" <small>Deacon 보정</small>":""}`],
+    [`Q`, `${sig(q,5)} g/s`],
+    [`σ<sub>y</sub> · σ<sub>z</sub>`, `${sig(s.sy)} · ${sig(s.sz)} m`],
+    [`C<sub>max</sub>`, maxRow]
+  ];
+  document.getElementById("kv").innerHTML = rows.map(([k,v])=>`<tr><th>${k}</th><td>${v}</td></tr>`).join("");
+
+  // 식 + 대입
+  const eqF=document.getElementById("eqForm"), eqS=document.getElementById("eqSubst");
+  const n=(v)=>sig(v,5);
+  if(kind==="cl"){
+    eqF.innerHTML = `C =${FR("Q","π·u·σ<sub>y</sub>·σ<sub>z</sub>")}· exp{ −½ (H<sub>e</sub>/σ<sub>z</sub>)² }`;
+    eqS.innerHTML = `=${FR(`${n(q*1e6)} µg/s`,`π × ${n(u)} × ${n(s.sy)} × ${n(s.sz)}`)}× exp{ −½ (${n(h)}/${n(s.sz)})² } = <b>${sig(c,4)} µg/m³</b>`;
+  }else if(kind==="g0"){
+    eqF.innerHTML = `C =${FR("Q","π·u·σ<sub>y</sub>·σ<sub>z</sub>")}`;
+    eqS.innerHTML = `=${FR(`${n(q*1e6)} µg/s`,`π × ${n(u)} × ${n(s.sy)} × ${n(s.sz)}`)}= <b>${sig(c,4)} µg/m³</b>`;
+  }else if(kind==="gr"){
+    eqF.innerHTML = `C =${FR("Q","π·u·σ<sub>y</sub>·σ<sub>z</sub>")}· exp{ −½ (y/σ<sub>y</sub>)² } · exp{ −½ (H<sub>e</sub>/σ<sub>z</sub>)² }`;
+    eqS.innerHTML = `=${FR(`${n(q*1e6)}`,`π × ${n(u)} × ${n(s.sy)} × ${n(s.sz)}`)}× exp{ −½ (${n(S.y)}/${n(s.sy)})² } × exp{ −½ (${n(h)}/${n(s.sz)})² } = <b>${sig(c,4)} µg/m³</b>`;
+  }else if(kind==="nr"){
+    eqF.innerHTML = `C =${FR("Q","2π·u·σ<sub>y</sub>·σ<sub>z</sub>")}· exp{ −½ (y/σ<sub>y</sub>)² } · exp{ −½ ((z−H<sub>e</sub>)/σ<sub>z</sub>)² }`;
+    eqS.innerHTML = `=${FR(`${n(q*1e6)}`,`2π × ${n(u)} × ${n(s.sy)} × ${n(s.sz)}`)}× exp{ −½ (${n(S.y)}/${n(s.sy)})² } × exp{ −½ ((${n(S.z)}−${n(h)})/${n(s.sz)})² } = <b>${sig(c,4)} µg/m³</b>`;
+  }else{
+    eqF.innerHTML = `C =${FR("Q","2π·u·σ<sub>y</sub>·σ<sub>z</sub>")}· exp{ −½ (y/σ<sub>y</sub>)² } · [ exp{ −½ ((z−H<sub>e</sub>)/σ<sub>z</sub>)² } + exp{ −½ ((z+H<sub>e</sub>)/σ<sub>z</sub>)² } ]`;
+    eqS.innerHTML = `=${FR(`${n(q*1e6)}`,`2π × ${n(u)} × ${n(s.sy)} × ${n(s.sz)}`)}× exp{ −½ (${n(S.y)}/${n(s.sy)})² } × [ exp{ −½ ((${n(S.z)}−${n(h)})/${n(s.sz)})² } + exp{ −½ ((${n(S.z)}+${n(h)})/${n(s.sz)})² } ] = <b>${sig(c,4)} µg/m³</b>`;
+  }
+}
+
+/* ════════════ 색 ════════════ */
+const RAMP=[
+  [0.00, 46,109,164,   0],
+  [0.16, 46,109,164, 105],
+  [0.36, 98,160,208, 170],
+  [0.56,232,196, 92, 210],
+  [0.76,217,122, 34, 236],
+  [1.00,179, 38, 30, 255]
+];
+function ramp(t){
+  t=clamp(t,0,1);
+  for(let i=1;i<RAMP.length;i++){
+    if(t<=RAMP[i][0]){
+      const a=RAMP[i-1], b=RAMP[i], k=(t-a[0])/(b[0]-a[0]);
+      return [a[1]+(b[1]-a[1])*k, a[2]+(b[2]-a[2])*k, a[3]+(b[3]-a[3])*k, a[4]+(b[4]-a[4])*k];
+    }
+  }
+  const l=RAMP[RAMP.length-1]; return [l[1],l[2],l[3],l[4]];
+}
+function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+(function paintRamp(){
+  const el=document.getElementById("ramp");
+  const stops=RAMP.map(s=>`rgba(${s[1]|0},${s[2]|0},${s[3]|0},${(s[4]/255).toFixed(2)}) ${(s[0]*100).toFixed(0)}%`).join(",");
+  el.style.background=`linear-gradient(90deg, ${stops})`;
+})();
+
+/* ════════════ 3D 투영 ════════════ */
+const BOX={LX:1.95, LY:0.66, LZ:0.76};
+let proj={k:1, ox:0, oy:0};
+let DOM={Ymax:600, Zmax:300};
+
+function model(x,y,z){
+  return [ (x/S.Xmax)*BOX.LX, (y/DOM.Ymax)*BOX.LY, (z/DOM.Zmax)*BOX.LZ ];
+}
+function rot(m){
+  const a=S.az*Math.PI/180, e=S.el*Math.PI/180;
+  const X1=m[0]*Math.cos(a)-m[1]*Math.sin(a);
+  const Y1=m[0]*Math.sin(a)+m[1]*Math.cos(a);
+  const Z1=m[2];
+  return [X1, Y1*Math.sin(e)-Z1*Math.cos(e), Y1*Math.cos(e)+Z1*Math.sin(e)]; // sx, sy, depth
+}
+function P(x,y,z){
+  const r=rot(model(x,y,z));
+  return {x:proj.ox+r[0]*proj.k, y:proj.oy+r[1]*proj.k, d:r[2]};
+}
+function fitProjection(w,h){
+  const pad=46, corners=[];
+  for(const X of [0,S.Xmax]) for(const Y of [-DOM.Ymax,DOM.Ymax]) for(const Z of [0,DOM.Zmax])
+    corners.push(rot(model(X,Y,Z)));
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  corners.forEach(c=>{ x0=Math.min(x0,c[0]); x1=Math.max(x1,c[0]); y0=Math.min(y0,c[1]); y1=Math.max(y1,c[1]); });
+  const k=Math.min((w-2*pad)/Math.max(x1-x0,1e-6), (h-2*pad)/Math.max(y1-y0,1e-6));
+  proj.k=k;
+  proj.ox=(w-(x0+x1)*k)/2;
+  proj.oy=(h-(y0+y1)*k)/2;
+}
+
+/* ════════════ 농도장 텍스처 ════════════ */
+let TEX={ground:null, mid:null, slice:null, hi:0};
+// skipU: 굴뚝 바로 앞(σ→0이라 값이 비현실적으로 큼)은 색 기준 최댓값에서 제외
+function sampleGrid(cols,rows,f,skipU=0){
+  const v=new Float64Array(cols*rows); let mx=0;
+  for(let j=0;j<rows;j++) for(let i=0;i<cols;i++){
+    const u=(i+0.5)/cols, val=f(u,(j+0.5)/rows);
+    v[j*cols+i]=val; if(u>=skipU && val>mx) mx=val;
+  }
+  return {v,cols,rows,mx};
+}
+function toCanvas(g,hi,am){
+  const c=document.createElement("canvas"); c.width=g.cols; c.height=g.rows;
+  const ctx=c.getContext("2d"), img=ctx.createImageData(g.cols,g.rows);
+  const H=Math.log10(Math.max(hi,1e-30)), L=H-4;
+  for(let k=0;k<g.v.length;k++){
+    const val=g.v[k];
+    let t=0;
+    if(val>0) t=(Math.log10(val)-L)/(H-L);
+    const [r,gg,b,a]=ramp(t);
+    img.data[4*k]=r|0; img.data[4*k+1]=gg|0; img.data[4*k+2]=b|0; img.data[4*k+3]=(a*am)|0;
+  }
+  ctx.putImageData(img,0,0);
+  return c;
+}
+function buildTextures(){
+  DOM=domain();
+  const CG=170, RG=96;
+  const g = sampleGrid(CG,RG,(u,v)=>conc(u*S.Xmax, -DOM.Ymax+v*2*DOM.Ymax, 0), 0.05);            // 지표면 z=0
+  const m = sampleGrid(CG,RG,(u,v)=>conc(u*S.Xmax, 0, DOM.Zmax-v*DOM.Zmax), 0.05);                // 중심 수직면 y=0
+  const q = sampleGrid(88,88,(u,v)=>conc(S.x, -DOM.Ymax+u*2*DOM.Ymax, DOM.Zmax-v*DOM.Zmax)); // 수용점 단면 x=xr
+  const hi=Math.max(g.mx,m.mx,q.mx,1e-12);
+  TEX={ ground:toCanvas(g,hi,1), mid:toCanvas(m,hi,0.78), slice:toCanvas(q,hi,0.62), hi };
+  document.getElementById("rampHi").textContent=sig(hi,3)+" µg/m³";
+  document.getElementById("rampLo").textContent=sig(hi/1e4,2);
+}
+
+/* ════════════ 입자 ════════════ */
+const NP=460;
+let parts=[];
+function gauss(){ let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+function newPart(x){ return {x, ry:gauss(), rz:gauss()}; }
+function resetParticles(){ parts=[]; for(let i=0;i<NP;i++) parts.push(newPart(Math.random()*S.Xmax)); }
+const ACCEL=42;
+function stepParticles(dt){
+  const sp=Uef()*ACCEL*dt;
+  for(const p of parts){
+    p.x+=sp;
+    if(p.x>S.Xmax){ p.x-=S.Xmax; p.ry=gauss(); p.rz=gauss(); }
+  }
+}
+
+/* ════════════ 씬 렌더 ════════════ */
+const scene=document.getElementById("scene"), sctx=scene.getContext("2d");
+let W=0,H=0,DPR=1;
+function resize(){
+  const r=scene.getBoundingClientRect();
+  DPR=Math.min(window.devicePixelRatio||1,2);
+  W=Math.max(r.width,10); H=Math.max(r.height,10);
+  scene.width=W*DPR; scene.height=H*DPR;
+  sctx.setTransform(DPR,0,0,DPR,0,0);
+}
+
+function planeTransform(ctx, p00, p10, p01, cols, rows){
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.transform((p10.x-p00.x)/cols, (p10.y-p00.y)/cols, (p01.x-p00.x)/rows, (p01.y-p00.y)/rows, p00.x, p00.y);
+}
+
+function ticks(max,n=5){
+  const step=niceUp(max/n), out=[];
+  for(let v=0; v<=max+1e-9; v+=step) out.push(+v.toFixed(6));
+  return out;
+}
+
+function drawScene(){
+  const col={ink:cssVar("--ink"), muted:cssVar("--muted"), line:cssVar("--rule"), accent:cssVar("--accent"), warm:cssVar("--warn"), ground:cssVar("--ground"), sky:cssVar("--sky"), panel:cssVar("--sheet")};
+  sctx.setTransform(DPR,0,0,DPR,0,0);
+  sctx.clearRect(0,0,W,H);
+  sctx.fillStyle=col.sky; sctx.fillRect(0,0,W,H);
+  fitProjection(W,H);
+
+  const h=He(), Ym=DOM.Ymax, Zm=DOM.Zmax;
+
+  // 바닥면
+  const g00=P(0,-Ym,0), g10=P(S.Xmax,-Ym,0), g11=P(S.Xmax,Ym,0), g01=P(0,Ym,0);
+  sctx.beginPath(); sctx.moveTo(g00.x,g00.y); sctx.lineTo(g10.x,g10.y); sctx.lineTo(g11.x,g11.y); sctx.lineTo(g01.x,g01.y); sctx.closePath();
+  sctx.fillStyle=col.ground; sctx.globalAlpha=.55; sctx.fill(); sctx.globalAlpha=1;
+  sctx.strokeStyle=col.line; sctx.lineWidth=1; sctx.stroke();
+
+  // 바닥 농도장
+  if(S.show.ground && TEX.ground){
+    sctx.save();
+    planeTransform(sctx,g00,g10,g01,TEX.ground.width,TEX.ground.height);
+    sctx.imageSmoothingEnabled=true;
+    sctx.drawImage(TEX.ground,0,0);
+    sctx.restore();
+    sctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+
+  // 바닥 격자
+  if(S.show.grid){
+    sctx.strokeStyle=col.line; sctx.globalAlpha=.75; sctx.lineWidth=1;
+    ticks(S.Xmax).forEach(tx=>{ const a=P(tx,-Ym,0), b=P(tx,Ym,0); sctx.beginPath(); sctx.moveTo(a.x,a.y); sctx.lineTo(b.x,b.y); sctx.stroke(); });
+    const ty=ticks(Ym,3);
+    [...ty.map(v=>-v),...ty].forEach(v=>{ const a=P(0,v,0), b=P(S.Xmax,v,0); sctx.beginPath(); sctx.moveTo(a.x,a.y); sctx.lineTo(b.x,b.y); sctx.stroke(); });
+    sctx.globalAlpha=1;
+  }
+
+  // 수직면 두 개 — 깊이순
+  const planes=[];
+  if(S.show.mid && TEX.mid){
+    planes.push({d:P(S.Xmax/2,0,Zm/2).d, draw:()=>{
+      const a=P(0,0,Zm), b=P(S.Xmax,0,Zm), c=P(0,0,0);
+      sctx.save(); planeTransform(sctx,a,b,c,TEX.mid.width,TEX.mid.height); sctx.drawImage(TEX.mid,0,0); sctx.restore();
+      sctx.setTransform(DPR,0,0,DPR,0,0);
+    }});
+  }
+  if(S.show.slice && TEX.slice && S.x>0){
+    planes.push({d:P(S.x,0,Zm/2).d, draw:()=>{
+      const a=P(S.x,-Ym,Zm), b=P(S.x,Ym,Zm), c=P(S.x,-Ym,0);
+      sctx.save(); planeTransform(sctx,a,b,c,TEX.slice.width,TEX.slice.height); sctx.drawImage(TEX.slice,0,0); sctx.restore();
+      sctx.setTransform(DPR,0,0,DPR,0,0);
+      // 단면 테두리
+      const p1=P(S.x,-Ym,0),p2=P(S.x,Ym,0),p3=P(S.x,Ym,Zm),p4=P(S.x,-Ym,Zm);
+      sctx.strokeStyle=col.accent; sctx.globalAlpha=.55; sctx.lineWidth=1.2; sctx.setLineDash([4,3]);
+      sctx.beginPath(); sctx.moveTo(p1.x,p1.y); sctx.lineTo(p2.x,p2.y); sctx.lineTo(p3.x,p3.y); sctx.lineTo(p4.x,p4.y); sctx.closePath(); sctx.stroke();
+      sctx.setLineDash([]); sctx.globalAlpha=1;
+    }});
+  }
+  planes.sort((a,b)=>a.d-b.d).forEach(p=>p.draw());
+
+  // ±2σ 외곽 링
+  if(S.show.env){
+    sctx.strokeStyle=col.accent; sctx.globalAlpha=.38; sctx.lineWidth=1.1;
+    const N=10;
+    for(let i=1;i<=N;i++){
+      const xx=S.Xmax*i/N, s=sigmas(xx);
+      sctx.beginPath();
+      for(let t=0;t<=36;t++){
+        const th=t/36*Math.PI*2;
+        const yy=2*s.sy*Math.cos(th), zz=h+2*s.sz*Math.sin(th);
+        const pt=P(xx, clamp(yy,-Ym,Ym), clamp(zz,0,Zm));
+        t===0?sctx.moveTo(pt.x,pt.y):sctx.lineTo(pt.x,pt.y);
+      }
+      sctx.stroke();
+    }
+    sctx.globalAlpha=1;
+  }
+
+  // 입자
+  if(S.show.parts){
+    const pts=[];
+    for(const p of parts){
+      const s=sigmas(p.x);
+      let yy=p.ry*s.sy, zz=h+p.rz*s.sz;
+      if(zz<0) zz=S.refl? -zz : 0;
+      if(Math.abs(yy)>Ym||zz>Zm) continue;
+      const q=P(p.x,yy,zz);
+      q.t=Math.exp(-0.5*(p.ry*p.ry+p.rz*p.rz));
+      pts.push(q);
+    }
+    pts.sort((a,b)=>a.d-b.d);
+    for(const q of pts){
+      const [r,gg,b]=ramp(0.3+0.7*q.t);
+      sctx.fillStyle=`rgba(${r|0},${gg|0},${b|0},${(0.35+0.55*q.t).toFixed(2)})`;
+      sctx.beginPath(); sctx.arc(q.x,q.y,1.3+1.6*q.t,0,6.2832); sctx.fill();
+    }
+  }
+
+  // 굴뚝
+  drawStack(col);
+
+  // 축
+  drawAxes(col);
+
+  // 수용점
+  drawReceptor(col);
+}
+
+function drawStack(col){
+  const hs=S.Hs, rr=Math.max(S.Xmax*0.006, DOM.Ymax*0.012);
+  if(hs>0){
+    const faces=[];
+    const corners=[[-rr,-rr],[rr,-rr],[rr,rr],[-rr,rr]];
+    for(let i=0;i<4;i++){
+      const a=corners[i], b=corners[(i+1)%4];
+      const p1=P(a[0],a[1],0), p2=P(b[0],b[1],0), p3=P(b[0],b[1],hs), p4=P(a[0],a[1],hs);
+      faces.push({d:(p1.d+p2.d)/2, p:[p1,p2,p3,p4], shade:0.55+0.45*(i%2)});
+    }
+    faces.sort((a,b)=>a.d-b.d);
+    faces.forEach(f=>{
+      sctx.beginPath(); sctx.moveTo(f.p[0].x,f.p[0].y); f.p.slice(1).forEach(q=>sctx.lineTo(q.x,q.y)); sctx.closePath();
+      sctx.fillStyle=col.muted; sctx.globalAlpha=f.shade*0.9; sctx.fill(); sctx.globalAlpha=1;
+      sctx.strokeStyle=col.ink; sctx.globalAlpha=.35; sctx.lineWidth=.8; sctx.stroke(); sctx.globalAlpha=1;
+    });
+  }
+  // 연기상승 Δh
+  const h=He();
+  if(S.dh>0){
+    const a=P(0,0,hs), b=P(0,0,h);
+    sctx.strokeStyle=cssVar("--warn"); sctx.setLineDash([3,3]); sctx.lineWidth=1.6;
+    sctx.beginPath(); sctx.moveTo(a.x,a.y); sctx.lineTo(b.x,b.y); sctx.stroke(); sctx.setLineDash([]);
+  }
+  // He 표시
+  const t=P(0,0,h);
+  sctx.fillStyle=cssVar("--warn");
+  sctx.beginPath(); sctx.arc(t.x,t.y,3.4,0,6.2832); sctx.fill();
+  sctx.font="600 10px "+cssVar("--mono");
+  sctx.fillStyle=cssVar("--ink"); sctx.textAlign="right"; sctx.textBaseline="middle";
+  sctx.fillText(`He=${sig(h)}m`, t.x-7, t.y);
+}
+
+function drawAxes(col){
+  const Ym=DOM.Ymax, Zm=DOM.Zmax;
+  sctx.lineWidth=1.5; sctx.strokeStyle=col.ink; sctx.globalAlpha=.75;
+  const o=P(0,-Ym,0);
+  const ex=P(S.Xmax,-Ym,0), ey=P(0,Ym,0), ez=P(0,-Ym,Zm);
+  [[o,ex],[o,ey],[o,ez]].forEach(([a,b])=>{ sctx.beginPath(); sctx.moveTo(a.x,a.y); sctx.lineTo(b.x,b.y); sctx.stroke(); });
+  sctx.globalAlpha=1;
+
+  sctx.font="500 10px "+cssVar("--mono");
+  sctx.fillStyle=col.muted;
+  // x 눈금
+  sctx.textAlign="center"; sctx.textBaseline="top";
+  ticks(S.Xmax).forEach(v=>{ if(v===0||v>=S.Xmax-1e-9) return; const p=P(v,-Ym,0); sctx.fillText(String(v>=1000?(v/1000)+"k":v), p.x, p.y+4); });
+  // y 눈금
+  sctx.textAlign="left";
+  ticks(Ym,3).forEach(v=>{ if(v===0||v>=Ym-1e-9)return; const p=P(0,v,0); sctx.fillText("+"+v, p.x+4, p.y); });
+  // z 눈금
+  sctx.textAlign="right"; sctx.textBaseline="middle";
+  ticks(Zm,4).forEach(v=>{ if(v===0||v>=Zm-1e-9)return; const p=P(0,-Ym,v); sctx.fillText(String(v), p.x-5, p.y); });
+
+  sctx.font="700 11px "+cssVar("--sans");
+  sctx.fillStyle=col.accent;
+  const lx=P(S.Xmax,-Ym,0), ly=P(0,Ym,0), lz=P(0,-Ym,Zm);
+  sctx.textAlign="left"; sctx.textBaseline="top"; sctx.fillText("x · 풍하거리 (m)", lx.x+6, lx.y+2);
+  sctx.textAlign="left"; sctx.textBaseline="bottom"; sctx.fillText("y · 횡방향 (m)", ly.x+6, ly.y);
+  sctx.textAlign="center"; sctx.textBaseline="bottom"; sctx.fillText("z · 높이 (m)", lz.x, lz.y-6);
+
+  // 바람 화살표
+  const w1=P(0,Ym*0.72,Zm*0.86), w2=P(S.Xmax*0.17,Ym*0.72,Zm*0.86);
+  sctx.strokeStyle=col.accent; sctx.lineWidth=1.6; sctx.globalAlpha=.9;
+  sctx.beginPath(); sctx.moveTo(w1.x,w1.y); sctx.lineTo(w2.x,w2.y); sctx.stroke();
+  const ang=Math.atan2(w2.y-w1.y,w2.x-w1.x);
+  sctx.beginPath(); sctx.moveTo(w2.x,w2.y);
+  sctx.lineTo(w2.x-8*Math.cos(ang-0.4), w2.y-8*Math.sin(ang-0.4));
+  sctx.lineTo(w2.x-8*Math.cos(ang+0.4), w2.y-8*Math.sin(ang+0.4));
+  sctx.closePath(); sctx.fillStyle=col.accent; sctx.fill(); sctx.globalAlpha=1;
+  sctx.font="600 10px "+cssVar("--mono"); sctx.textAlign="left"; sctx.textBaseline="bottom";
+  sctx.fillText(`u = ${sig(Uef())} m/s`, w1.x, w1.y-5);
+}
+
+function drawReceptor(col){
+  if(S.x<=0) return;
+  const Ym=DOM.Ymax, Zm=DOM.Zmax;
+  if(Math.abs(S.y)>Ym||S.z>Zm) return;
+  const p=P(S.x,S.y,S.z), f=P(S.x,S.y,0);
+  sctx.strokeStyle=col.ink; sctx.globalAlpha=.5; sctx.setLineDash([2,3]); sctx.lineWidth=1;
+  sctx.beginPath(); sctx.moveTo(p.x,p.y); sctx.lineTo(f.x,f.y); sctx.stroke(); sctx.setLineDash([]); sctx.globalAlpha=1;
+  sctx.beginPath(); sctx.arc(f.x,f.y,2.6,0,6.2832); sctx.fillStyle=col.ink; sctx.globalAlpha=.5; sctx.fill(); sctx.globalAlpha=1;
+
+  sctx.beginPath(); sctx.arc(p.x,p.y,6,0,6.2832);
+  sctx.fillStyle=cssVar("--sheet"); sctx.fill();
+  sctx.lineWidth=2.4; sctx.strokeStyle=cssVar("--warn"); sctx.stroke();
+  sctx.beginPath(); sctx.arc(p.x,p.y,2.1,0,6.2832); sctx.fillStyle=cssVar("--warn"); sctx.fill();
+
+  const c=conc(S.x,S.y,S.z);
+  const label=`${sig(c,3)} µg/m³`;
+  sctx.font="600 10.5px "+cssVar("--mono");
+  const w=sctx.measureText(label).width+12;
+  const bx=p.x+11, by=p.y-10;
+  sctx.fillStyle=cssVar("--sheet"); sctx.globalAlpha=.94;
+  sctx.beginPath(); sctx.roundRect(bx,by-8,w,18,6); sctx.fill(); sctx.globalAlpha=1;
+  sctx.strokeStyle=cssVar("--warn"); sctx.lineWidth=1; sctx.stroke();
+  sctx.fillStyle=cssVar("--ink"); sctx.textAlign="left"; sctx.textBaseline="middle";
+  sctx.fillText(label, bx+6, by+1);
+}
+
+/* ════════════ 그래프 ════════════ */
+const gcan=document.getElementById("graph"), gctx=gcan.getContext("2d");
+const GMODES={ x:"지표 중심선 C(x)", y:"횡방향 C(y)", z:"연직 C(z)" };
+function buildGtabs(){
+  const el=document.getElementById("gtabs");
+  el.innerHTML=Object.entries(GMODES).map(([k,v])=>`<button data-g="${k}">${v}</button>`).join("");
+  el.addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return; S.gmode=b.dataset.g; markDirty(); });
+}
+function drawGraph(){
+  const r=gcan.getBoundingClientRect();
+  gcan.width=r.width*DPR; gcan.height=r.height*DPR;
+  gctx.setTransform(DPR,0,0,DPR,0,0);
+  const w=r.width, h=r.height;
+  gctx.clearRect(0,0,w,h);
+  const col={ink:cssVar("--ink"), muted:cssVar("--muted"), line:cssVar("--rule"), accent:cssVar("--accent"), warm:cssVar("--warn")};
+  const pad={l:56,r:16,t:16,b:40};
+  const pw=w-pad.l-pad.r, ph=h-pad.t-pad.b;
+
+  const N=220, xs=[], ys=[];
+  let axMin, axMax, axLabel, cur;
+  if(S.gmode==="x"){ axMin=0; axMax=S.Xmax; axLabel="풍하거리 x (m)"; cur=S.x; }
+  else if(S.gmode==="y"){ axMin=-DOM.Ymax; axMax=DOM.Ymax; axLabel="횡방향 y (m)"; cur=S.y; }
+  else { axMin=0; axMax=DOM.Zmax; axLabel="높이 z (m)"; cur=S.z; }
+
+  for(let i=0;i<=N;i++){
+    const t=axMin+(axMax-axMin)*i/N;
+    xs.push(t);
+    ys.push(S.gmode==="x" ? conc(t,0,0) : S.gmode==="y" ? conc(S.x,t,S.z) : conc(S.x,S.y,t));
+  }
+  const ymax=Math.max(...ys,1e-12)*1.12;
+  const X=v=>pad.l+(v-axMin)/(axMax-axMin)*pw;
+  const Y=v=>pad.t+ph-(v/ymax)*ph;
+
+  // 격자 + y축
+  gctx.strokeStyle=col.line; gctx.lineWidth=1; gctx.font="500 9.5px "+cssVar("--mono");
+  gctx.fillStyle=col.muted; gctx.textAlign="right"; gctx.textBaseline="middle";
+  for(let i=0;i<=4;i++){
+    const v=ymax*i/4, yy=Y(v);
+    gctx.globalAlpha=.6; gctx.beginPath(); gctx.moveTo(pad.l,yy); gctx.lineTo(w-pad.r,yy); gctx.stroke(); gctx.globalAlpha=1;
+    gctx.fillText(sig(v,3), pad.l-6, yy);
+  }
+  gctx.textAlign="center"; gctx.textBaseline="top";
+  for(let i=0;i<=4;i++){
+    const v=axMin+(axMax-axMin)*i/4;
+    gctx.fillText(sig(v,4), X(v), pad.t+ph+6);
+  }
+  gctx.fillStyle=col.muted; gctx.textAlign="center"; gctx.textBaseline="top";
+  gctx.font="500 11px "+cssVar("--sans");
+  gctx.fillText(axLabel, pad.l+pw/2, pad.t+ph+22);
+  gctx.save(); gctx.translate(11,pad.t+ph/2); gctx.rotate(-Math.PI/2);
+  gctx.textAlign="center"; gctx.textBaseline="middle"; gctx.fillText("C (µg/m³)",0,0); gctx.restore();
+
+  // 곡선
+  gctx.beginPath();
+  xs.forEach((t,i)=>{ const px=X(t), py=Y(ys[i]); i===0?gctx.moveTo(px,py):gctx.lineTo(px,py); });
+  gctx.strokeStyle=col.accent; gctx.lineWidth=2; gctx.stroke();
+  gctx.lineTo(X(axMax),Y(0)); gctx.lineTo(X(axMin),Y(0)); gctx.closePath();
+  gctx.fillStyle=col.accent; gctx.globalAlpha=.12; gctx.fill(); gctx.globalAlpha=1;
+
+  // 현재 수용점
+  if(cur>=axMin&&cur<=axMax){
+    const cv = S.gmode==="x"? conc(cur,0,0) : S.gmode==="y"? conc(S.x,cur,S.z) : conc(S.x,S.y,cur);
+    gctx.strokeStyle=col.warm; gctx.setLineDash([3,3]); gctx.lineWidth=1.2;
+    gctx.beginPath(); gctx.moveTo(X(cur),pad.t); gctx.lineTo(X(cur),pad.t+ph); gctx.stroke(); gctx.setLineDash([]);
+    gctx.beginPath(); gctx.arc(X(cur),Y(cv),3.6,0,6.2832); gctx.fillStyle=col.warm; gctx.fill();
+  }
+  // 최대점
+  if(S.gmode==="x"){
+    let bi=0; ys.forEach((v,i)=>{ if(v>ys[bi]) bi=i; });
+    if(ys[bi]>0 && bi>0 && bi<N){
+      gctx.beginPath(); gctx.arc(X(xs[bi]),Y(ys[bi]),3.2,0,6.2832);
+      gctx.strokeStyle=col.ink; gctx.lineWidth=1.6; gctx.stroke();
+      gctx.fillStyle=col.ink; gctx.font="600 9.5px "+cssVar("--mono"); gctx.textAlign="center"; gctx.textBaseline="bottom";
+      gctx.fillText(`최대 ${sig(ys[bi],3)} @ ${sig(xs[bi],3)}m`, X(xs[bi]), Y(ys[bi])-7);
+    }
+  }
+
+  const notes={
+    x:"지표 중심선(y=0, z=0)을 따라 거리에 따른 농도. 안정도 모드에서는 최대착지농도 지점이 보입니다.",
+    y:`풍하거리 x=${sig(S.x)} m, 높이 z=${sig(S.z)} m에서 옆으로 자른 분포. 폭은 σ<sub>y</sub>가 결정합니다.`,
+    z:`풍하거리 x=${sig(S.x)} m, y=${sig(S.y)} m에서 위로 자른 분포. 지면 반사가 있으면 아래쪽이 두터워집니다.`
+  };
+  let note=notes[S.gmode];
+  if(S.gmode==="x" && S.sigMode==="manual") note+=" σ를 직접 입력하면 거리에 따라 σ가 변하지 않으므로 곡선이 평평합니다.";
+  document.getElementById("graphNote").innerHTML=note;
+  [...document.querySelectorAll("#gtabs button")].forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.g===S.gmode)));
+}
+
+/* ════════════ 표시 토글 ════════════ */
+const TOGS=[["ground","지표면 농도"],["mid","중심 수직면"],["slice","수용점 단면"],["parts","연기 입자"],["env","±2σ 외곽"],["grid","격자"]];
+function buildToggles(){
+  const el=document.getElementById("toggles");
+  el.innerHTML=TOGS.map(([k,v])=>`<button data-t="${k}">${v}</button>`).join("");
+  el.addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return; S.show[b.dataset.t]=!S.show[b.dataset.t]; syncToggles(); });
+}
+function syncToggles(){
+  [...document.querySelectorAll("#toggles button")].forEach(b=>b.setAttribute("aria-pressed",String(!!S.show[b.dataset.t])));
+}
+
+/* ════════════ 카메라 조작 ════════════ */
+function bindCamera(){
+  const az=document.getElementById("az"), azr=document.getElementById("az_r");
+  const el=document.getElementById("el"), elr=document.getElementById("el_r");
+  const set=(k,v)=>{ S[k]=v; az.value=Math.round(S.az); azr.value=S.az; el.value=Math.round(S.el); elr.value=S.el; };
+  [[az,"az"],[azr,"az"],[el,"el"],[elr,"el"]].forEach(([n,k])=>{
+    n.addEventListener("input",()=>{ const v=parseFloat(n.value); if(isFinite(v)) set(k, k==="az"?clamp(v,-180,180):clamp(v,3,88)); });
+  });
+  set("az",S.az);
+
+  let drag=null;
+  scene.addEventListener("pointerdown",e=>{ drag={x:e.clientX,y:e.clientY,az:S.az,el:S.el}; scene.setPointerCapture(e.pointerId); });
+  scene.addEventListener("pointermove",e=>{
+    if(!drag) return;
+    set("az", clamp(drag.az+(e.clientX-drag.x)*0.35,-180,180));
+    set("el", clamp(drag.el+(e.clientY-drag.y)*0.2,3,88));
+  });
+  const end=()=>{ drag=null; };
+  scene.addEventListener("pointerup",end); scene.addEventListener("pointercancel",end);
+}
+
+/* ════════════ 해설 패널 ════════════ */
+const E_TABS=[
+  ["form","식의 4가지 꼴"],
+  ["sym","기호·단위"],
+  ["sig","σy·σz"],
+  ["wind","풍속·He"],
+  ["max","최대착지농도"],
+  ["tip","단위환산·요령"]
+];
+const E_HTML={
+form:`
+<p>가우시안 확산식은 <mark>연기 단면의 농도가 y·z 방향으로 정규분포</mark>를 이룬다고 보고 세운 식입니다. 정상상태·연속배출·바람은 x축 방향으로 일정하다고 가정합니다.</p>
+
+<div class="card"><div class="cname">① 일반식 (지면 반사 포함)</div>
+<div class="eqbox"><div class="eq wrapok">C(x,y,z,H<sub>e</sub>) = <span class="frac"><span class="n">Q</span><span class="d">2π·u·σ<sub>y</sub>σ<sub>z</sub></span></span>· e<sup>−½(y/σ<sub>y</sub>)²</sup> · [ e<sup>−½((z−H<sub>e</sub>)/σ<sub>z</sub>)²</sup> + e<sup>−½((z+H<sub>e</sub>)/σ<sub>z</sub>)²</sup> ]</div></div>
+<div class="when">공중의 임의 지점 농도. 뒤 항은 지면에서 되튕긴(반사) 가상의 연기를 더한 것입니다.</div></div>
+
+<div class="card"><div class="cname">② 지표면 (z = 0)</div>
+<div class="eqbox"><div class="eq wrapok">C(x,y,0,H<sub>e</sub>) = <span class="frac"><span class="n">Q</span><span class="d">π·u·σ<sub>y</sub>σ<sub>z</sub></span></span>· e<sup>−½(y/σ<sub>y</sub>)²</sup> · e<sup>−½(H<sub>e</sub>/σ<sub>z</sub>)²</sup></div></div>
+<div class="when">z=0을 넣으면 두 지수항이 <b>똑같아져</b> 2배가 되므로 분모의 2π가 <b>π</b>로 바뀝니다. 시험에서 가장 많이 쓰는 꼴입니다.</div></div>
+
+<div class="card"><div class="cname">③ 지표 중심선 (y = 0, z = 0)</div>
+<div class="eqbox"><div class="eq wrapok">C(x,0,0,H<sub>e</sub>) = <span class="frac"><span class="n">Q</span><span class="d">π·u·σ<sub>y</sub>σ<sub>z</sub></span></span>· e<sup>−½(H<sub>e</sub>/σ<sub>z</sub>)²</sup></div></div>
+<div class="when">연기 중심선 바로 아래 지표. “연기중심선상의 지표농도를 구하시오”가 이 꼴입니다.</div></div>
+
+<div class="card"><div class="cname">④ 지면 배출 (H<sub>e</sub> = 0, y = 0, z = 0)</div>
+<div class="eqbox"><div class="eq wrapok">C(x,0,0,0) = <span class="frac"><span class="n">Q</span><span class="d">π·u·σ<sub>y</sub>σ<sub>z</sub></span></span></div></div>
+<div class="when">도로·지면 오염원처럼 굴뚝이 없을 때. 지수항이 모두 1이 되어 사라집니다.</div></div>
+
+<p class="k">※ 문제에서 y와 z가 0인지부터 확인하는 것이 순서입니다. 0인 값이 많을수록 식이 짧아집니다.</p>`,
+
+sym:`
+<div class="scrollx"><table class="t">
+<tr><th>기호</th><th>의미</th><th>단위</th></tr>
+<tr><td><code>C</code></td><td class="l">오염물질 농도</td><td>g/m³ (→µg/m³)</td></tr>
+<tr><td><code>Q</code></td><td class="l">오염물질 배출량(점오염원)</td><td>g/s</td></tr>
+<tr><td><code>u</code></td><td class="l">굴뚝 높이에서의 평균 풍속</td><td>m/s</td></tr>
+<tr><td><code>σy</code></td><td class="l">수평(횡) 방향 확산 표준편차</td><td>m</td></tr>
+<tr><td><code>σz</code></td><td class="l">수직 방향 확산 표준편차</td><td>m</td></tr>
+<tr><td><code>x</code></td><td class="l">풍하 방향 거리(바람이 가는 쪽)</td><td>m</td></tr>
+<tr><td><code>y</code></td><td class="l">연기 중심선에서 옆으로 떨어진 거리</td><td>m</td></tr>
+<tr><td><code>z</code></td><td class="l">지면으로부터의 높이</td><td>m</td></tr>
+<tr><td><code>Hs</code></td><td class="l">굴뚝 실제 높이</td><td>m</td></tr>
+<tr><td><code>Δh</code></td><td class="l">연기 상승 높이</td><td>m</td></tr>
+<tr><td><code>He</code></td><td class="l">유효 굴뚝 높이 = Hs + Δh</td><td>m</td></tr>
+</table></div>
+<h3>가정</h3>
+<ul>
+<li>정상상태 · 연속 배출 (시간에 따라 변하지 않음)</li>
+<li>풍향·풍속이 일정하고, 바람 방향이 x축</li>
+<li>y·z 방향 농도분포가 정규(가우스)분포</li>
+<li>x 방향 확산(난류 확산)은 이류에 비해 무시</li>
+<li>오염물질은 반응·침강·소멸하지 않음 (질량 보존)</li>
+<li>지면에 닿은 연기는 흡수되지 않고 <b>전량 반사</b></li>
+</ul>`,
+
+sig:`
+<p>σ는 연기가 얼마나 퍼졌는지를 나타내는 <b>표준편차</b>입니다. 멀리 갈수록, 대기가 불안정할수록 커집니다. <b>시험에서는 보통 문제에 값이 주어지므로 그대로 대입</b>하면 됩니다.</p>
+<h3>Pasquill 안정도 판정</h3>
+<div class="scrollx"><table class="t">
+<tr><th rowspan="2">지상풍속<br>(m/s)</th><th colspan="3">주간 일사량</th><th colspan="2">야간 운량</th></tr>
+<tr><th>강</th><th>중</th><th>약</th><th>≥4/8</th><th>≤3/8</th></tr>
+<tr><td>&lt;2</td><td>A</td><td>A~B</td><td>B</td><td>—</td><td>—</td></tr>
+<tr><td>2~3</td><td>A~B</td><td>B</td><td>C</td><td>E</td><td>F</td></tr>
+<tr><td>3~5</td><td>B</td><td>B~C</td><td>C</td><td>D</td><td>E</td></tr>
+<tr><td>5~6</td><td>C</td><td>C~D</td><td>D</td><td>D</td><td>D</td></tr>
+<tr><td>&gt;6</td><td>C</td><td>D</td><td>D</td><td>D</td><td>D</td></tr>
+</table></div>
+<p class="k">A·B = 불안정(난류 활발, 연기가 빨리 퍼짐) · D = 중립 · E·F = 안정(연기가 가늘고 멀리 감)</p>
+<h3>이 시뮬레이터가 쓰는 Briggs 개활지식 (x: m)</h3>
+<div class="scrollx"><table class="t">
+<tr><th>등급</th><th>σy</th><th>σz</th></tr>
+<tr><td>A</td><td><code>0.22x(1+10⁻⁴x)<sup>−½</sup></code></td><td><code>0.20x</code></td></tr>
+<tr><td>B</td><td><code>0.16x(1+10⁻⁴x)<sup>−½</sup></code></td><td><code>0.12x</code></td></tr>
+<tr><td>C</td><td><code>0.11x(1+10⁻⁴x)<sup>−½</sup></code></td><td><code>0.08x(1+2·10⁻⁴x)<sup>−½</sup></code></td></tr>
+<tr><td>D</td><td><code>0.08x(1+10⁻⁴x)<sup>−½</sup></code></td><td><code>0.06x(1+1.5·10⁻³x)<sup>−½</sup></code></td></tr>
+<tr><td>E</td><td><code>0.06x(1+10⁻⁴x)<sup>−½</sup></code></td><td><code>0.03x(1+3·10⁻⁴x)<sup>−1</sup></code></td></tr>
+<tr><td>F</td><td><code>0.04x(1+10⁻⁴x)<sup>−½</sup></code></td><td><code>0.016x(1+3·10⁻⁴x)<sup>−1</sup></code></td></tr>
+</table></div>
+<p class="k">※ 실기에서 이 식을 외울 필요는 없습니다. “거리에 따라 σ가 커진다”는 감각을 잡는 용도로 쓰세요.</p>`,
+
+wind:`
+<h3>유효 굴뚝높이</h3>
+<div class="eqbox"><div class="eq">H<sub>e</sub> = H<sub>s</sub> + Δh</div></div>
+<p>연기는 운동량(배출속도)과 부력(온도차) 때문에 굴뚝 위로 더 올라갑니다. 그 상승분 Δh를 더한 높이가 실제 확산의 출발점입니다. 식에 넣는 높이는 언제나 <b>H<sub>e</sub></b>입니다.</p>
+
+<h3>Deacon 풍속 보정식</h3>
+<div class="eqbox"><div class="eq">u = u<sub>0</sub> ( <span class="frac"><span class="n">Z</span><span class="d">Z<sub>0</sub></span></span> )<sup>P</sup></div></div>
+<ul>
+<li><code>u₀</code> : 기준 높이 Z₀에서 측정한 풍속</li>
+<li><code>Z</code> : 구하려는 높이 (보통 H<sub>e</sub>)</li>
+<li><code>P</code> : 대기 안정도에 따른 지수 (불안정 0.1 전후 ~ 안정 0.5 전후, 중립 ≈0.25)</li>
+</ul>
+<p>“지상 OO m에서의 풍속이 △ m/s일 때”라는 조건이 나오면 반드시 굴뚝 높이 풍속으로 <b>먼저 환산</b>한 뒤 가우시안 식에 넣습니다. 왼쪽 패널의 체크박스를 켜면 자동으로 적용됩니다.</p>
+<p class="k">풍속이 커지면 농도는 반비례해서 작아집니다 (C ∝ 1/u).</p>`,
+
+max:`
+<h3>최대 착지농도</h3>
+<p>굴뚝에서 나온 연기는 바로 아래가 아니라 <b>어느 정도 떨어진 지점</b>에서 지표농도가 가장 높아집니다. 가까우면 연기가 아직 높이 떠 있고, 멀면 충분히 희석되기 때문입니다.</p>
+<div class="eqbox"><div class="eq">C<sub>max</sub> = <span class="frac"><span class="n">2Q</span><span class="d">e·π·u·H<sub>e</sub>²</span></span>· <span class="frac"><span class="n">σ<sub>z</sub></span><span class="d">σ<sub>y</sub></span></span></div></div>
+<p>이때의 조건은 <b>σ<sub>z</sub> = H<sub>e</sub>/√2</b> 이고, 이 σ<sub>z</sub>가 되는 거리가 최대착지거리 x<sub>max</sub>입니다.</p>
+<ul>
+<li>C<sub>max</sub> ∝ Q (배출량에 비례)</li>
+<li>C<sub>max</sub> ∝ 1/u, 1/H<sub>e</sub>² → <b>굴뚝을 2배 높이면 최대농도는 1/4</b></li>
+<li>불안정할수록 x<sub>max</sub>는 가까워지고 값은 커집니다</li>
+</ul>
+<h3>지면 반사의 의미</h3>
+<p>지면은 오염물질을 흡수하지 않는 거울이라고 봅니다. 그래서 지하 −H<sub>e</sub>에 똑같은 가상 굴뚝이 있다고 놓고 그 몫을 더해 줍니다. 이것이 식에 <code>exp{−½((z+He)/σz)²}</code> 항이 붙는 이유입니다. 왼쪽 체크를 끄면 반사를 뺀 농도와 비교할 수 있습니다.</p>`,
+
+tip:`
+<h3>단위 환산</h3>
+<ul>
+<li><b>배출량</b> : 9000 g/min ÷ 60 = 150 g/s · 1 kg/h = 1000/3600 = 0.278 g/s</li>
+<li><b>농도</b> : 1 g/m³ = 10³ mg/m³ = 10⁶ µg/m³</li>
+<li><b>부피 농도(0℃·1atm)</b> : ppm = mg/m³ × 22.4 / M · ppb = ppm × 1000</li>
+</ul>
+<p class="k">예) H₂S 2.98 µg/m³ → 2.98 × (22.4/34) = 1.96 ppb</p>
+
+<h3>푸는 순서</h3>
+<ul>
+<li>① Q를 <b>g/s</b>로 바꾼다</li>
+<li>② H<sub>e</sub> = H<sub>s</sub> + Δh 를 구한다</li>
+<li>③ 풍속이 다른 높이 기준이면 Deacon식으로 보정한다</li>
+<li>④ 수용점의 y, z가 0인지 확인해 식의 꼴을 고른다</li>
+<li>⑤ 대입 후 µg/m³ 등 <b>묻는 단위</b>로 맞춘다</li>
+</ul>
+
+<h3>자주 틀리는 곳</h3>
+<ul>
+<li>“유효굴뚝높이 60 m”면 Δh를 또 더하지 않습니다</li>
+<li>z = 0 인데 2π를 그대로 쓰는 실수 (π가 맞습니다)</li>
+<li>지수 안의 ½ 누락</li>
+<li>g/min을 g/s로 바꾸지 않음</li>
+<li>σy·σz를 서로 바꿔 대입</li>
+</ul>
+
+<h3>검산용 교재 문제</h3>
+<p class="k">위 프리셋 버튼으로 불러오면 교재 해답과 같은 값이 나오는지 바로 확인할 수 있습니다. 교재 03 → 24.05 µg/m³, 교재 04 → 782.78 µg/m³, 교재 05 → 1.04 mg/m³, 교재 06 → 2.98 µg/m³(=1.96 ppb), 교재 07 → 1.02 µg/m³.</p>`
+};
+function buildExplain(){
+  const tabs=document.getElementById("etabs"), panes=document.getElementById("epanes");
+  tabs.innerHTML=E_TABS.map(([k,v])=>`<button data-e="${k}">${v}</button>`).join("");
+  let cur="form";
+  const render=()=>{
+    panes.innerHTML=E_HTML[cur];
+    [...tabs.querySelectorAll("button")].forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.e===cur)));
+  };
+  tabs.addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return; cur=b.dataset.e; render(); });
+  render();
+}
+
+/* ════════════ 루프 ════════════ */
+let dirty=true, last=0;
+function markDirty(){ dirty=true; }
+function refresh(){
+  DOM=domain();
+  syncControls();
+  buildTextures();
+  updateResult();
+  drawGraph();
+}
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function frame(ts){
+  const dt=Math.min((ts-last)/1000||0, 0.06); last=ts;
+  if(dirty){ dirty=false; refresh(); }
+  if(!reduce) stepParticles(dt);
+  drawScene();
+  requestAnimationFrame(frame);
+}
+
+/* ════════════ 시작 ════════════ */
+buildPresets();
+buildControls();
+buildToggles();
+buildGtabs();
+buildExplain();
+bindCamera();
+syncToggles();
+resize();
+resetParticles();
+window.addEventListener("resize", ()=>{ resize(); markDirty(); });
+const mq=window.matchMedia("(prefers-color-scheme: dark)");
+mq.addEventListener?.("change", markDirty);
+new MutationObserver(markDirty).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+requestAnimationFrame(frame);
+})();
+</script>
+
+
+<a href="../" aria-label="Chemnote 홈으로" style="position:fixed;left:12px;bottom:12px;z-index:40;font:600 13px/1 'IBM Plex Sans KR','Malgun Gothic',system-ui,sans-serif;padding:8px 12px;border-radius:999px;background:rgba(23,33,43,.82);color:#fff;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.2)">← Chemnote</a>
+</body>
+</html>
