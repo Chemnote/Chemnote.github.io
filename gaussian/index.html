@@ -137,6 +137,15 @@ canvas#scene:active{cursor:grabbing}
 .big .val span{font-size:16px;color:var(--muted);font-weight:500;margin-left:6px}
 .big .alt{font-family:var(--mono);font-size:14px;color:var(--muted);margin-top:6px;font-variant-numeric:tabular-nums;line-height:1.75}
 .big .alt b{color:var(--ink)}
+.vals{display:grid;grid-template-columns:auto auto;justify-content:start;column-gap:10px;align-items:baseline;margin-top:4px}
+.vals b{font-family:var(--mono);font-weight:600;font-size:21px;line-height:1.45;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+.vals span{font-family:var(--mono);font-size:15px;color:var(--muted)}
+.vals b.main{font-size:36px;line-height:1.2;color:var(--accent)}
+.vals span.main{font-size:16px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+.pair .lab{font-size:13.5px;color:var(--muted)}
+.pair .num{font-family:var(--mono);font-weight:600;font-size:30px;line-height:1.25;color:var(--accent);font-variant-numeric:tabular-nums;word-break:break-all}
+.pair .num span{font-size:15px;color:var(--muted);font-weight:500;margin-left:5px}
 .big .btn{margin-top:10px;font-size:13.5px}
 .pill{display:inline-block;border-radius:999px;padding:3px 11px;font-size:13px;font-weight:600;background:var(--sheet);color:var(--accent);margin-bottom:8px;border:1px solid var(--rule)}
 .tip{display:none;position:absolute;left:0;top:calc(100% + 8px);z-index:30;width:min(680px,calc(100vw - 40px));background:var(--sheet);border:1px solid var(--rule);border-radius:10px;box-shadow:0 14px 36px rgba(23,33,43,.2);padding:14px 18px 16px;font-size:14px}
@@ -251,8 +260,7 @@ mark{background:var(--input);color:var(--input-ink);padding:0 3px;border-radius:
             <div class="big" tabindex="0" aria-describedby="tipC">
               <span class="pill" id="formBadge">—</span>
               <div class="cap"><span>수용점 농도 C</span><span class="hint">풀이 보기</span></div>
-              <div class="val" id="cMain">—<span>µg/m³</span></div>
-              <div class="alt" id="cAlt">—</div>
+              <div class="vals" id="cVals"></div>
             </div>
             <div class="tip" id="tipC" role="tooltip">
               <div class="t">계산 조건</div>
@@ -267,9 +275,12 @@ mark{background:var(--input);color:var(--input-ink);padding:0 3px;border-radius:
           <div class="tipwrap right" id="twM">
             <div class="big" tabindex="0" aria-describedby="tipM">
               <span class="pill" id="maxBadge">—</span>
-              <div class="cap"><span>최대착지농도 C<sub>max</sub></span><span class="hint">풀이 보기</span></div>
-              <div class="val" id="cmMain">—</div>
-              <div class="alt" id="cmAlt">—</div>
+              <div class="cap"><span>최대착지 지점</span><span class="hint">풀이 보기</span></div>
+              <div class="pair">
+                <div><div class="lab">최대착지농도 C<sub>max</sub></div><div class="num" id="cmMain">—</div></div>
+                <div><div class="lab">최대착지거리 X<sub>max</sub></div><div class="num" id="xmMain">—</div></div>
+              </div>
+              <div class="alt" id="cmAlt" hidden></div>
               <button class="btn" id="goMax" type="button">최대착지 지점으로 수용점 옮기기</button>
             </div>
             <div class="tip" id="tipM" role="tooltip">
@@ -639,29 +650,28 @@ function updateResult(){
   const names={gen:"일반식 (반사 포함)", gr:"지표면 z = 0", cl:"지표 중심선 y = 0, z = 0", g0:"지면 배출 H<sub>e</sub> = 0", nr:"반사 제외 기본식"};
   document.getElementById("formBadge").innerHTML = names[kind];
 
-  document.getElementById("cMain").innerHTML = `${sig(c,4)}<span>${U}</span>`;
-  if(gas){
-    const mg = S.M>0 ? c*S.M/22.4 : NaN;
-    document.getElementById("cAlt").innerHTML = `${sig(c*1000,4)} ppb` +
-      (isFinite(mg)? `<br><b style="color:var(--ink)">${sig(mg,4)} mg/m³</b> = ${sig(mg*1000,4)} µg/m³ <span style="opacity:.75">(0℃·1atm, M=${sig(S.M)})</span>` : "");
-  }else{
-    const ppm = S.M>0 ? (c/1000)*22.4/S.M : NaN;
-    document.getElementById("cAlt").innerHTML =
-      `${sig(c/1000,4)} mg/m³ · ${sig(c/1e6,4)} g/m³` +
-      (isFinite(ppm)? `<br><b style="color:var(--ink)">${sig(ppm,4)} ppm</b> = ${sig(ppm*1000,4)} ppb <span style="opacity:.75">(0℃·1atm, M=${sig(S.M)})</span>` : "");
-  }
+  // 수용점 농도: µg/m³ · ppm · ppb 세 줄 (입력 방식의 기본 단위를 맨 위에 크게)
+  const toUg  = v => gas ? (S.M>0 ? v*S.M/22.4*1000 : NaN) : v;
+  const toPpm = v => gas ? v : (S.M>0 ? v/1000*22.4/S.M : NaN);
+  const triple = v => { const ug=toUg(v), ppm=toPpm(v);
+    return gas ? [[ppm,"ppm"],[ppm*1000,"ppb"],[ug,"µg/m³"]] : [[ug,"µg/m³"],[ppm,"ppm"],[ppm*1000,"ppb"]]; };
+  document.getElementById("cVals").innerHTML = triple(c)
+    .map(([v,u],i)=>`<b${i?"":' class="main"'}>${sig(v,4)}</b><span${i?"":' class="main"'}>${u}</span>`).join("");
 
+  // 최대착지 지점: Cmax · Xmax 나란히
   const mi=maxInfo();
-  const mB={sutton:"Sutton식 공식", pg:"거리별 수치 탐색", manual:"공식 참고값", ground:"지면 배출"};
+  const mB={sutton:"Sutton식 공식", pg:"거리별 수치 탐색", manual:"σ 직접입력 · 참고값", ground:"지면 배출"};
   document.getElementById("maxBadge").innerHTML = mB[mi.how];
+  const cmA=document.getElementById("cmAlt");
   if(mi.how==="ground"){
     document.getElementById("cmMain").innerHTML = `—`;
-    document.getElementById("cmAlt").innerHTML = `H<sub>e</sub> = 0이면 오염원에 가까울수록 높아서<br>최대착지 지점이 따로 없습니다.`;
+    document.getElementById("xmMain").innerHTML = `—`;
+    cmA.innerHTML = `H<sub>e</sub> = 0이면 최대착지 지점이 따로 없습니다.`; cmA.hidden=false;
   }else{
     document.getElementById("cmMain").innerHTML = `${sig(mi.c,4)}<span>${U}</span>`;
-    document.getElementById("cmAlt").innerHTML = mi.how==="manual"
-      ? `σ를 직접 넣으면 X<sub>max</sub>를 구할 수 없습니다.<br>입력한 σ<sub>z</sub>/σ<sub>y</sub> 비로 계산한 참고값`
-      : `최대착지거리 <b>X<sub>max</sub> = ${sig(mi.x, mi.how==="sutton"?6:4)} m</b><br>σ<sub>z</sub> = H<sub>e</sub>/√2 = ${sig(h/Math.SQRT2,4)} m 인 지점`;
+    document.getElementById("xmMain").innerHTML = isFinite(mi.x) ? `${sig(mi.x, mi.how==="sutton"?6:4)}<span>m</span>` : `—`;
+    cmA.innerHTML = mi.how==="manual" ? `σ가 고정이라 X<sub>max</sub>는 구할 수 없습니다.` : "";
+    cmA.hidden = mi.how!=="manual";
   }
   const rows=[
     [`H<sub>e</sub>`, `${sig(S.Hs)} + ${sig(S.dh)} = ${sig(h)} m`],
