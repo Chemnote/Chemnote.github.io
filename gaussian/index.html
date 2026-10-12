@@ -143,8 +143,10 @@ canvas#scene:active{cursor:grabbing}
 .subst .t{font-size:12px;font-weight:600;color:var(--accent-2);margin-bottom:4px}
 
 /* ── 수식 ── */
-.eq{font-family:var(--mono);font-size:13px;white-space:nowrap;display:flex;align-items:center;gap:.2em;line-height:1.4}
-.eq.wrapok{white-space:normal;flex-wrap:wrap;row-gap:6px}
+.eq{font-family:var(--mono);font-size:13px;white-space:nowrap;display:block;line-height:2.1}
+.eq.wrapok{white-space:normal}
+.eq sup{font-size:.72em;vertical-align:.55em;line-height:0}
+.eq sub{font-size:.72em;vertical-align:-.3em;line-height:0}
 .frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;margin:0 .15em}
 .frac .n{padding:0 .4em .1em}
 .frac .d{padding:.1em .4em 0;border-top:1.4px solid currentColor}
@@ -249,6 +251,14 @@ mark{background:var(--input);color:var(--input-ink);padding:0 3px;border-radius:
           <div class="t" style="margin-top:8px">값 대입</div>
           <div class="eqbox"><div class="eq" id="eqSubst"></div></div>
         </div>
+
+        <div class="subst" id="maxBox">
+          <div class="t">최대착지거리 X<sub>max</sub> · 최대착지농도 C<sub>max</sub></div>
+          <div class="eqbox"><div class="eq" id="eqXmax"></div></div>
+          <div class="eqbox" style="margin-top:6px"><div class="eq" id="eqCmax"></div></div>
+          <p class="note" id="maxNote"></p>
+          <button class="btn" id="goMax" type="button" style="margin-top:8px">최대착지 지점으로 수용점 옮기기</button>
+        </div>
       </div>
 
       <div class="sep panel-head">
@@ -279,10 +289,10 @@ mark{background:var(--input);color:var(--input-ink);padding:0 3px;border-radius:
 /* ════════════ 상태 ════════════ */
 const S = {
   preset:"base",
-  Q:50, Qunit:"g/s", M:64,
+  Qmode:"mass", Q:50, Qunit:"g/s", G:40000, Cp:1000, M:64,
   Hs:80, dh:20,
   deacon:false, U:5, U0:5, Z0:10, p:0.25,
-  sigMode:"pg", pg:"D", sy:76, sz:38,
+  sigMode:"pg", pg:"D", sy:76, sz:38, Cy:0.07, Cz:0.07, n:0.25,
   x:1000, y:0, z:0,
   refl:true,
   Xmax:3000,
@@ -299,12 +309,16 @@ const PRESETS = {
   p06:{ name:"교재 06 · H₂S 냄새", v:{Q:80,Qunit:"g/s",M:34,Hs:70,dh:0,deacon:false,U:10,sigMode:"manual",sy:36,sz:18.5,x:500,y:0,z:0,refl:true,Xmax:1200} },
   p07:{ name:"교재 07 · Deacon 보정", v:{Q:5,Qunit:"g/s",M:64,Hs:60,dh:0,deacon:true,U0:5,Z0:5.5,p:0.25,sigMode:"manual",sy:37,sz:18,x:500,y:0,z:0,refl:true,Xmax:1200} },
   pA:{ name:"불안정 A 안정도", v:{Q:50,Qunit:"g/s",M:64,Hs:60,dh:15,deacon:false,U:2,sigMode:"pg",pg:"A",x:500,y:0,z:0,refl:true,Xmax:2000} },
-  pF:{ name:"안정 F 안정도", v:{Q:50,Qunit:"g/s",M:64,Hs:60,dh:15,deacon:false,U:2,sigMode:"pg",pg:"F",x:3000,y:0,z:0,refl:true,Xmax:6000} }
+  pF:{ name:"안정 F 안정도", v:{Q:50,Qunit:"g/s",M:64,Hs:60,dh:15,deacon:false,U:2,sigMode:"pg",pg:"F",x:3000,y:0,z:0,refl:true,Xmax:6000} },
+  pS:{ name:"Sutton · Cmax·Xmax", v:{Qmode:"gas",G:40000,Cp:1000,M:64,Hs:200,dh:0,deacon:false,U:5,sigMode:"sutton",Cy:0.07,Cz:0.07,n:0.25,x:8905,y:0,z:0,refl:true,Xmax:15000} }
 };
 
 /* ════════════ 계산 ════════════ */
 const QFAC = {"g/s":1, "g/min":1/60, "kg/h":1000/3600};
 const Qgs = () => S.Q * QFAC[S.Qunit];              // g/s
+const GAS = () => S.Qmode==="gas";                  // 가스량×농도 입력이면 결과 단위가 ppm
+const UNIT = () => GAS() ? "ppm" : "µg/m³";
+const qEff = () => GAS() ? S.G/3600*S.Cp : Qgs()*1e6; // ppm·Sm³/s 또는 µg/s
 const He  = () => S.Hs + S.dh;                      // m
 const Uef = () => {
   if(!S.deacon) return Math.max(S.U, 0.1);
@@ -322,15 +336,19 @@ const BRIGGS = {
 };
 function sigmas(x){
   if(S.sigMode==="manual") return {sy:Math.max(S.sy,1e-3), sz:Math.max(S.sz,1e-3)};
+  if(S.sigMode==="sutton"){   // Sutton: σ² = ½·C²·x^(2−n)
+    const f=Math.pow(Math.max(x,1), 2-S.n);
+    return {sy:Math.max(S.Cy*Math.sqrt(f/2),1e-3), sz:Math.max(S.Cz*Math.sqrt(f/2),1e-3)};
+  }
   const d = Math.max(x,1), f = BRIGGS[S.pg];
   return {sy:Math.max(f.y(d),1e-3), sz:Math.max(f.z(d),1e-3)};
 }
 
-/** 농도 [µg/m³] */
+/** 농도 [UNIT(): µg/m³ 또는 ppm] */
 function conc(x,y,z){
   if(x<=0) return 0;
   const {sy,sz}=sigmas(x), h=He(), u=Uef();
-  const base = Qgs()*1e6/(2*Math.PI*u*sy*sz);
+  const base = qEff()/(2*Math.PI*u*sy*sz);
   const fy = Math.exp(-0.5*(y/sy)**2);
   let fz = Math.exp(-0.5*((z-h)/sz)**2);
   if(S.refl) fz += Math.exp(-0.5*((z+h)/sz)**2);
@@ -371,7 +389,9 @@ function sig(v,n=4){
 /* ════════════ 입력 콘솔 ════════════ */
 const C_DEFS = [
   {g:"배출 조건", items:[
-    {id:"Q",  key:"Q",  label:"배출량 Q", min:0, max:20000, step:0.1, slMax:200, unitSel:["g/s","g/min","kg/h"]},
+    {id:"Q",  key:"Q",  label:"배출량 Q", min:0, max:20000, step:0.1, slMax:200, unitSel:["g/s","g/min","kg/h"], hideIf:()=>GAS()},
+    {id:"G",  key:"G",  label:"배출가스량", min:0, max:1000000, step:100, slMax:100000, unit:"Sm³/h", showIf:()=>GAS()},
+    {id:"Cp", key:"Cp", label:"오염물질 농도", min:0, max:1000000, step:1, slMax:5000, unit:"ppm", showIf:()=>GAS()},
     {id:"Hs", key:"Hs", label:"굴뚝 실제높이 H<sub>s</sub>", min:0, max:300, step:1, unit:"m"},
     {id:"dh", key:"dh", label:"연기상승높이 Δh", min:0, max:200, step:1, unit:"m"},
     {id:"M",  key:"M",  label:"분자량 M <em>(ppm 환산)</em>", min:1, max:200, step:0.1, unit:"g/mol"}
@@ -396,6 +416,11 @@ function buildControls(){
 
   C_DEFS.forEach((grp,gi)=>{
     h += `<div class="group" data-grp="${gi}"><div class="glabel">${grp.g}</div>`;
+    if(gi===0){
+      h += `<div class="seg" id="qSeg" role="group" aria-label="배출량 입력 방식" style="margin-bottom:10px">
+              <button data-q="mass">질량 배출량</button><button data-q="gas">가스량 × 농도</button>
+            </div>`;
+    }
     if(gi===1){
       h += `<label class="chk"><input type="checkbox" id="deacon"><span>Deacon식으로 굴뚝높이 풍속 보정</span></label>
             <p class="note" id="deaconNote" hidden></p>`;
@@ -417,7 +442,7 @@ function buildControls(){
   // 확산계수 그룹
   h += `<div class="group"><div class="glabel">확산계수 σ<sub>y</sub> · σ<sub>z</sub></div>
     <div class="seg" id="sigSeg" role="group" aria-label="확산계수 입력 방식">
-      <button data-m="pg">안정도 등급</button><button data-m="manual">σ 직접입력</button>
+      <button data-m="pg">안정도 등급</button><button data-m="manual">σ 직접입력</button><button data-m="sutton">Sutton</button>
     </div>
     <div class="seg mono" id="pgSeg" style="margin-top:6px" role="group" aria-label="Pasquill 안정도 등급"></div>
     <div id="manualBox" hidden>
@@ -428,6 +453,20 @@ function buildControls(){
       <div class="ctrl">
         <div class="crow"><label for="sz">σ<sub>z</sub> 수직 표준편차</label><span class="cin"><input type="number" id="sz" min="0.1" max="3000" step="0.1"><em class="u">m</em></span></div>
         <input type="range" id="sz_r" min="1" max="400" step="0.5" aria-label="시그마 z 슬라이더">
+      </div>
+    </div>
+    <div id="suttonBox" hidden>
+      <div class="ctrl" style="margin-top:8px">
+        <div class="crow"><label for="cy">C<sub>y</sub> 수평 확산계수</label><span class="cin"><input type="number" id="cy" min="0.001" max="5" step="0.001"><em class="u">m<sup>n/2</sup></em></span></div>
+        <input type="range" id="cy_r" min="0.01" max="1" step="0.005" aria-label="Sutton Cy 슬라이더">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label for="cz">C<sub>z</sub> 수직 확산계수</label><span class="cin"><input type="number" id="cz" min="0.001" max="5" step="0.001"><em class="u">m<sup>n/2</sup></em></span></div>
+        <input type="range" id="cz_r" min="0.01" max="1" step="0.005" aria-label="Sutton Cz 슬라이더">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label for="sn">대기안정도 지수 n</label><span class="cin"><input type="number" id="sn" min="0" max="1" step="0.01"><em class="u">—</em></span></div>
+        <input type="range" id="sn_r" min="0" max="1" step="0.01" aria-label="Sutton n 슬라이더">
       </div>
     </div>
     <p class="note" id="sigNote"></p>
@@ -452,6 +491,12 @@ function buildControls(){
     n.addEventListener("input", ()=>{ const v=parseFloat(n.value); if(isFinite(v)&&v>0){ S[k]=v; r.value=Math.min(v,parseFloat(r.max)); markDirty(); } });
     r.addEventListener("input", ()=>{ S[k]=parseFloat(r.value); n.value=sig(S[k],6); markDirty(); });
   });
+  [["cy","Cy",0.001,5],["cz","Cz",0.001,5],["sn","n",0,1]].forEach(([id,k,lo,hi])=>{
+    const n=document.getElementById(id), r=document.getElementById(id+"_r");
+    n.addEventListener("input", ()=>{ const v=parseFloat(n.value); if(isFinite(v)){ S[k]=clamp(v,lo,hi); r.value=S[k]; markDirty(); } });
+    r.addEventListener("input", ()=>{ S[k]=parseFloat(r.value); n.value=sig(S[k],6); markDirty(); });
+  });
+  document.getElementById("qSeg").addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b)return; S.Qmode=b.dataset.q; markDirty(); });
   document.getElementById("deacon").addEventListener("change", e=>{ S.deacon=e.target.checked; markDirty(); });
   document.getElementById("refl").addEventListener("change", e=>{ S.refl=e.target.checked; markDirty(); });
 
@@ -482,7 +527,7 @@ function syncControls(){
     if(it.slMax) hi=it.slMax;
     if(it.slMaxKey) hi = it.slMaxKey==="Xmax" ? S.Xmax : d[it.slMaxKey];
     if(it.slSym){ hi=d[it.slSym]; lo=-hi; }
-    if(it.id==="Xmax"){ lo=100; hi=10000; }
+    if(it.id==="Xmax"){ lo=100; hi=20000; }
     r.min=lo; r.max=hi;
     r.step = (hi-lo)>2000 ? 10 : (hi-lo)>200 ? 1 : it.step;
     r.value=clamp(S[it.key],lo,hi);
@@ -496,8 +541,15 @@ function syncControls(){
   });
   document.getElementById("deacon").checked=S.deacon;
   document.getElementById("refl").checked=S.refl;
+  [["cy","Cy"],["cz","Cz"],["sn","n"]].forEach(([id,k])=>{
+    const n=document.getElementById(id), r=document.getElementById(id+"_r");
+    if(document.activeElement!==n) n.value=sig(S[k],6);
+    r.value=S[k];
+  });
   document.getElementById("manualBox").hidden = S.sigMode!=="manual";
+  document.getElementById("suttonBox").hidden = S.sigMode!=="sutton";
   document.getElementById("pgSeg").hidden = S.sigMode!=="pg";
+  [...document.querySelectorAll("#qSeg button")].forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.q===S.Qmode)));
   [...document.querySelectorAll("#sigSeg button")].forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.m===S.sigMode)));
   [...document.querySelectorAll("#pgSeg button")].forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.k===S.pg)));
 
@@ -508,6 +560,8 @@ function syncControls(){
   const s=sigmas(S.x);
   document.getElementById("sigNote").innerHTML = S.sigMode==="pg"
     ? `Briggs 개활지식 · x = ${sig(S.x)} m → σ<sub>y</sub> = <b>${sig(s.sy)}</b>, σ<sub>z</sub> = <b>${sig(s.sz)}</b> m (거리에 따라 커짐)`
+    : S.sigMode==="sutton"
+    ? `σ² = ½·C²·x<sup>2−n</sup> · x = ${sig(S.x)} m → σ<sub>y</sub> = <b>${sig(s.sy)}</b>, σ<sub>z</sub> = <b>${sig(s.sz)}</b> m<br>C<sub>y</sub>·C<sub>z</sub>는 m 단위 표준편차가 아니라 Sutton 확산계수입니다.`
     : `시험문제처럼 특정 거리의 σ만 쓰므로 <b>거리에 관계없이 일정</b>합니다. 그래서 그림의 연기 폭도 평행하게 그려집니다.`;
 
   [...document.querySelectorAll("#presets button")].forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.p===S.preset)));
@@ -520,7 +574,7 @@ function buildPresets(){
   el.addEventListener("click", e=>{
     const b=e.target.closest("button"); if(!b) return;
     const pr=PRESETS[b.dataset.p]; if(!pr) return;
-    Object.assign(S, {deacon:false, dh:0, refl:true}, pr.v);
+    Object.assign(S, {deacon:false, dh:0, refl:true, Qmode:"mass"}, pr.v);
     S.preset=b.dataset.p;
     resetParticles(); markDirty();
   });
@@ -538,34 +592,49 @@ function caseOf(){
   return "gen";
 }
 
+/** 최대착지 지점: {x, c, how} — c는 UNIT() 단위 */
+function maxInfo(){
+  const h=He(), u=Uef(), q=qEff(), rf=S.refl?1:0.5;
+  if(!(h>0)) return {x:NaN, c:NaN, how:"ground"};
+  if(S.sigMode==="sutton"){
+    const x=Math.pow(h/S.Cz, 2/(2-S.n));
+    return {x, c:2*q/(Math.E*Math.PI*u*h*h)*(S.Cz/S.Cy)*rf, how:"sutton"};
+  }
+  if(S.sigMode==="pg"){
+    let bx=0,bc=0;
+    for(let i=0;i<600;i++){ const xx=10*Math.pow(30000/10, i/599); const cc=conc(xx,0,0); if(cc>bc){bc=cc;bx=xx;} }
+    return {x:bx, c:bc, how:"pg"};
+  }
+  const s=sigmas(0);
+  return {x:NaN, c:2*q/(Math.E*Math.PI*u*h*h)*(s.sz/s.sy)*rf, how:"manual"};
+}
+
 function updateResult(){
-  const c=conc(S.x,S.y,S.z), s=sigmas(S.x), h=He(), u=Uef(), q=Qgs();
+  const c=conc(S.x,S.y,S.z), s=sigmas(S.x), h=He(), u=Uef(), q=qEff(), U=UNIT(), gas=GAS();
   const kind=caseOf();
   const names={gen:"일반식 (반사 포함)", gr:"지표면 z = 0", cl:"지표 중심선 y = 0, z = 0", g0:"지면 배출 H<sub>e</sub> = 0", nr:"반사 제외 기본식"};
   document.getElementById("formBadge").innerHTML = names[kind];
 
-  document.getElementById("cMain").innerHTML = `${sig(c,4)}<span>µg/m³</span>`;
-  const ppm = S.M>0 ? (c/1000)*22.4/S.M : NaN;
-  document.getElementById("cAlt").innerHTML =
-    `${sig(c/1000,4)} mg/m³ · ${sig(c/1e6,4)} g/m³` +
-    (isFinite(ppm)? `<br><b style="color:var(--ink)">${sig(ppm,4)} ppm</b> = ${sig(ppm*1000,4)} ppb <span style="opacity:.75">(0℃·1atm, M=${sig(S.M)})</span>` : "");
-
-  // 최대착지농도
-  let maxRow;
-  if(S.sigMode==="pg"){
-    let bx=0,bc=0;
-    for(let i=0;i<400;i++){ const xx=10*Math.pow(20000/10, i/399); const cc=conc(xx,0,0); if(cc>bc){bc=cc;bx=xx;} }
-    maxRow = `${sig(bc,4)} µg/m³<br><small>x<sub>max</sub> ≈ ${sig(bx,3)} m 지점</small>`;
+  document.getElementById("cMain").innerHTML = `${sig(c,4)}<span>${U}</span>`;
+  if(gas){
+    const mg = S.M>0 ? c*S.M/22.4 : NaN;
+    document.getElementById("cAlt").innerHTML = `${sig(c*1000,4)} ppb` +
+      (isFinite(mg)? `<br><b style="color:var(--ink)">${sig(mg,4)} mg/m³</b> = ${sig(mg*1000,4)} µg/m³ <span style="opacity:.75">(0℃·1atm, M=${sig(S.M)})</span>` : "");
   }else{
-    const cm = h>0 ? 2*q*1e6/(Math.E*Math.PI*u*h*h)*(s.sz/s.sy) : NaN;
-    maxRow = h>0
-      ? `${sig(cm,4)} µg/m³<br><small>공식값 · σ<sub>z</sub>=H<sub>e</sub>/√2 가정</small>`
-      : `<small>지면 배출은 오염원 바로 옆이 최대</small>`;
+    const ppm = S.M>0 ? (c/1000)*22.4/S.M : NaN;
+    document.getElementById("cAlt").innerHTML =
+      `${sig(c/1000,4)} mg/m³ · ${sig(c/1e6,4)} g/m³` +
+      (isFinite(ppm)? `<br><b style="color:var(--ink)">${sig(ppm,4)} ppm</b> = ${sig(ppm*1000,4)} ppb <span style="opacity:.75">(0℃·1atm, M=${sig(S.M)})</span>` : "");
   }
+
+  const mi=maxInfo();
+  const maxRow = mi.how==="ground" ? `<small>지면 배출은 오염원 바로 옆이 최대</small>`
+    : mi.how==="manual" ? `${sig(mi.c,4)} ${U}<br><small>공식 참고값 · σ 고정이라 X<sub>max</sub> 없음</small>`
+    : `${sig(mi.c,4)} ${U}<br><small>X<sub>max</sub> ≈ ${sig(mi.x,4)} m</small>`;
   const rows=[
     [`H<sub>e</sub>`, `${sig(S.Hs)} + ${sig(S.dh)} = ${sig(h)} m`],
     [`u`, `${sig(u)} m/s${S.deacon?" <small>Deacon 보정</small>":""}`],
-    [`Q`, `${sig(q,5)} g/s`],
+    [`Q`, gas ? `${sig(S.G,6)} Sm³/h × ${sig(S.Cp,6)} ppm` : `${sig(Qgs(),5)} g/s`],
     [`σ<sub>y</sub> · σ<sub>z</sub>`, `${sig(s.sy)} · ${sig(s.sz)} m`],
     [`C<sub>max</sub>`, maxRow]
   ];
@@ -574,22 +643,49 @@ function updateResult(){
   // 식 + 대입
   const eqF=document.getElementById("eqForm"), eqS=document.getElementById("eqSubst");
   const n=(v)=>sig(v,5);
+  const Qs = gas ? "Q·C" : "Q";
+  const num = gas ? `${n(S.G)} Sm³/h × ${n(S.Cp)} ppm` : `${n(q)} µg/s`;
+  const t36 = gas ? " × 3600 s/h" : "";
+  const d1 = `π × ${n(u)} × ${n(s.sy)} × ${n(s.sz)}${t36}`, d2 = `2${d1}`;
+  const res = `<b>${sig(c,4)} ${U}</b>`;
+  const ey = `exp{ −½ (${n(S.y)}/${n(s.sy)})² }`;
   if(kind==="cl"){
-    eqF.innerHTML = `C =${FR("Q","π·u·σ<sub>y</sub>·σ<sub>z</sub>")}· exp{ −½ (H<sub>e</sub>/σ<sub>z</sub>)² }`;
-    eqS.innerHTML = `=${FR(`${n(q*1e6)} µg/s`,`π × ${n(u)} × ${n(s.sy)} × ${n(s.sz)}`)}× exp{ −½ (${n(h)}/${n(s.sz)})² } = <b>${sig(c,4)} µg/m³</b>`;
+    eqF.innerHTML = `C =${FR(Qs,"π·u·σ<sub>y</sub>·σ<sub>z</sub>")}· exp{ −½ (H<sub>e</sub>/σ<sub>z</sub>)² }`;
+    eqS.innerHTML = `=${FR(num,d1)}× exp{ −½ (${n(h)}/${n(s.sz)})² } = ${res}`;
   }else if(kind==="g0"){
-    eqF.innerHTML = `C =${FR("Q","π·u·σ<sub>y</sub>·σ<sub>z</sub>")}`;
-    eqS.innerHTML = `=${FR(`${n(q*1e6)} µg/s`,`π × ${n(u)} × ${n(s.sy)} × ${n(s.sz)}`)}= <b>${sig(c,4)} µg/m³</b>`;
+    eqF.innerHTML = `C =${FR(Qs,"π·u·σ<sub>y</sub>·σ<sub>z</sub>")}`;
+    eqS.innerHTML = `=${FR(num,d1)}= ${res}`;
   }else if(kind==="gr"){
-    eqF.innerHTML = `C =${FR("Q","π·u·σ<sub>y</sub>·σ<sub>z</sub>")}· exp{ −½ (y/σ<sub>y</sub>)² } · exp{ −½ (H<sub>e</sub>/σ<sub>z</sub>)² }`;
-    eqS.innerHTML = `=${FR(`${n(q*1e6)}`,`π × ${n(u)} × ${n(s.sy)} × ${n(s.sz)}`)}× exp{ −½ (${n(S.y)}/${n(s.sy)})² } × exp{ −½ (${n(h)}/${n(s.sz)})² } = <b>${sig(c,4)} µg/m³</b>`;
+    eqF.innerHTML = `C =${FR(Qs,"π·u·σ<sub>y</sub>·σ<sub>z</sub>")}· exp{ −½ (y/σ<sub>y</sub>)² } · exp{ −½ (H<sub>e</sub>/σ<sub>z</sub>)² }`;
+    eqS.innerHTML = `=${FR(num,d1)}× ${ey} × exp{ −½ (${n(h)}/${n(s.sz)})² } = ${res}`;
   }else if(kind==="nr"){
-    eqF.innerHTML = `C =${FR("Q","2π·u·σ<sub>y</sub>·σ<sub>z</sub>")}· exp{ −½ (y/σ<sub>y</sub>)² } · exp{ −½ ((z−H<sub>e</sub>)/σ<sub>z</sub>)² }`;
-    eqS.innerHTML = `=${FR(`${n(q*1e6)}`,`2π × ${n(u)} × ${n(s.sy)} × ${n(s.sz)}`)}× exp{ −½ (${n(S.y)}/${n(s.sy)})² } × exp{ −½ ((${n(S.z)}−${n(h)})/${n(s.sz)})² } = <b>${sig(c,4)} µg/m³</b>`;
+    eqF.innerHTML = `C =${FR(Qs,"2π·u·σ<sub>y</sub>·σ<sub>z</sub>")}· exp{ −½ (y/σ<sub>y</sub>)² } · exp{ −½ ((z−H<sub>e</sub>)/σ<sub>z</sub>)² }`;
+    eqS.innerHTML = `=${FR(num,d2)}× ${ey} × exp{ −½ ((${n(S.z)}−${n(h)})/${n(s.sz)})² } = ${res}`;
   }else{
-    eqF.innerHTML = `C =${FR("Q","2π·u·σ<sub>y</sub>·σ<sub>z</sub>")}· exp{ −½ (y/σ<sub>y</sub>)² } · [ exp{ −½ ((z−H<sub>e</sub>)/σ<sub>z</sub>)² } + exp{ −½ ((z+H<sub>e</sub>)/σ<sub>z</sub>)² } ]`;
-    eqS.innerHTML = `=${FR(`${n(q*1e6)}`,`2π × ${n(u)} × ${n(s.sy)} × ${n(s.sz)}`)}× exp{ −½ (${n(S.y)}/${n(s.sy)})² } × [ exp{ −½ ((${n(S.z)}−${n(h)})/${n(s.sz)})² } + exp{ −½ ((${n(S.z)}+${n(h)})/${n(s.sz)})² } ] = <b>${sig(c,4)} µg/m³</b>`;
+    eqF.innerHTML = `C =${FR(Qs,"2π·u·σ<sub>y</sub>·σ<sub>z</sub>")}· exp{ −½ (y/σ<sub>y</sub>)² } · [ exp{ −½ ((z−H<sub>e</sub>)/σ<sub>z</sub>)² } + exp{ −½ ((z+H<sub>e</sub>)/σ<sub>z</sub>)² } ]`;
+    eqS.innerHTML = `=${FR(num,d2)}× ${ey} × [ exp{ −½ ((${n(S.z)}−${n(h)})/${n(s.sz)})² } + exp{ −½ ((${n(S.z)}+${n(h)})/${n(s.sz)})² } ] = ${res}`;
   }
+
+  // 최대착지거리 · 최대착지농도
+  const eX=document.getElementById("eqXmax"), eC=document.getElementById("eqCmax"), mN=document.getElementById("maxNote");
+  const cmF = (r1,r2,v1,v2)=>`C<sub>max</sub> =${FR(`2·${Qs}`,"e·π·u·H<sub>e</sub>²")}·${FR(r1,r2)} =${FR(`2 × ${num}`,`e × π × ${n(u)} × ${n(h)}²${t36}`)}×${FR(n(v1),n(v2))}= <b>${sig(mi.c,4)} ${U}</b>`;
+  if(mi.how==="ground"){
+    eX.innerHTML = `H<sub>e</sub> = 0 (지면 배출)이면 오염원에 가까울수록 지표농도가 높아서 최대착지거리가 없습니다.`;
+    eC.innerHTML = ""; mN.innerHTML = "";
+  }else if(mi.how==="sutton"){
+    eX.innerHTML = `X<sub>max</sub> = ( H<sub>e</sub> / C<sub>z</sub> )<sup>2/(2−n)</sup> = ( ${n(h)} / ${n(S.Cz)} )<sup>2/(2−${n(S.n)})</sup> = <b>${sig(mi.x,6)} m</b>`;
+    eC.innerHTML = cmF("C<sub>z</sub>","C<sub>y</sub>",S.Cz,S.Cy);
+    mN.innerHTML = `X<sub>max</sub>는 σ<sub>z</sub> = H<sub>e</sub>/√2 = ${sig(h/Math.SQRT2,4)} m가 되는 거리입니다.` + (S.refl?"":" 지면 반사를 끄면 C<sub>max</sub>가 절반이 됩니다.");
+  }else if(mi.how==="pg"){
+    eX.innerHTML = `거리별로 지표 중심선 농도를 계산해 찾은 최대 지점: X<sub>max</sub> ≈ <b>${sig(mi.x,4)} m</b>`;
+    eC.innerHTML = `C<sub>max</sub> ≈ <b>${sig(mi.c,4)} ${U}</b> &nbsp;(y = 0, z = 0)`;
+    mN.innerHTML = `안정도 등급(Briggs식)은 σ<sub>z</sub>/σ<sub>y</sub> 비가 거리에 따라 변해서 공식 대신 수치로 찾습니다.`;
+  }else{
+    eX.innerHTML = `σ를 직접 입력하면 거리에 따라 변하지 않으므로 X<sub>max</sub>를 구할 수 없습니다.`;
+    eC.innerHTML = cmF("σ<sub>z</sub>","σ<sub>y</sub>",s.sz,s.sy);
+    mN.innerHTML = `입력한 σ<sub>z</sub>/σ<sub>y</sub> 비가 최대착지 지점에서도 같다고 가정한 참고값입니다. 문제에서 최대착지농도를 묻지 않으면 쓰지 않습니다.`;
+  }
+  document.getElementById("goMax").hidden = !(isFinite(mi.x) && mi.x>0);
 }
 
 /* ════════════ 색 ════════════ */
@@ -683,7 +779,7 @@ function buildTextures(){
   const q = sampleGrid(88,88,(u,v)=>conc(S.x, -DOM.Ymax+u*2*DOM.Ymax, DOM.Zmax-v*DOM.Zmax)); // 수용점 단면 x=xr
   const hi=Math.max(g.mx,m.mx,q.mx,1e-12);
   TEX={ ground:toCanvas(g,hi,1), mid:toCanvas(m,hi,0.78), slice:toCanvas(q,hi,0.62), hi };
-  document.getElementById("rampHi").textContent=sig(hi,3)+" µg/m³";
+  document.getElementById("rampHi").textContent=sig(hi,3)+" "+UNIT();
   document.getElementById("rampLo").textContent=sig(hi/1e4,2);
 }
 
@@ -695,7 +791,7 @@ function newPart(x){ return {x, ry:gauss(), rz:gauss()}; }
 function resetParticles(){ parts=[]; for(let i=0;i<NP;i++) parts.push(newPart(Math.random()*S.Xmax)); }
 const ACCEL=42;
 function stepParticles(dt){
-  const sp=Uef()*ACCEL*dt;
+  const sp=Uef()*ACCEL*dt*Math.max(1,S.Xmax/3000);
   for(const p of parts){
     p.x+=sp;
     if(p.x>S.Xmax){ p.x-=S.Xmax; p.ry=gauss(); p.rz=gauss(); }
@@ -917,7 +1013,7 @@ function drawReceptor(col){
   sctx.beginPath(); sctx.arc(p.x,p.y,2.1,0,6.2832); sctx.fillStyle=cssVar("--warn"); sctx.fill();
 
   const c=conc(S.x,S.y,S.z);
-  const label=`${sig(c,3)} µg/m³`;
+  const label=`${sig(c,3)} ${UNIT()}`;
   sctx.font="600 10.5px "+cssVar("--mono");
   const w=sctx.measureText(label).width+12;
   const bx=p.x+11, by=p.y-10;
@@ -978,7 +1074,7 @@ function drawGraph(){
   gctx.font="500 11px "+cssVar("--sans");
   gctx.fillText(axLabel, pad.l+pw/2, pad.t+ph+22);
   gctx.save(); gctx.translate(11,pad.t+ph/2); gctx.rotate(-Math.PI/2);
-  gctx.textAlign="center"; gctx.textBaseline="middle"; gctx.fillText("C (µg/m³)",0,0); gctx.restore();
+  gctx.textAlign="center"; gctx.textBaseline="middle"; gctx.fillText("C ("+UNIT()+")",0,0); gctx.restore();
 
   // 곡선
   gctx.beginPath();
@@ -998,10 +1094,13 @@ function drawGraph(){
   if(S.gmode==="x"){
     let bi=0; ys.forEach((v,i)=>{ if(v>ys[bi]) bi=i; });
     if(ys[bi]>0 && bi>0 && bi<N){
-      gctx.beginPath(); gctx.arc(X(xs[bi]),Y(ys[bi]),3.2,0,6.2832);
+      // 격자 사이를 촘촘히 다시 찾아 최대점 위치를 정확히 표시
+      let mx=xs[bi], my=ys[bi];
+      for(let k=0;k<=200;k++){ const t=xs[bi-1]+(xs[bi+1]-xs[bi-1])*k/200, v=conc(t,0,0); if(v>my){my=v;mx=t;} }
+      gctx.beginPath(); gctx.arc(X(mx),Y(my),3.2,0,6.2832);
       gctx.strokeStyle=col.ink; gctx.lineWidth=1.6; gctx.stroke();
       gctx.fillStyle=col.ink; gctx.font="600 9.5px "+cssVar("--mono"); gctx.textAlign="center"; gctx.textBaseline="bottom";
-      gctx.fillText(`최대 ${sig(ys[bi],3)} @ ${sig(xs[bi],3)}m`, X(xs[bi]), Y(ys[bi])-7);
+      gctx.fillText(`최대 ${sig(my,4)} @ ${sig(mx,4)}m`, X(mx), Y(my)-7);
     }
   }
 
@@ -1154,6 +1253,18 @@ max:`
 <li>C<sub>max</sub> ∝ 1/u, 1/H<sub>e</sub>² → <b>굴뚝을 2배 높이면 최대농도는 1/4</b></li>
 <li>불안정할수록 x<sub>max</sub>는 가까워지고 값은 커집니다</li>
 </ul>
+<h3>Sutton식으로 풀 때</h3>
+<p>Sutton식은 가우시안과 같은 꼴인데, σ를 거리 x의 함수로 정해 둔 것입니다.</p>
+<div class="eqbox"><div class="eq wrapok">σ<sub>y</sub>² = ½·C<sub>y</sub>²·x<sup>2−n</sup>, &nbsp; σ<sub>z</sub>² = ½·C<sub>z</sub>²·x<sup>2−n</sup></div></div>
+<p>여기에 최대 조건 σ<sub>z</sub> = H<sub>e</sub>/√2를 넣고 x에 대해 풀면 최대착지거리가 나옵니다.</p>
+<div class="eqbox"><div class="eq">X<sub>max</sub> = ( H<sub>e</sub> / C<sub>z</sub> )<sup>2/(2−n)</sup></div></div>
+<div class="eqbox" style="margin-top:6px"><div class="eq">C<sub>max</sub> = <span class="frac"><span class="n">2Q</span><span class="d">e·π·u·H<sub>e</sub>²</span></span>· <span class="frac"><span class="n">C<sub>z</sub></span><span class="d">C<sub>y</sub></span></span></div></div>
+<ul>
+<li>C<sub>y</sub>, C<sub>z</sub>(예: 0.07)는 m 단위 표준편차가 아니라 Sutton 확산계수(단위 m<sup>n/2</sup>)입니다. 65 m 같은 σ 값과 섞어 쓰면 안 됩니다.</li>
+<li>n은 대기안정도 지수입니다. 중립일 때 0.25 정도를 씁니다.</li>
+<li>배출량을 "배출가스량(Sm³/h) × 농도(ppm)"로 주면 결과가 ppm으로 바로 나옵니다. 이때 시간 단위를 맞추려고 분모에 3600 s/h가 붙습니다.</li>
+</ul>
+<p class="k">왼쪽 확산계수에서 Sutton을 고르거나 위의 "Sutton · Cmax·Xmax" 버튼을 누르면 풀이가 결과 칸 아래에 나옵니다.</p>
 <h3>지면 반사의 의미</h3>
 <p>지면은 오염물질을 흡수하지 않는 거울이라고 봅니다. 그래서 지하 −H<sub>e</sub>에 똑같은 가상 굴뚝이 있다고 놓고 그 몫을 더해 줍니다. 이것이 식에 <code>exp{−½((z+He)/σz)²}</code> 항이 붙는 이유입니다. 왼쪽 체크를 끄면 반사를 뺀 농도와 비교할 수 있습니다.</p>`,
 
@@ -1226,6 +1337,12 @@ buildToggles();
 buildGtabs();
 buildExplain();
 bindCamera();
+document.getElementById("goMax").addEventListener("click", ()=>{
+  const mi=maxInfo(); if(!(isFinite(mi.x) && mi.x>0)) return;
+  S.x=+mi.x.toFixed(2); S.y=0; S.z=0;
+  if(S.x>S.Xmax*0.85) S.Xmax=Math.min(20000, niceDom(S.x*1.6));
+  markDirty();
+});
 syncToggles();
 resize();
 resetParticles();
