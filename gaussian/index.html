@@ -128,19 +128,30 @@ canvas#scene:active{cursor:grabbing}
 /* ── 결과 ── */
 .result{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;padding-top:16px}
 @media (max-width:620px){ .result{grid-template-columns:1fr} }
-.big{background:var(--result);border-radius:8px;padding:12px 14px}
-.big .cap{font-size:12.5px;color:var(--muted)}
-.big .val{font-family:var(--mono);font-weight:600;font-size:30px;line-height:1.2;font-variant-numeric:tabular-nums;color:var(--accent);word-break:break-all}
-.big .val span{font-size:14px;color:var(--muted);font-weight:500;margin-left:5px}
-.big .alt{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums;line-height:1.7}
-.pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;background:var(--sheet);color:var(--accent);margin-bottom:6px;border:1px solid var(--rule)}
-.kv{width:100%;border-collapse:collapse;font-size:13px}
+.tipwrap{position:relative;min-width:0;display:flex}
+.big{flex:1;background:var(--result);border-radius:8px;padding:14px 16px;cursor:help;border:1px solid transparent;transition:border-color .15s}
+.big:hover,.big:focus-visible,.tipwrap.open .big{border-color:var(--accent-2);outline:none}
+.big .cap{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.big .hint{font-size:12px;color:var(--accent-2);border:1px solid var(--accent-2);border-radius:999px;padding:0 8px;line-height:1.6}
+.big .val{font-family:var(--mono);font-weight:600;font-size:36px;line-height:1.2;font-variant-numeric:tabular-nums;color:var(--accent);word-break:break-all;margin-top:2px}
+.big .val span{font-size:16px;color:var(--muted);font-weight:500;margin-left:6px}
+.big .alt{font-family:var(--mono);font-size:14px;color:var(--muted);margin-top:6px;font-variant-numeric:tabular-nums;line-height:1.75}
+.big .alt b{color:var(--ink)}
+.big .btn{margin-top:10px;font-size:13.5px}
+.pill{display:inline-block;border-radius:999px;padding:3px 11px;font-size:13px;font-weight:600;background:var(--sheet);color:var(--accent);margin-bottom:8px;border:1px solid var(--rule)}
+.tip{display:none;position:absolute;left:0;top:calc(100% + 8px);z-index:30;width:min(680px,calc(100vw - 40px));background:var(--sheet);border:1px solid var(--rule);border-radius:10px;box-shadow:0 14px 36px rgba(23,33,43,.2);padding:14px 18px 16px;font-size:14px}
+.tip::before{content:"";position:absolute;left:0;right:0;top:-10px;height:10px}
+.tipwrap.right .tip{left:auto;right:0}
+.tipwrap:hover .tip,.tipwrap:has(:focus-visible) .tip,.tipwrap.open .tip{display:block}
+.tip .t{font-size:13.5px;font-weight:700;color:var(--accent-2);margin:12px 0 4px}
+.tip .t:first-child{margin-top:0}
+.tip .eq{font-size:15px}
+.tip .note{font-size:13px}
+.kv{width:100%;border-collapse:collapse;font-size:14px}
 .kv th,.kv td{padding:5px 8px;border-bottom:1px solid var(--rule-soft);text-align:left;vertical-align:top}
 .kv th{font-weight:500;color:var(--muted);white-space:nowrap;width:1%}
 .kv td{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.kv td small{font-family:var(--sans);color:var(--muted);font-size:11.5px}
-.subst{margin-top:12px;background:var(--label);border:1px solid var(--rule-soft);border-radius:8px;padding:10px 12px}
-.subst .t{font-size:12px;font-weight:600;color:var(--accent-2);margin-bottom:4px}
+.kv td small{font-family:var(--sans);color:var(--muted);font-size:12.5px}
 
 /* ── 수식 ── */
 .eq{font-family:var(--mono);font-size:13px;white-space:nowrap;display:block;line-height:2.1}
@@ -236,28 +247,39 @@ mark{background:var(--input);color:var(--input-ink);padding:0 3px;border-radius:
 
       <div class="pbody">
         <div class="result">
-          <div class="big">
-            <span class="pill" id="formBadge">—</span>
-            <div class="cap">수용점 농도 C</div>
-            <div class="val" id="cMain">—<span>µg/m³</span></div>
-            <div class="alt" id="cAlt">—</div>
+          <div class="tipwrap" id="twC">
+            <div class="big" tabindex="0" aria-describedby="tipC">
+              <span class="pill" id="formBadge">—</span>
+              <div class="cap"><span>수용점 농도 C</span><span class="hint">풀이 보기</span></div>
+              <div class="val" id="cMain">—<span>µg/m³</span></div>
+              <div class="alt" id="cAlt">—</div>
+            </div>
+            <div class="tip" id="tipC" role="tooltip">
+              <div class="t">계산 조건</div>
+              <table class="kv"><tbody id="kv"></tbody></table>
+              <div class="t">적용식</div>
+              <div class="eqbox"><div class="eq" id="eqForm"></div></div>
+              <div class="t">값 대입</div>
+              <div class="eqbox"><div class="eq" id="eqSubst"></div></div>
+            </div>
           </div>
-          <table class="kv"><tbody id="kv"></tbody></table>
-        </div>
 
-        <div class="subst">
-          <div class="t">적용식</div>
-          <div class="eqbox"><div class="eq" id="eqForm"></div></div>
-          <div class="t" style="margin-top:8px">값 대입</div>
-          <div class="eqbox"><div class="eq" id="eqSubst"></div></div>
-        </div>
-
-        <div class="subst" id="maxBox">
-          <div class="t">최대착지거리 X<sub>max</sub> · 최대착지농도 C<sub>max</sub></div>
-          <div class="eqbox"><div class="eq" id="eqXmax"></div></div>
-          <div class="eqbox" style="margin-top:6px"><div class="eq" id="eqCmax"></div></div>
-          <p class="note" id="maxNote"></p>
-          <button class="btn" id="goMax" type="button" style="margin-top:8px">최대착지 지점으로 수용점 옮기기</button>
+          <div class="tipwrap right" id="twM">
+            <div class="big" tabindex="0" aria-describedby="tipM">
+              <span class="pill" id="maxBadge">—</span>
+              <div class="cap"><span>최대착지농도 C<sub>max</sub></span><span class="hint">풀이 보기</span></div>
+              <div class="val" id="cmMain">—</div>
+              <div class="alt" id="cmAlt">—</div>
+              <button class="btn" id="goMax" type="button">최대착지 지점으로 수용점 옮기기</button>
+            </div>
+            <div class="tip" id="tipM" role="tooltip">
+              <div class="t">최대착지거리 X<sub>max</sub></div>
+              <div class="eqbox"><div class="eq" id="eqXmax"></div></div>
+              <div class="t">최대착지농도 C<sub>max</sub></div>
+              <div class="eqbox"><div class="eq" id="eqCmax"></div></div>
+              <p class="note" id="maxNote"></p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -603,6 +625,8 @@ function maxInfo(){
   if(S.sigMode==="pg"){
     let bx=0,bc=0;
     for(let i=0;i<600;i++){ const xx=10*Math.pow(30000/10, i/599); const cc=conc(xx,0,0); if(cc>bc){bc=cc;bx=xx;} }
+    const lo=bx/Math.pow(3000,1/599), hi=bx*Math.pow(3000,1/599);
+    for(let k=0;k<=400;k++){ const xx=lo+(hi-lo)*k/400, cc=conc(xx,0,0); if(cc>bc){bc=cc;bx=xx;} }
     return {x:bx, c:bc, how:"pg"};
   }
   const s=sigmas(0);
@@ -628,15 +652,22 @@ function updateResult(){
   }
 
   const mi=maxInfo();
-  const maxRow = mi.how==="ground" ? `<small>지면 배출은 오염원 바로 옆이 최대</small>`
-    : mi.how==="manual" ? `${sig(mi.c,4)} ${U}<br><small>공식 참고값 · σ 고정이라 X<sub>max</sub> 없음</small>`
-    : `${sig(mi.c,4)} ${U}<br><small>X<sub>max</sub> ≈ ${sig(mi.x,4)} m</small>`;
+  const mB={sutton:"Sutton식 공식", pg:"거리별 수치 탐색", manual:"공식 참고값", ground:"지면 배출"};
+  document.getElementById("maxBadge").innerHTML = mB[mi.how];
+  if(mi.how==="ground"){
+    document.getElementById("cmMain").innerHTML = `—`;
+    document.getElementById("cmAlt").innerHTML = `H<sub>e</sub> = 0이면 오염원에 가까울수록 높아서<br>최대착지 지점이 따로 없습니다.`;
+  }else{
+    document.getElementById("cmMain").innerHTML = `${sig(mi.c,4)}<span>${U}</span>`;
+    document.getElementById("cmAlt").innerHTML = mi.how==="manual"
+      ? `σ를 직접 넣으면 X<sub>max</sub>를 구할 수 없습니다.<br>입력한 σ<sub>z</sub>/σ<sub>y</sub> 비로 계산한 참고값`
+      : `최대착지거리 <b>X<sub>max</sub> = ${sig(mi.x, mi.how==="sutton"?6:4)} m</b><br>σ<sub>z</sub> = H<sub>e</sub>/√2 = ${sig(h/Math.SQRT2,4)} m 인 지점`;
+  }
   const rows=[
     [`H<sub>e</sub>`, `${sig(S.Hs)} + ${sig(S.dh)} = ${sig(h)} m`],
     [`u`, `${sig(u)} m/s${S.deacon?" <small>Deacon 보정</small>":""}`],
     [`Q`, gas ? `${sig(S.G,6)} Sm³/h × ${sig(S.Cp,6)} ppm` : `${sig(Qgs(),5)} g/s`],
-    [`σ<sub>y</sub> · σ<sub>z</sub>`, `${sig(s.sy)} · ${sig(s.sz)} m`],
-    [`C<sub>max</sub>`, maxRow]
+    [`σ<sub>y</sub> · σ<sub>z</sub>`, `${sig(s.sy)} · ${sig(s.sz)} m &nbsp;<small>(x = ${sig(S.x)} m)</small>`]
   ];
   document.getElementById("kv").innerHTML = rows.map(([k,v])=>`<tr><th>${k}</th><td>${v}</td></tr>`).join("");
 
@@ -1312,7 +1343,7 @@ function buildExplain(){
 
 /* ════════════ 루프 ════════════ */
 let dirty=true, last=0;
-function markDirty(){ dirty=true; }
+function markDirty(){ dirty=true; if(document.hidden){ dirty=false; refresh(); } }  // 숨은 탭에서는 프레임이 멈추므로 바로 계산
 function refresh(){
   DOM=domain();
   syncControls();
@@ -1337,6 +1368,17 @@ buildToggles();
 buildGtabs();
 buildExplain();
 bindCamera();
+// 풀이 툴팁: 마우스는 올리면 열림(CSS), 터치는 카드를 눌러 열고 닫기
+document.querySelectorAll(".tipwrap").forEach(w=>{
+  w.querySelector(".big").addEventListener("pointerup", e=>{
+    if(e.pointerType==="mouse" || e.target.closest("button")) return;
+    const was=w.classList.contains("open");
+    document.querySelectorAll(".tipwrap.open").forEach(x=>x.classList.remove("open"));
+    if(!was) w.classList.add("open");
+  });
+});
+document.addEventListener("pointerdown", e=>{ if(!e.target.closest(".tipwrap")) document.querySelectorAll(".tipwrap.open").forEach(x=>x.classList.remove("open")); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") document.querySelectorAll(".tipwrap.open").forEach(x=>x.classList.remove("open")); });
 document.getElementById("goMax").addEventListener("click", ()=>{
   const mi=maxInfo(); if(!(isFinite(mi.x) && mi.x>0)) return;
   S.x=+mi.x.toFixed(2); S.y=0; S.z=0;
@@ -1350,6 +1392,7 @@ window.addEventListener("resize", ()=>{ resize(); markDirty(); });
 const mq=window.matchMedia("(prefers-color-scheme: dark)");
 mq.addEventListener?.("change", markDirty);
 new MutationObserver(markDirty).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+refresh(); dirty=false;   // 첫 화면 값을 프레임 시작 전에 채움
 requestAnimationFrame(frame);
 })();
 
