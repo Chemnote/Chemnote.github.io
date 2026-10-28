@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>습공기 상태 계산기 · 습공기선도 | Chemnote</title>
+<meta name="description" content="건구온도·습구온도·절대습도·상대습도·엔탈피 중 두 값으로 노점, 수증기분압, 비체적, 밀도, 불쾌지수까지 계산하고 습공기선도에 상태점을 표시하는 무료 계산기.">
+<link rel="canonical" href="https://chemnote.github.io/psychrometric/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://chemnote.github.io/psychrometric/">
+<meta property="og:title" content="습공기 상태 계산기 · 습공기선도 | Chemnote">
+<meta property="og:description" content="건구온도·습구온도·절대습도·상대습도·엔탈피 중 두 값으로 노점, 수증기분압, 비체적, 밀도, 불쾌지수까지 계산하고 습공기선도에 상태점을 표시하는 무료 계산기.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#EEF3F4; --surface:#FFFFFF; --surface2:#F5F8F9; --ink:#15212B; --muted:#5A6B77; --line:#D3DDE1;
+  --heat:#C0492B; --heat-soft:#F7E3DC; --wet:#1E5F86; --wet-soft:#DCEAF3;
+  --grid:#E2E9EC; --grid2:#C7D3D8; --ok:#2E7D4F; --warn:#B7791F; --bad:#B83A3A;
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F171C; --surface:#172229; --surface2:#1C2931; --ink:#E4ECEF; --muted:#94A6B1; --line:#2C3C45;
+    --heat:#F08A6C; --heat-soft:#3A241E; --wet:#6DB3DE; --wet-soft:#1B3242;
+    --grid:#22313A; --grid2:#33454F; --ok:#5CC08A; --warn:#E3B04F; --bad:#EF7676;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F171C; --surface:#172229; --surface2:#1C2931; --ink:#E4ECEF; --muted:#94A6B1; --line:#2C3C45;
+  --heat:#F08A6C; --heat-soft:#3A241E; --wet:#6DB3DE; --wet-soft:#1B3242;
+  --grid:#22313A; --grid2:#33454F; --ok:#5CC08A; --warn:#E3B04F; --bad:#EF7676;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 48px}
+header{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+h1{margin:0;font-size:1.75rem;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+.sub{margin:4px 0 0;color:var(--muted);font-size:.9rem}
+.alt{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:.85rem;color:var(--muted)}
+.alt input{width:80px}
+.alt b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+.phead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;margin-bottom:4px}
+.phead h2{margin:0}
+.tsel{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted)}
+.tseg{display:inline-flex;gap:2px;background:var(--surface2);border-radius:8px;padding:2px}
+.tseg button{appearance:none;border:0;background:transparent;color:var(--muted);font:600 .88rem var(--mono);padding:4px 10px;border-radius:6px;cursor:pointer;min-width:36px}
+.tseg button[aria-pressed="true"]{background:var(--heat);color:#fff}
+.tseg button:focus-visible{outline:2px solid var(--wet);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:880px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.panel h2{margin:0 0 4px;font-size:.78rem;font-weight:600;letter-spacing:.08em;color:var(--muted)}
+.hint{font-size:.85rem;color:var(--muted);margin:0 0 12px;min-height:1.3em}
+.hint.err{color:var(--bad);font-weight:500}
+.rows{display:flex;flex-direction:column;gap:6px}
+.row{display:grid;grid-template-columns:118px minmax(0,1fr) 104px;gap:10px;align-items:center;padding:6px 8px;border-radius:9px}
+.row .unit{font-size:.8rem;color:var(--muted);font-family:var(--mono)}
+.pick{appearance:none;display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:999px;padding:5px 10px;font:500 .88rem var(--sans);cursor:pointer;text-align:left;width:100%}
+.pick::before{content:"";width:12px;height:12px;border-radius:50%;border:1.5px solid var(--muted);flex:none}
+.pick:hover{border-color:var(--muted)}
+.pick:focus-visible, input:focus-visible{outline:2px solid var(--wet);outline-offset:2px}
+.row[data-kind="heat"].on{background:var(--heat-soft)}
+.row[data-kind="wet"].on{background:var(--wet-soft)}
+.row[data-kind="heat"].on .pick{border-color:var(--heat)}
+.row[data-kind="wet"].on .pick{border-color:var(--wet)}
+.row[data-kind="heat"].on .pick::before{background:var(--heat);border-color:var(--heat)}
+.row[data-kind="wet"].on .pick::before{background:var(--wet);border-color:var(--wet)}
+input{font:500 1rem var(--mono);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;width:100%;text-align:right;font-variant-numeric:tabular-nums}
+input[readonly]{background:transparent;border-color:transparent;color:var(--ink)}
+.row.on input{border-color:var(--grid2)}
+.sep{margin:14px 0 8px;border-top:1px dashed var(--line);padding-top:10px;font-size:.78rem;font-weight:600;letter-spacing:.08em;color:var(--muted)}
+.name{font-size:.9rem;font-weight:500;padding-left:4px}
+.val{font:500 1rem var(--mono);text-align:right;padding-right:11px;font-variant-numeric:tabular-nums}
+.val small{display:block;font-size:.72rem;color:var(--muted);font-weight:400}
+.pill{display:inline-block;font:600 .72rem/1.25 var(--sans);padding:2px 8px;border-radius:999px;color:#fff;white-space:nowrap}
+.stale .val,.stale input[readonly],.stale .mct td.r{opacity:.35}
+[hidden]{display:none!important}
+.mc{margin-top:20px}
+.cseg{display:inline-flex;gap:2px;background:var(--surface2);border-radius:8px;padding:2px}
+.cseg button{appearance:none;border:0;background:transparent;color:var(--muted);font:600 .8rem var(--sans);padding:4px 10px;border-radius:6px;cursor:pointer}
+.cseg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.cseg button:focus-visible{outline:2px solid var(--wet);outline-offset:2px}
+.mcsteps{margin:10px 0 0;padding-left:20px;font-size:.84rem;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.mcsteps b{color:var(--ink);font-weight:600}
+.mcnote{font-size:.8rem;color:var(--muted)}
+.mcwrap{overflow-x:auto;margin-top:6px}
+.mct{border-collapse:collapse;width:100%;font-size:.9rem}
+.mct th{font-size:.76rem;font-weight:600;letter-spacing:.04em;color:var(--muted);text-align:left;padding:6px 10px;border-bottom:1px solid var(--line)}
+.mct td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.mct tr:last-child td{border-bottom:0}
+.mct .r{text-align:right}
+.mct td.r{font:500 1rem var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.mct td.sym{font-family:"Cambria Math","STIX Two Math",serif;font-size:1.05rem;white-space:nowrap}
+.mct td.u{font:.8rem var(--mono);color:var(--muted);white-space:nowrap}
+.mct td.f{font:.8rem var(--mono);color:var(--muted);min-width:220px}
+.mct td.name{white-space:nowrap}
+.chart-wrap{overflow-x:auto}
+svg{display:block;width:100%;height:auto;min-width:320px}
+svg text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+svg .ttl{font-family:var(--sans);font-size:12px;font-weight:500;fill:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.8rem;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:18px;height:0;border-top:2px solid}
+.formulas{margin-top:20px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.formulas summary{display:flex;align-items:baseline;gap:12px;cursor:pointer;padding:14px 18px;list-style:none;border-radius:14px}
+.formulas summary::-webkit-details-marker{display:none}
+.formulas summary::before{content:"▸";color:var(--muted);transition:transform .15s}
+.formulas[open] summary::before{transform:rotate(90deg)}
+.formulas summary:focus-visible{outline:2px solid var(--wet);outline-offset:2px}
+.formulas summary h2{margin:0;font-size:1.1rem;font-weight:700}
+.sumhint{font-size:.82rem;color:var(--muted)}
+.fbody{display:flex;flex-direction:column;gap:14px;padding:0 18px 18px}
+@media (prefers-reduced-motion:reduce){.formulas summary::before{transition:none}}
+.lead{margin:0;color:var(--muted);font-size:.9rem;max-width:70ch}
+.consts{display:flex;flex-wrap:wrap;gap:6px}
+.consts span{font:400 .8rem var(--mono);background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.consts b{font-family:var(--sans);font-weight:600;margin-right:4px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(340px,100%),1fr));gap:14px}
+.glabel{grid-column:1/-1;font-size:.78rem;font-weight:600;letter-spacing:.08em;color:var(--muted);margin-top:8px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.fcard{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.fcard.wide{grid-column:1/-1}
+.fcard h3{margin:0;font-size:.95rem;font-weight:600}
+.fcard h3 small{font-weight:400;color:var(--muted);font-size:.8rem;margin-left:6px}
+.mbox{overflow-x:auto;background:var(--surface);border-radius:8px;padding:12px 10px}
+.mbox + .mbox{margin-top:-2px}
+math{font-family:"Cambria Math","STIX Two Math","Latin Modern Math",math;font-size:1.18em;color:var(--ink)}
+math .t{color:var(--heat)} math .w{color:var(--wet)}
+.note{margin:0;font-size:.82rem;color:var(--muted)}
+.ctable{border-collapse:collapse;font:400 .82rem var(--mono);font-variant-numeric:tabular-nums;width:100%}
+.ctable th,.ctable td{padding:4px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+.ctable th{font-family:var(--sans);font-weight:600;color:var(--muted);font-size:.78rem}
+.ctable th:first-child,.ctable td:first-child{text-align:left}
+.pairs{border-collapse:collapse;font-size:.84rem;width:100%}
+.pairs th,.pairs td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.pairs th{font-size:.78rem;font-weight:600;color:var(--muted)}
+.pairs td:first-child{white-space:nowrap;font-weight:500}
+.pairs math{font-size:1.05em}
+.twocol{display:flex;flex-wrap:wrap;gap:12px}
+.twocol > div{flex:1 1 280px;min-width:0}
+@media (max-width:420px){.row{grid-template-columns:88px minmax(0,1fr) 88px;gap:6px}.pill{font-size:.66rem;padding:2px 6px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <div>
+    <h1>습공기 상태 계산기</h1>
+    <p class="sub">상태값 두 개를 고르면 나머지를 모두 계산하고 습공기선도 위에 표시합니다.</p>
+  </div>
+  <label class="alt" for="alt">해발고도
+    <input id="alt" type="number" value="0" step="10" inputmode="decimal"> m
+    <span>대기압 <b id="patm">101325</b> Pa</span>
+  </label>
+</header>
+
+<div class="grid">
+  <section class="panel" aria-label="상태값">
+    <div class="phead">
+      <h2>입력 · 두 개 선택</h2>
+      <div class="tsel" role="group" aria-label="온도 단위">온도 단위
+        <div class="tseg">
+          <button type="button" id="tu-C" aria-pressed="true">℃</button>
+          <button type="button" id="tu-F" aria-pressed="false">℉</button>
+          <button type="button" id="tu-K" aria-pressed="false">K</button>
+        </div>
+      </div>
+    </div>
+    <p class="hint" id="hint"></p>
+    <div class="rows" id="inputs"></div>
+    <div class="sep">계산값</div>
+    <div class="rows" id="outputs"></div>
+  </section>
+
+  <section class="panel" aria-label="습공기선도">
+    <div class="phead">
+      <h2><span id="chartTitle">습공기선도</span> · 대기압 <span id="patm2">101.3</span> kPa</h2>
+      <div class="cseg" role="group" aria-label="그래프 종류">
+        <button type="button" id="cm-psy" aria-pressed="true">습공기선도</button>
+        <button type="button" id="cm-mc" aria-pressed="false">습도도표 (McCabe)</button>
+      </div>
+    </div>
+    <div class="chart-wrap"><svg id="chart" viewBox="0 0 680 460" role="img" aria-label="현재 상태점을 표시한 그래프"></svg></div>
+    <div class="legend" id="psyLegend">
+      <span><i style="border-color:var(--wet)"></i>상대습도 10 % 간격</span>
+      <span><i style="border-color:var(--grid2);border-top-style:dashed"></i><span id="wbLegend">습구온도 5 ℃ 간격</span></span>
+      <span><i style="border-color:var(--heat)"></i>현재 상태 (습구온도선 → 포화점)</span>
+    </div>
+    <ol class="mcsteps" id="mcSteps" hidden></ol>
+  </section>
+</div>
+
+<section class="panel mc" aria-label="단위조작 습도 항목">
+  <div class="phead">
+    <h2>단위조작(McCabe) 습도 항목</h2>
+    <span class="mcnote" id="mcNote"></span>
+  </div>
+  <div class="mcwrap">
+    <table class="mct">
+      <thead><tr><th>항목</th><th>기호</th><th class="r">값</th><th>단위</th><th>식</th></tr></thead>
+      <tbody id="mcBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<details class="formulas" id="formulas">
+  <summary><h2>사용한 식</h2><span class="sumhint">기호 · 상수 · 조합별 풀이</span></summary>
+  <div class="fbody">
+  <p class="lead"><span style="color:var(--heat)">빨간 기호</span>는 온도, <span style="color:var(--wet)">파란 기호</span>는 수분량입니다. t 건구온도 [℃], t′ 습구온도 [℃], T = t + 273.15 [K], x 절대습도 [kg/kg′], P 대기압 [Pa], P<sub>w</sub> 수증기분압 [Pa], φ 상대습도 [%], h 엔탈피 [J/kg′]. 온도 단위를 ℉나 K로 골라도 계산은 ℃로 바꿔서 하고, 결과만 고른 단위로 보여 줍니다(℉ = ℃ × 9/5 + 32, K = ℃ + 273.15).</p>
+  <div class="consts">
+    <span><b>C<sub>pa</sub></b>1005 J/kg·K</span>
+    <span><b>C<sub>pv</sub></b>1846 J/kg·K</span>
+    <span><b>r<sub>0</sub></b>2 501 000 J/kg</span>
+    <span><b>C<sub>w</sub></b>4186 J/kg·K</span>
+    <span><b>C<sub>i</sub></b>2093 J/kg·K</span>
+    <span><b>L<sub>f</sub></b>333 600 J/kg</span>
+    <span><b>R<sub>a</sub></b>287.055 J/kg·K</span>
+    <span><b>P<sub>0</sub></b>101 325 Pa</span>
+    <span><b>M<sub>w</sub>/M<sub>a</sub></b>0.62198</span>
+  </div>
+
+  <div class="fgrid">
+    <div class="glabel">포화수증기압 · 대기압</div>
+
+    <article class="fcard wide">
+      <h3>포화수증기압 P<sub>ws</sub><small>ASHRAE Hyland–Wexler 식</small></h3>
+      <div class="twocol">
+        <div>
+          <div class="mbox"><math display="block"><mrow><mi>ln</mi><mo>&#x2061;</mo><msub><mi>P</mi><mi>ws</mi></msub><mo>=</mo><mfrac><msub><mi>C</mi><mn>1</mn></msub><mi class="t">T</mi></mfrac><mo>+</mo><msub><mi>C</mi><mn>2</mn></msub><mo>+</mo><msub><mi>C</mi><mn>3</mn></msub><mi class="t">T</mi><mo>+</mo><msub><mi>C</mi><mn>4</mn></msub><msup><mi class="t">T</mi><mn>2</mn></msup><mo>+</mo><msub><mi>C</mi><mn>5</mn></msub><msup><mi class="t">T</mi><mn>3</mn></msup><mo>+</mo><msub><mi>C</mi><mn>6</mn></msub><msup><mi class="t">T</mi><mn>4</mn></msup><mo>+</mo><msub><mi>C</mi><mn>7</mn></msub><mi>ln</mi><mo>&#x2061;</mo><mi class="t">T</mi></mrow></math></div>
+          <p class="note">결과 단위는 Pa입니다. t &gt; 0 ℃이면 물 위, t ≤ 0 ℃이면 얼음 위 계수를 씁니다.</p>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="ctable">
+            <thead><tr><th>계수</th><th>물 (t &gt; 0 ℃)</th><th>얼음 (t ≤ 0 ℃)</th></tr></thead>
+            <tbody>
+              <tr><td>C<sub>1</sub></td><td>−5800.2206</td><td>−5674.5359</td></tr>
+              <tr><td>C<sub>2</sub></td><td>1.3914993</td><td>6.3925247</td></tr>
+              <tr><td>C<sub>3</sub></td><td>−4.8640239×10⁻²</td><td>−9.677843×10⁻³</td></tr>
+              <tr><td>C<sub>4</sub></td><td>4.1764768×10⁻⁵</td><td>6.2215701×10⁻⁷</td></tr>
+              <tr><td>C<sub>5</sub></td><td>−1.4452093×10⁻⁸</td><td>2.0747825×10⁻⁹</td></tr>
+              <tr><td>C<sub>6</sub></td><td>0</td><td>−9.484024×10⁻¹³</td></tr>
+              <tr><td>C<sub>7</sub></td><td>6.5459673</td><td>4.1635019</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </article>
+
+    <article class="fcard">
+      <h3>해발고도에 따른 대기압</h3>
+      <div class="mbox"><math display="block"><mrow><mi>P</mi><mo>=</mo><mn>101325</mn><msup><mrow><mo>(</mo><mn>1</mn><mo>−</mo><mn>2.2558</mn><mo>×</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>5</mn></mrow></msup><mi>z</mi><mo>)</mo></mrow><mn>5.256</mn></msup></mrow></math></div>
+      <p class="note">z는 해발고도 [m]입니다. 0 m이면 P = 101 325 Pa입니다.</p>
+    </article>
+
+    <div class="glabel">습도 · 엔탈피</div>
+
+    <article class="fcard">
+      <h3>절대습도 ↔ 수증기분압</h3>
+      <div class="mbox"><math display="block"><mrow><mi class="w">x</mi><mo>=</mo><mn>0.62198</mn><mfrac><msub><mi class="w">P</mi><mi class="w">w</mi></msub><mrow><mi>P</mi><mo>−</mo><msub><mi class="w">P</mi><mi class="w">w</mi></msub></mrow></mfrac><mspace width="1.2em"></mspace><msub><mi class="w">P</mi><mi class="w">w</mi></msub><mo>=</mo><mfrac><mrow><mi class="w">x</mi><mi>P</mi></mrow><mrow><mn>0.62198</mn><mo>+</mo><mi class="w">x</mi></mrow></mfrac></mrow></math></div>
+    </article>
+
+    <article class="fcard">
+      <h3>상대습도</h3>
+      <div class="mbox"><math display="block"><mrow><mi class="w">φ</mi><mo>=</mo><mn>100</mn><mo>×</mo><mfrac><msub><mi class="w">P</mi><mi class="w">w</mi></msub><mrow><msub><mi>P</mi><mi>ws</mi></msub><mo>(</mo><mi class="t">t</mi><mo>)</mo></mrow></mfrac></mrow></math></div>
+      <p class="note">φ는 %로 나타냅니다.</p>
+    </article>
+
+    <article class="fcard">
+      <h3>엔탈피</h3>
+      <div class="mbox"><math display="block"><mrow><mi>h</mi><mo>=</mo><msub><mi>C</mi><mi>pa</mi></msub><mi class="t">t</mi><mo>+</mo><mo>(</mo><msub><mi>C</mi><mi>pv</mi></msub><mi class="t">t</mi><mo>+</mo><msub><mi>r</mi><mn>0</mn></msub><mo>)</mo><mi class="w">x</mi></mrow></math></div>
+      <div class="mbox"><math display="block"><mrow><mo>=</mo><mn>1005</mn><mi class="t">t</mi><mo>+</mo><mo>(</mo><mn>1846</mn><mi class="t">t</mi><mo>+</mo><mn>2501000</mn><mo>)</mo><mi class="w">x</mi></mrow></math></div>
+      <p class="note">단위는 J/kg′이고, 입력칸에서는 kJ/kg′으로 씁니다.</p>
+    </article>
+
+    <article class="fcard">
+      <h3>건구·습구온도 → 절대습도</h3>
+      <div class="mbox"><math display="block"><mrow><mi class="w">x</mi><mo>=</mo><mfrac><mrow><mo>(</mo><msub><mi>r</mi><mn>0</mn></msub><mo>+</mo><msub><mi>C</mi><mi>pv</mi></msub><mi class="t">t′</mi><mo>−</mo><msub><mi>h</mi><mi>c</mi></msub><mo>)</mo><msubsup><mi class="w">x</mi><mi class="w">s</mi><mo class="t">′</mo></msubsup><mo>−</mo><msub><mi>C</mi><mi>pa</mi></msub><mo>(</mo><mi class="t">t</mi><mo>−</mo><mi class="t">t′</mi><mo>)</mo></mrow><mrow><msub><mi>C</mi><mi>pv</mi></msub><mi class="t">t</mi><mo>+</mo><msub><mi>r</mi><mn>0</mn></msub><mo>−</mo><msub><mi>h</mi><mi>c</mi></msub></mrow></mfrac></mrow></math></div>
+      <div class="mbox"><math display="block"><mrow><msub><mi>h</mi><mi>c</mi></msub><mo>=</mo><mrow><mo>{</mo><mtable columnalign="left"><mtr><mtd><msub><mi>C</mi><mi>w</mi></msub><mi class="t">t′</mi></mtd><mtd><mtext>&#xA0;&#xA0;(t′ ≥ 0, 물)</mtext></mtd></mtr><mtr><mtd><mo>−</mo><msub><mi>L</mi><mi>f</mi></msub><mo>+</mo><msub><mi>C</mi><mi>i</mi></msub><mi class="t">t′</mi></mtd><mtd><mtext>&#xA0;&#xA0;(t′ &lt; 0, 얼음)</mtext></mtd></mtr></mtable></mrow></mrow></math></div>
+      <p class="note">x<sub>s</sub>′은 습구온도 t′에서의 포화 절대습도, 즉 0.62198·P<sub>ws</sub>(t′) / (P − P<sub>ws</sub>(t′))입니다.</p>
+    </article>
+
+    <div class="glabel">기타 상태량</div>
+
+    <article class="fcard">
+      <h3>노점온도</h3>
+      <p class="note">노점온도를 입력하면 이 식을 거꾸로 풀어(이분법) P<sub>w</sub>를 구합니다. 그래서 입력한 노점이 결과에 그대로 유지됩니다.</p>
+      <div class="mbox"><math display="block"><mrow><mi>Y</mi><mo>=</mo><mi>ln</mi><mo>&#x2061;</mo><msub><mi class="w">P</mi><mi class="w">w</mi></msub></mrow></math></div>
+      <div class="mbox"><math display="block"><mrow><msub><mi class="t">t</mi><mi class="t">d</mi></msub><mo>=</mo><mrow><mo>{</mo><mtable columnalign="left" rowspacing="0.6em"><mtr><mtd><mo>−</mo><mn>77.199</mn><mo>+</mo><mn>13.198</mn><mi>Y</mi><mo>−</mo><mn>0.63772</mn><msup><mi>Y</mi><mn>2</mn></msup><mo>+</mo><mn>0.071098</mn><msup><mi>Y</mi><mn>3</mn></msup></mtd></mtr><mtr><mtd><mtext>(</mtext><msub><mi class="w">P</mi><mi class="w">w</mi></msub><mtext>&#xA0;≥ 611.2 Pa)</mtext></mtd></mtr><mtr><mtd><mo>−</mo><mn>60.662</mn><mo>+</mo><mn>7.4624</mn><mi>Y</mi><mo>+</mo><mn>0.20594</mn><msup><mi>Y</mi><mn>2</mn></msup><mo>+</mo><mn>0.016321</mn><msup><mi>Y</mi><mn>3</mn></msup></mtd></mtr><mtr><mtd><mtext>(</mtext><msub><mi class="w">P</mi><mi class="w">w</mi></msub><mtext>&#xA0;&lt; 611.2 Pa)</mtext></mtd></mtr></mtable></mrow></mrow></math></div>
+    </article>
+
+    <article class="fcard">
+      <h3>비체적 · 밀도</h3>
+      <div class="mbox"><math display="block"><mrow><mi>v</mi><mo>=</mo><mfrac><mrow><msub><mi>R</mi><mi>a</mi></msub><mi class="t">T</mi><mo>(</mo><mn>1</mn><mo>+</mo><mn>1.6078</mn><mi class="w">x</mi><mo>)</mo></mrow><mi>P</mi></mfrac></mrow></math></div>
+      <div class="mbox"><math display="block"><mrow><msub><mi>ρ</mi><mi>da</mi></msub><mo>=</mo><mfrac><mrow><mn>0.62198</mn><mi>P</mi></mrow><mrow><mo>(</mo><mn>0.62198</mn><mo>+</mo><mi class="w">x</mi><mo>)</mo><msub><mi>R</mi><mi>a</mi></msub><mi class="t">T</mi></mrow></mfrac><mspace width="1.2em"></mspace><mi>ρ</mi><mo>=</mo><msub><mi>ρ</mi><mi>da</mi></msub><mo>(</mo><mn>1</mn><mo>+</mo><mi class="w">x</mi><mo>)</mo></mrow></math></div>
+      <p class="note">v는 건공기 1 kg당 부피 [m³/kg′], ρ<sub>da</sub>는 건공기 밀도, ρ는 습공기 밀도 [kg/m³]입니다.</p>
+    </article>
+
+    <article class="fcard">
+      <h3>불쾌지수</h3>
+      <div class="mbox"><math display="block"><mrow><mi>DI</mi><mo>=</mo><mn>0.72</mn><mo>(</mo><mi class="t">t</mi><mo>+</mo><mi class="t">t′</mi><mo>)</mo><mo>+</mo><mn>40.6</mn></mrow></math></div>
+      <table class="ctable">
+        <thead><tr><th>DI</th><th>등급</th></tr></thead>
+        <tbody>
+          <tr><td>70 미만</td><td>쾌적</td></tr>
+          <tr><td>70 ~ 75</td><td>불쾌감 느낌</td></tr>
+          <tr><td>75 ~ 80</td><td>반수 이상 불쾌</td></tr>
+          <tr><td>80 ~ 85</td><td>전체 불쾌</td></tr>
+          <tr><td>85 이상</td><td>참을 수 없음</td></tr>
+        </tbody>
+      </table>
+    </article>
+
+    <div class="glabel">입력 조합별 풀이</div>
+
+    <article class="fcard wide">
+      <h3>건구온도 t와 절대습도 x를 먼저 구하고, 나머지는 위 식으로 계산합니다</h3>
+      <div style="overflow-x:auto">
+        <table class="pairs">
+          <thead><tr><th>입력</th><th>t, x 구하는 방법</th></tr></thead>
+          <tbody>
+            <tr><td>건구 + 습구</td><td>위의 “건구·습구온도 → 절대습도” 식으로 x</td></tr>
+            <tr><td>건구 + 절대습도</td><td>바로 사용</td></tr>
+            <tr><td>건구 + 상대습도</td><td><math><mrow><msub><mi class="w">P</mi><mi class="w">w</mi></msub><mo>=</mo><mi class="w">φ</mi><msub><mi>P</mi><mi>ws</mi></msub><mo>(</mo><mi class="t">t</mi><mo>)</mo><mo>/</mo><mn>100</mn></mrow></math> → x</td></tr>
+            <tr><td>건구 + 엔탈피</td><td><math><mrow><mi class="w">x</mi><mo>=</mo><mfrac><mrow><mi>h</mi><mo>−</mo><msub><mi>C</mi><mi>pa</mi></msub><mi class="t">t</mi></mrow><mrow><msub><mi>C</mi><mi>pv</mi></msub><mi class="t">t</mi><mo>+</mo><msub><mi>r</mi><mn>0</mn></msub></mrow></mfrac></mrow></math></td></tr>
+            <tr><td>절대습도 + 엔탈피</td><td><math><mrow><mi class="t">t</mi><mo>=</mo><mfrac><mrow><mi>h</mi><mo>−</mo><msub><mi>r</mi><mn>0</mn></msub><mi class="w">x</mi></mrow><mrow><msub><mi>C</mi><mi>pa</mi></msub><mo>+</mo><msub><mi>C</mi><mi>pv</mi></msub><mi class="w">x</mi></mrow></mfrac></mrow></math></td></tr>
+            <tr><td>절대습도 + 상대습도</td><td><math><mrow><msub><mi>P</mi><mi>ws</mi></msub><mo>(</mo><mi class="t">t</mi><mo>)</mo><mo>=</mo><mn>100</mn><msub><mi class="w">P</mi><mi class="w">w</mi></msub><mo>/</mo><mi class="w">φ</mi></mrow></math>, 이 압력을 노점 식에 넣어 t</td></tr>
+            <tr><td>습구 + 절대습도</td><td>“건구·습구 → 절대습도” 식을 t에 대해 정리해 바로 계산</td></tr>
+            <tr><td>습구 + 상대습도<br>습구 + 엔탈피<br>상대습도 + 엔탈피</td><td>t를 뉴턴법으로 반복 계산 (아래)</td></tr>
+            <tr><td>노점 + 건구·습구·<br>상대습도·엔탈피</td><td>노점 식을 거꾸로 풀어 <math><mrow><msub><mi class="w">P</mi><mi class="w">w</mi></msub></mrow></math>를 구하고 → x. 그다음은 위의 “절대습도 + ○○” 조합과 같습니다.</td></tr>
+            <tr><td>노점 + 절대습도</td><td>둘 다 수분량이라 같은 정보입니다. 함께 고를 수 없습니다.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="fcard wide">
+      <h3>뉴턴법 반복 계산<small>습구온도를 구할 때도 같은 방법</small></h3>
+      <div class="mbox"><math display="block"><mrow><msub><mi class="t">t</mi><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi class="t">t</mi><mi>n</mi></msub><mo>−</mo><mfrac><mrow><mi>F</mi><mo>(</mo><msub><mi class="t">t</mi><mi>n</mi></msub><mo>)</mo></mrow><mrow><mi>F</mi><mo>′</mo><mo>(</mo><msub><mi class="t">t</mi><mi>n</mi></msub><mo>)</mo></mrow></mfrac><mspace width="1.2em"></mspace><mi>F</mi><mo>′</mo><mo>(</mo><mi class="t">t</mi><mo>)</mo><mo>≈</mo><mfrac><mrow><mi>F</mi><mo>(</mo><mi class="t">t</mi><mo>+</mo><mn>0.1</mn><mo>)</mo><mo>−</mo><mi>F</mi><mo>(</mo><mi class="t">t</mi><mo>)</mo></mrow><mn>0.1</mn></mfrac></mrow></math></div>
+      <p class="note">|t<sub>n+1</sub> − t<sub>n</sub>| ≤ 0.02 ℃가 되면 멈춥니다(습구 + 엔탈피 조합은 0.001 ℃). 최대 100회 반복합니다. 습구온도는 F(t′) = h(t′, x<sub>s</sub>′) − h − (x<sub>s</sub>′ − x)·h<sub>c</sub>(t′) = 0을 풀어 구합니다.</p>
+    </article>
+  </div>
+  </div>
+</details>
+</div>
+
+<script>
+/* ---------- Psychrometric module (ported from VBA) ---------- */
+const P0=101325, R0=2501000, Ra=287.055, CpAir=1005, Cpv=1846, Rc=333600, Cc=2093, CpWater=4186;
+let Patm=P0;
+const Pws=t=>{const T=t+273.15;let v;
+  if(t>0){v=-5800.2206/T+1.3914993+T*(-0.048640239+T*(0.000041764768-0.000000014452093*T))+6.5459673*Math.log(T);}
+  else{v=-5674.5359/T+6.3925247-0.009677843*T+0.00000062215701*T**2+2.0747825e-9*T**3-9.484024e-13*T**4+4.1635019*Math.log(T);}
+  return Math.exp(v);};
+const xFromPw=pw=>0.62198*pw/(Patm-pw);
+const pwFromX=x=>x*Patm/(x+0.62198);
+const dewPoint=pw=>{const Y=Math.log(pw);return pw>=611.2?-77.199+Y*(13.198+Y*(-0.63772+0.071098*Y)):-60.662+Y*(7.4624+Y*(0.20594+0.016321*Y));};
+const hDbX=(t,x)=>CpAir*t+(Cpv*t+R0)*x;
+const hc=tw=>tw>=0?CpWater*tw:-Rc+Cc*tw;
+const xDbWb=(t,tw)=>{const H=hc(tw);return((R0+Cpv*tw-H)*xFromPw(Pws(tw))-CpAir*(t-tw))/(Cpv*t+R0-H);};
+const dbXWb=(x,tw)=>{const H=hc(tw);return(CpAir*tw+(Cpv*tw+R0-H)*xFromPw(Pws(tw))-(R0-H)*x)/(CpAir+Cpv*x);};
+const xDbRh=(t,rh)=>xFromPw(rh*Pws(t)/100);
+const xDbH=(t,h)=>(h-CpAir*t)/(Cpv*t+R0);
+const dbXH=(x,h)=>(h-R0*x)/(CpAir+Cpv*x);
+const dbXRh=(x,rh)=>dewPoint(100/rh*pwFromX(x));
+const rhDbX=(t,x)=>100*pwFromX(x)/Pws(t);
+function newton(f,t0,tol){let T=t0,n=T;for(let i=0;i<100;i++){const F=f(T),Fd=(f(T+0.1)-F)/0.1;n=T-F/Fd;if(Math.abs(n-T)<=tol)return n;T=n;}return n;}
+const dbRhWb=(rh,tw)=>newton(T=>T-dbXWb(xDbRh(T,rh),tw),tw,0.02);
+const dbHWb=(h,tw)=>newton(T=>T-dbXWb(xDbH(T,h),tw),tw,0.001);
+const dbRhH=(rh,h)=>newton(T=>h-hDbX(T,xDbRh(T,rh)),Math.min(dbXH(0,h),30),0.02);
+// 노점 → 수증기분압: 원본 노점 근사식을 Y = ln Pw 에 대해 이분법으로 거꾸로 풂
+function pwFromTd(td){let lo=-5,hi=13;
+  for(let i=0;i<80;i++){const mid=(lo+hi)/2;if(dewPoint(Math.exp(mid))<td)lo=mid;else hi=mid;}
+  return Math.exp((lo+hi)/2);}
+const xFromTd=td=>xFromPw(pwFromTd(td));
+function wbDbX(t,x){const h=hDbX(t,x);
+  const f=T=>{const xs=xFromPw(Pws(T));return hDbX(T,xs)-h-(xs-x)*hc(T);};
+  return newton(f,t,0.02);}
+
+/* ---------- 온도 단위 ---------- */
+const TUNITS={
+  C:{s:'℃',to:c=>c,from:v=>v,d:1,step:'0.1',tick:5},
+  F:{s:'℉',to:c=>c*9/5+32,from:f=>(f-32)*5/9,d:1,step:'0.1',tick:10},
+  K:{s:'K',to:c=>c+273.15,from:k=>k-273.15,d:2,step:'0.01',tick:5},
+};
+let tu='C';
+try{const s=localStorage.getItem('humid-air-tu');if(s&&TUNITS[s])tu=s;}catch(e){}
+const TU=()=>TUNITS[tu];
+const tDisp=c=>TU().to(c).toFixed(TU().d);
+const TEMPS=['db','wb','td'];
+
+/* ---------- UI ---------- */
+const VARS=[
+  {k:'db',n:'건구온도',u:'℃',kind:'heat',d:1,step:'0.1',temp:true},
+  {k:'wb',n:'습구온도',u:'℃',kind:'heat',d:1,step:'0.1',temp:true},
+  {k:'x', n:'절대습도',u:"kg/kg'",kind:'wet',d:4,step:'0.0001'},
+  {k:'rh',n:'상대습도',u:'%',kind:'wet',d:1,step:'0.1'},
+  {k:'h', n:'엔탈피',u:"kJ/kg'",kind:'heat',d:2,step:'0.1'},
+  {k:'td',n:'노점온도',u:'℃',kind:'heat',d:1,step:'0.1',temp:true},
+];
+const OUTS=[
+  {k:'pw',n:'수증기분압',u:'Pa',f:v=>v.toFixed(2)},
+  {k:'hJ',n:'엔탈피',u:"J/kg'",f:v=>Math.round(v).toLocaleString()},
+  {k:'di',n:'불쾌지수',u:'',f:v=>v.toFixed(1)},
+  {k:'v', n:'비체적',u:"m³/kg'",f:v=>v.toFixed(3)},
+  {k:'rda',n:'건공기밀도',u:'kg/m³',f:v=>v.toFixed(3)},
+  {k:'rma',n:'습공기밀도',u:'kg/m³',f:v=>v.toFixed(3)},
+];
+let sel=['db','wb'];
+const $=id=>document.getElementById(id);
+const inBox=$('inputs'), outBox=$('outputs');
+VARS.forEach(v=>{
+  const r=document.createElement('div');r.className='row';r.dataset.kind=v.kind;r.id='row-'+v.k;
+  r.innerHTML=`<button class="pick" type="button" id="pick-${v.k}" aria-pressed="false">${v.n}</button>
+    <input id="in-${v.k}" type="number" step="${v.step}" inputmode="decimal" aria-label="${v.n}">
+    <span class="unit" id="u-${v.k}">${v.u}</span>`;
+  inBox.appendChild(r);
+  r.querySelector('button').addEventListener('click',()=>toggle(v.k));
+  r.querySelector('input').addEventListener('input',calc);
+  r.querySelector('input').addEventListener('focus',e=>{if(!sel.includes(v.k))toggle(v.k,true);});
+});
+OUTS.forEach(o=>{
+  const r=document.createElement('div');r.className='row';
+  r.innerHTML=`<span class="name">${o.n}</span><span class="val" id="out-${o.k}">–</span><span class="unit" id="unit-${o.k}">${o.u}</span>`;
+  outBox.appendChild(r);
+});
+const DEF={db:20,wb:15};
+VARS.forEach(v=>{$('in-'+v.k).value=DEF[v.k]===undefined?'':(v.temp?tDisp(DEF[v.k]):DEF[v.k].toFixed(v.d));});
+
+function applyTU(){
+  ['C','F','K'].forEach(u=>$('tu-'+u).setAttribute('aria-pressed',u===tu));
+  TEMPS.forEach(k=>{$('u-'+k).textContent=TU().s;$('in-'+k).step=TU().step;});
+  $('wbLegend').textContent=`습구온도 ${tu==='F'?'9 ℉':tu==='K'?'5 K':'5 ℃'} 간격`;
+}
+function setTU(u){
+  if(u===tu)return;
+  // 직접 입력 중인 온도는 새 단위로 바꿔서 그대로 유지
+  const keep={};TEMPS.forEach(k=>{if(sel.includes(k)){const v=parseFloat($('in-'+k).value);if(Number.isFinite(v))keep[k]=TU().from(v);}});
+  tu=u;try{localStorage.setItem('humid-air-tu',u);}catch(e){}
+  Object.entries(keep).forEach(([k,c])=>$('in-'+k).value=tDisp(c));
+  applyTU();calc();
+}
+['C','F','K'].forEach(u=>$('tu-'+u).addEventListener('click',()=>setTU(u)));
+
+function toggle(k,keepFocus){
+  if(sel.includes(k)){sel=sel.filter(s=>s!==k);}
+  else{sel.push(k);if(sel.length>2)sel.shift();}
+  syncSel();calc();
+  if(sel.includes(k)&&!keepFocus){const i=$('in-'+k);i.focus();i.select();}
+}
+function syncSel(){VARS.forEach(v=>{const on=sel.includes(v.k);$('row-'+v.k).classList.toggle('on',on);$('pick-'+v.k).setAttribute('aria-pressed',on);$('in-'+v.k).readOnly=!on;});}
+
+const NAME=Object.fromEntries(VARS.map(v=>[v.k,v.n]));
+function solve(inp){
+  const has=k=>k in inp; let db,x,wb=null;
+  const pair=[...sel].sort().join('+');
+  const I=inp;
+  switch(pair){
+    case 'db+wb': db=I.db;wb=I.wb;x=xDbWb(db,wb);break;
+    case 'db+x': db=I.db;x=I.x;break;
+    case 'db+rh': db=I.db;x=xDbRh(db,I.rh);break;
+    case 'db+h': db=I.db;x=xDbH(db,I.h);break;
+    case 'wb+x': wb=I.wb;x=I.x;db=dbXWb(x,wb);break;
+    case 'rh+wb': wb=I.wb;db=dbRhWb(I.rh,wb);x=xDbRh(db,I.rh);break;
+    case 'h+wb': wb=I.wb;db=dbHWb(I.h,wb);x=xDbH(db,I.h);break;
+    case 'rh+x': x=I.x;db=dbXRh(x,I.rh);break;
+    case 'h+x': x=I.x;db=dbXH(x,I.h);break;
+    case 'h+rh': db=dbRhH(I.rh,I.h);x=xDbRh(db,I.rh);break;
+    case 'db+td': db=I.db;x=xFromTd(I.td);break;
+    case 'td+wb': wb=I.wb;x=xFromTd(I.td);db=dbXWb(x,wb);break;
+    case 'rh+td': x=xFromTd(I.td);db=dbXRh(x,I.rh);break;
+    case 'h+td': x=xFromTd(I.td);db=dbXH(x,I.h);break;
+  }
+  if(wb===null)wb=wbDbX(db,x);
+  const pw=pwFromX(x), rh=rhDbX(db,x), h=hDbX(db,x);
+  const rda=(0.62198*Patm/(0.62198+x))/Ra/(db+273.15);
+  return {db,wb,x,rh,h:h/1000,hJ:h,pw,td:'td' in I?I.td:dewPoint(pw),di:0.72*(db+wb)+40.6,v:(db+273.15)*Ra*(1+1.6078*x)/Patm,rda,rma:rda*(1+x)};
+}
+function validate(I){
+  for(const k of sel){if(!Number.isFinite(I[k]))return `${NAME[k]} 값을 숫자로 입력하세요.`;}
+  if('rh' in I&&(I.rh<=0||I.rh>100))return '상대습도는 0 초과 100 % 이하로 입력하세요.';
+  if('x' in I&&I.x<0)return '절대습도는 0 이상이어야 합니다.';
+  if('db' in I&&'wb' in I&&I.wb>I.db)return '습구온도는 건구온도보다 높을 수 없습니다.';
+  if('td' in I&&'x' in I)return '노점온도와 절대습도는 둘 다 수분량을 나타내서 함께 고를 수 없습니다. 다른 값을 하나 고르세요.';
+  if('td' in I&&'db' in I&&I.td>I.db)return '노점온도는 건구온도보다 높을 수 없습니다.';
+  if('td' in I&&'wb' in I&&I.td>I.wb)return '노점온도는 습구온도보다 높을 수 없습니다.';
+  for(const k of ['db','wb','td'])if(k in I&&(I[k]<-40||I[k]>90))return `${NAME[k]}는 ${tDisp(-40)} ~ ${tDisp(90)} ${TU().s} 범위에서 계산합니다.`;
+  return null;
+}
+function diLabel(d){
+  if(d>=85)return ['참을 수 없음','var(--bad)'];
+  if(d>=80)return ['전체 불쾌','var(--bad)'];
+  if(d>=75)return ['반수 이상 불쾌','var(--heat)'];
+  if(d>=70)return ['불쾌감 느낌','var(--warn)'];
+  return ['쾌적','var(--ok)'];
+}
+function calc(){
+  const hint=$('hint');hint.classList.remove('err');
+  const alt=parseFloat($('alt').value)||0;
+  Patm=P0*Math.pow(1-0.000022558*alt,5.256);
+  $('patm').textContent=Patm.toFixed(0);$('patm2').textContent=(Patm/1000).toFixed(1);
+  document.body.classList.toggle('stale',sel.length<2);
+  if(sel.length<2){hint.textContent=sel.length?`${NAME[sel[0]]} 외에 하나를 더 고르세요.`:'계산할 상태값 두 개를 고르세요.';return;}
+  const I={};sel.forEach(k=>{const v=parseFloat($('in-'+k).value);I[k]=k==='h'?v*1000:TEMPS.includes(k)?TU().from(v):v;});
+  const err=validate(I);
+  if(err){hint.textContent=err;hint.classList.add('err');document.body.classList.add('stale');return;}
+  const S=solve(I);
+  const bad=!Object.values(S).every(Number.isFinite)||S.rh>100.05||S.x<-1e-6||S.pw>=Patm;
+  if(bad){hint.textContent='이 조합은 포화선을 넘거나 해가 없습니다. 값을 조정하세요.';hint.classList.add('err');document.body.classList.add('stale');return;}
+  hint.textContent=`${NAME[sel[0]]} + ${NAME[sel[1]]} 기준으로 계산했습니다.`;
+  VARS.forEach(v=>{if(!sel.includes(v.k))$('in-'+v.k).value=v.temp?tDisp(S[v.k]):S[v.k].toFixed(v.d);});
+  OUTS.forEach(o=>{$('out-'+o.k).textContent=o.f(S[o.k]);});
+  const [lab,col]=diLabel(S.di);
+  $('unit-di').innerHTML=`<span class="pill" style="background:${col}">${lab}</span>`;
+  draw(S);
+  mcRender(S);
+}
+
+/* ---------- 단위조작(McCabe) 습도 항목 ---------- */
+// 습윤비열·습윤부피는 McCabe 식: c_s = 1.005 + 1.88H [kJ/kg·K] = 0.24 + 0.45H [Btu/lb·°F]
+//                                 v_H = (0.00283 + 0.00456H)T[K] = (0.0252 + 0.0405H)T[°R]
+function mcRender(S){
+  const eng=tu==='F';
+  const H=S.x, ps=Pws(S.db), Hs=ps<Patm?0.62198*ps/(Patm-ps):NaN;
+  const pA=S.pw/101325, HR=100*S.pw/ps, HA=100*H/Hs;
+  const cs=eng?0.24+0.45*H:1.005+1.88*H;
+  const vH=eng?(0.0252+0.0405*H)*(S.db*9/5+32+460):(0.00283+0.00456*H)*(S.db+273.15);
+  const n=(v,d)=>Number.isFinite(v)?v.toFixed(d):'—';
+  const T=eng?'T [°R] = °F + 460':'T [K]';
+  const rows=[
+    ['수증기 분압','<i>p</i><sub>A</sub>',n(pA,4),'atm','p<sub>A</sub> = P<sub>w</sub> / 101325'],
+    ['절대습도','<i>H</i>',n(H,4),eng?'lb H₂O/lb 건조공기':'kg H₂O/kg 건조공기','H = 0.62198 p<sub>A</sub> / (P − p<sub>A</sub>)'],
+    [`포화습도 (${tDisp(S.db)} ${TU().s})`,'<i>H</i><sub>s</sub>',n(Hs,4),eng?'lb H₂O/lb 건조공기':'kg H₂O/kg 건조공기','H<sub>s</sub> = 0.62198 p<sub>s</sub> / (P − p<sub>s</sub>), p<sub>s</sub>: 건구온도의 포화수증기압'],
+    ['상대습도','<i>H</i><sub>R</sub>',n(HR,1),'%','H<sub>R</sub> = 100 p<sub>A</sub> / p<sub>s</sub>'],
+    ['%습도 (비교습도)','<i>H</i><sub>A</sub>',n(HA,1),'%','H<sub>A</sub> = 100 H / H<sub>s</sub>'],
+    ['습윤비열','<i>c</i><sub>s</sub>',n(cs,3),eng?'Btu/lb 건조공기·°F':'kJ/kg 건조공기·K',eng?'c<sub>s</sub> = 0.24 + 0.45H':'c<sub>s</sub> = 1.005 + 1.88H'],
+    ['습윤부피','<i>v</i><sub>H</sub>',n(vH,eng?1:3),eng?'ft³/lb 건조공기':'m³/kg 건조공기',(eng?'v<sub>H</sub> = (0.0252 + 0.0405H)T':'v<sub>H</sub> = (0.00283 + 0.00456H)T')+', '+T],
+    ['단열포화온도 ≈ 습구온도','<i>T</i><sub>s</sub> ≈ <i>T</i><sub>w</sub>',tDisp(S.wb),TU().s,'공기–물계에서는 루이스 관계로 두 온도가 거의 같습니다'],
+  ];
+  $('mcBody').innerHTML=rows.map(r=>`<tr><td class="name">${r[0]}</td><td class="sym">${r[1]}</td><td class="r">${r[2]}</td><td class="u">${r[3]}</td><td class="f">${r[4]}</td></tr>`).join('');
+  $('mcNote').textContent=eng?'영국 단위 (온도 단위 ℉)':'SI 단위 · 온도 단위를 ℉로 고르면 lb·Btu·ft³ 단위로 바뀝니다';
+}
+
+/* ---------- Chart ---------- */
+const W=680,H=460,m={l:44,r:62,t:16,b:40};
+// 기본 범위는 일반 습공기선도(−10~50 ℃, x ≤ 0.030). 상태점이 벗어나면 그 점이 들어오도록 넓힘
+let TMIN=-10,TMAX=50,XMAX=0.030,XSTEP=0.005;
+function setRange(S){
+  TMIN=Math.max(-40,Math.min(-10,Math.floor((Math.min(S.db,S.wb)-5)/10)*10));
+  TMAX=Math.min(100,Math.max(50,Math.ceil((S.db+5)/10)*10));
+  const need=Math.max(S.x,xFromPw(Pws(S.wb)))*1.12;   // 상태점과 습구 포화점이 모두 보이게
+  if(need<=0.030){XMAX=0.030;XSTEP=0.005;}
+  else{XSTEP=[0.005,0.01,0.02,0.05,0.1,0.2,0.5].find(s=>need/s<=8)||1;XMAX=Math.ceil(need/XSTEP)*XSTEP;}
+}
+const sx=t=>m.l+(t-TMIN)/(TMAX-TMIN)*(W-m.l-m.r);
+const sy=x=>H-m.b-x/XMAX*(H-m.t-m.b);
+function path(pts){return pts.filter(p=>Number.isFinite(p[1])&&p[1]>=0&&p[1]<XMAX*4).map((p,i)=>(i?'L':'M')+sx(p[0]).toFixed(1)+','+sy(p[1]).toFixed(1)).join('');}
+/* ---------- 그래프 종류 전환 ---------- */
+let chartMode='psy';
+try{const s=localStorage.getItem('humid-air-chart');if(s==='mc'||s==='psy')chartMode=s;}catch(e){}
+function applyChartMode(){
+  $('cm-psy').setAttribute('aria-pressed',chartMode==='psy');$('cm-mc').setAttribute('aria-pressed',chartMode==='mc');
+  $('chartTitle').textContent=chartMode==='psy'?'습공기선도':'습도도표 (McCabe 그림 19.3 방식)';
+  $('psyLegend').hidden=chartMode!=='psy';$('mcSteps').hidden=chartMode!=='mc';
+}
+['psy','mc'].forEach(k=>$('cm-'+k).addEventListener('click',()=>{chartMode=k;try{localStorage.setItem('humid-air-chart',k);}catch(e){}applyChartMode();calc();}));
+
+/* ---------- 습도도표 (McCabe 그림 19.3 방식) ---------- */
+function niceStep(r){const p=Math.pow(10,Math.floor(Math.log10(r)));const f=r/p;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;}
+function drawMc(S){
+  const eng=tu==='F';
+  const L=62,R=70,Tp=40,B=40,x0=L,x1=W-R,y0=Tp,y1=H-B,pw=x1-x0,ph=y1-y0;
+  const T1=S.db,Td=S.td,Ts=S.wb,H1=S.x;
+  const Hs=t=>{const p=Pws(t);return p<Patm?0.62198*p/(Patm-p):NaN;};
+  const HsT1=Hs(T1),HsTs=Hs(Ts),HA=100*H1/HsT1;
+  const vol=(t,h)=>eng?(0.0252+0.0405*h)*(t*9/5+32+460):(0.00283+0.00456*h)*(t+273.15);
+  const cs=h=>eng?0.24+0.45*h:1.005+1.88*h;
+  const vU=eng?'ft³/lb':'m³/kg', hU=eng?'lb/lb 건조공기':'kg/kg 건조공기', cU=eng?'Btu/lb·°F':'kJ/kg·K';
+  // 온도 범위(내부 ℃)
+  const tmin=Math.max(-40,Math.floor((Math.min(Td,Ts)-10)/10)*10);
+  const tmax=Math.min(95,Math.max(tmin+40,Math.ceil((T1+15)/10)*10));
+  const sx=t=>x0+(t-tmin)/(tmax-tmin)*pw;
+  // 습도축(오른쪽): 습도 선들이 아래쪽 40 % 안에 오도록
+  const hstep=niceStep(Math.max(HsTs,H1)/0.38/5), Hmax=hstep*5;
+  const hy=h=>y1-h/Hmax*ph;
+  // 부피축(왼쪽): 부피 선들이 위쪽 55 % 안에 오도록
+  const vdry=t=>vol(t,0), vsat=t=>vol(t,Hs(t));
+  const vlo=vdry(tmin), vhi=Math.max(vsat(T1),vdry(tmax))*1.04;
+  const vy=v=>y0+10+(1-(v-vlo)/(vhi-vlo))*(ph*0.55-10);
+  // 습윤비열축(위쪽): c_s = a + bH 직선이 습도축과 짝을 이룸
+  const cslo=cs(0), cshi=cs(Hmax), cx=c=>x0+(c-cslo)/(cshi-cslo)*pw;
+
+  let g=`<defs><clipPath id="clipMc"><rect x="${x0}" y="${y0}" width="${pw}" height="${ph}"/></clipPath></defs>`;
+  g+=`<rect x="${x0}" y="${y0}" width="${pw}" height="${ph}" fill="var(--surface2)" stroke="var(--grid2)"/>`;
+  // 아래 온도축
+  const tst=niceStep((TU().to(tmax)-TU().to(tmin))/7);
+  for(let v=Math.ceil(TU().to(tmin)/tst-1e-9)*tst;v<=TU().to(tmax)+1e-9;v+=tst){const x=sx(TU().from(v));
+    g+=`<line x1="${x}" x2="${x}" y1="${y0}" y2="${y1}" stroke="var(--grid)"/><text x="${x}" y="${y1+15}" text-anchor="middle">${+v.toFixed(2)}</text>`;}
+  g+=`<text class="ttl" x="${(x0+x1)/2}" y="${H-6}" text-anchor="middle">온도 [${TU().s}]</text>`;
+  // 오른쪽 습도축
+  for(let i=0;i<=5;i++){const h=i*hstep;g+=`<line x1="${x1}" x2="${x1+4}" y1="${hy(h)}" y2="${hy(h)}" stroke="var(--muted)"/><text x="${x1+7}" y="${hy(h)+4}">${+h.toFixed(4)}</text>`;}
+  g+=`<text class="ttl" x="${W-10}" y="${(y0+y1)/2+60}" text-anchor="middle" transform="rotate(90 ${W-10} ${(y0+y1)/2+60})">습도 H [${hU}]</text>`;
+  // 왼쪽 부피축
+  const vst=niceStep((vhi-vlo)/4);
+  for(let v=Math.ceil(vlo/vst)*vst;v<=vhi+1e-9;v+=vst){g+=`<line x1="${x0-4}" x2="${x0}" y1="${vy(v)}" y2="${vy(v)}" stroke="var(--muted)"/><text x="${x0-7}" y="${vy(v)+4}" text-anchor="end">${+v.toFixed(3)}</text>`;}
+  g+=`<text class="ttl" x="14" y="${y0+ph*0.28}" text-anchor="middle" transform="rotate(-90 14 ${y0+ph*0.28})">부피 [${vU}]</text>`;
+  // 위쪽 습윤비열축
+  const cst=niceStep((cshi-cslo)/5);
+  for(let c=Math.ceil(cslo/cst)*cst;c<=cshi+1e-9;c+=cst){g+=`<line x1="${cx(c)}" x2="${cx(c)}" y1="${y0-4}" y2="${y0}" stroke="var(--muted)"/><text x="${cx(c)}" y="${y0-7}" text-anchor="middle">${+c.toFixed(3)}</text>`;}
+  g+=`<text class="ttl" x="${x0}" y="12">습윤비열 c<tspan dy="3" font-size="9">s</tspan><tspan dy="-3"> [${cU}]</tspan></text>`;
+
+  const P=(f,a,b,st)=>{let d='';for(let t=a;t<=b+1e-9;t+=st){const y=f(t);if(!Number.isFinite(y))continue;d+=(d?'L':'M')+sx(t).toFixed(1)+','+y.toFixed(1);}return d;};
+  g+=`<g clip-path="url(#clipMc)">`;
+  // 부피 선
+  g+=`<path d="${P(t=>vy(vdry(t)),tmin,tmax,0.5)}" fill="none" stroke="var(--ink)" stroke-width="1.3"/>`;
+  g+=`<path d="${P(t=>vy(vsat(t)),tmin,tmax,0.25)}" fill="none" stroke="var(--ink)" stroke-width="1.3"/>`;
+  // 습윤비열-습도 직선
+  g+=`<line x1="${cx(cs(0))}" y1="${hy(0)}" x2="${cx(cs(Hmax))}" y2="${hy(Hmax)}" stroke="var(--heat)" stroke-width="1.3"/>`;
+  // %습도 곡선
+  [25,50,75].forEach(p=>{g+=`<path d="${P(t=>hy(p/100*Hs(t)),tmin,tmax,0.25)}" fill="none" stroke="var(--wet)" stroke-width=".8" opacity=".35"/>`;});
+  g+=`<path d="${P(t=>hy(Hs(t)),tmin,tmax,0.2)}" fill="none" stroke="var(--wet)" stroke-width="2.2"/>`;
+  g+=`<path d="${P(t=>hy(HA/100*Hs(t)),tmin,tmax,0.25)}" fill="none" stroke="var(--wet)" stroke-width="1.6" stroke-dasharray="6 4"/>`;
+  g+='</g>';
+
+  // 작도선
+  const a=[sx(T1),hy(H1)], c=[sx(Td),hy(H1)], e=[sx(Ts),hy(HsTs)];
+  const vl=vdry(T1), vk=vsat(T1), vm=vol(T1,H1), csv=cs(H1);
+  const l=[sx(T1),vy(vl)], k=[sx(T1),vy(vk)], mP=[sx(T1),vy(vm)], o=[cx(csv),hy(H1)];
+  const ln=(p,q,col,dash,w)=>`<line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" stroke="${col}" stroke-width="${w||1.6}"${dash?` stroke-dasharray="${dash}"`:''}/>`;
+  g+=ln([Math.min(c[0],o[0]),a[1]],[x1,a[1]],'var(--wet)');            // c–a–b : H1
+  g+=ln(c,[c[0],y1],'var(--wet)');                                      // c–d : 이슬점
+  g+=ln(a,[a[0],y1],'var(--wet)');                                      // a–T1
+  g+=ln(e,[x1,e[1]],'var(--bad)');                                      // e–f : Hs
+  g+=ln(e,[e[0],y1],'var(--bad)','4 3',1.2);                            // e–g : Ts
+  let ad='';for(let t=Ts;t<=T1+1e-9;t+=Math.max((T1-Ts)/40,0.01)){ad+=(ad?'L':'M')+sx(t).toFixed(1)+','+hy(xDbWb(t,Ts)).toFixed(1);}
+  g+=`<path d="${ad}" fill="none" stroke="var(--bad)" stroke-width="1.8"/>`; // a–e 단열냉각선
+  g+=ln([a[0],a[1]],[a[0],y0],'var(--muted)','3 3',1);                  // T1 위로 (l, m, k)
+  g+=ln(mP,[x0,mP[1]],'var(--ok)','',1.6);                              // m–n : v_H
+  g+=ln(o,[o[0],y0],'var(--heat)','',1.6);                              // o–p : c_s
+  // 점과 글자
+  const pt=(p,lab,col,dx,dy,anchor)=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="var(--surface)" stroke="${col}" stroke-width="1.8"/><text x="${p[0]+(dx||6)}" y="${p[1]+(dy||-6)}" text-anchor="${anchor||'start'}" style="fill:${col};font-weight:600">${lab}</text>`;
+  g+=pt(a,'a','var(--ink)',6,14);g+=pt(c,'c','var(--wet)',-6,-6,'end');g+=pt(e,'e','var(--bad)',-6,-6,'end');
+  g+=pt(l,'l','var(--ink)',6,12);g+=pt(k,'k','var(--ink)',6,-4);g+=pt(mP,'m','var(--ok)',6,4);g+=pt(o,'o','var(--heat)',6,14);
+  g+=`<text x="${c[0]-4}" y="${y1-6}" text-anchor="end" style="fill:var(--wet)">d · 이슬점 ${tDisp(Td)}</text>`;
+  g+=`<text x="${e[0]+4}" y="${y1-6}" style="fill:var(--bad)">g · T<tspan dy="3" font-size="9">s</tspan><tspan dy="-3"> ${tDisp(Ts)}</tspan></text>`;
+  g+=`<text x="${a[0]+4}" y="${y1-20}" style="fill:var(--wet)">T<tspan dy="3" font-size="9">1</tspan><tspan dy="-3"> ${tDisp(T1)}</tspan></text>`;
+  g+=`<text x="${x1-4}" y="${a[1]+14}" text-anchor="end" style="fill:var(--wet)">b · H<tspan dy="3" font-size="9">1</tspan><tspan dy="-3"> = ${H1.toFixed(4)}</tspan></text>`;
+  g+=`<text x="${x1-4}" y="${e[1]-6}" text-anchor="end" style="fill:var(--bad)">f · H<tspan dy="3" font-size="9">s</tspan><tspan dy="-3"> = ${HsTs.toFixed(4)}</tspan></text>`;
+  g+=`<text x="${x0+6}" y="${mP[1]-6}" style="fill:var(--ok)">n · v<tspan dy="3" font-size="9">H</tspan><tspan dy="-3"> = ${vm.toFixed(eng?2:3)}</tspan></text>`;
+  g+=`<text x="${o[0]+6}" y="${y0+14}" style="fill:var(--heat)">p · c<tspan dy="3" font-size="9">s</tspan><tspan dy="-3"> = ${csv.toFixed(3)}</tspan></text>`;
+  g+=`<text x="${l[0]-6}" y="${l[1]+12}" text-anchor="end" class="num">${vl.toFixed(eng?2:3)}</text>`;
+  g+=`<text x="${k[0]-6}" y="${k[1]+4}" text-anchor="end" class="num">${vk.toFixed(eng?2:3)}</text>`;
+  // 곡선 이름
+  const lab=(x,y,t,col,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'start'}" style="fill:${col}" font-size="11">${t}</text>`;
+  const tDry=tmin+(tmax-tmin)*0.9;
+  g+=lab(sx(tDry),vy(vdry(tDry))+16,'건조공기 부피','var(--muted)','end');
+  let tSat=tmin;while(tSat<tmax&&vy(vsat(tSat))>y0+ph*0.12)tSat+=0.5;
+  if(Number.isFinite(vsat(tSat)))g+=lab(sx(tSat)+8,vy(vsat(tSat))+4,'포화 부피','var(--muted)');
+  g+=lab(cx(cs(Hmax*0.8))+6,hy(Hmax*0.8),'습윤비열–습도','var(--heat)');
+  let t100=tmin;while(t100<tmax&&hy(Hs(t100))>y0+ph*0.5)t100+=0.5;
+  g+=lab(sx(t100)+6,hy(Hs(t100))+4,'100 %','var(--wet)');
+  let tA=Math.min(tmax-2,T1+(tmax-T1)*0.6);g+=lab(sx(tA),hy(HA/100*Hs(tA))-6,`H<tspan dy="3" font-size="9">A</tspan><tspan dy="-3"> = ${HA.toFixed(1)} %</tspan>`,'var(--wet)','end');
+  $('chart').innerHTML=g;
+
+  $('mcSteps').innerHTML=[
+    `<b>a</b>: 건구온도 T<sub>1</sub>과 습도 H<sub>1</sub>로 정한 상태점. 오른쪽으로 가면 <b>b</b>에서 H<sub>1</sub> = ${H1.toFixed(4)}.`,
+    `<b>c → d</b>: H<sub>1</sub> 수평선이 100 % 곡선과 만나는 c의 온도가 이슬점 ${tDisp(Td)} ${TU().s}.`,
+    `<b>a → e → f, g</b>: 단열냉각선을 따라 100 % 곡선까지 가면 단열포화온도 T<sub>s</sub> = ${tDisp(Ts)} ${TU().s}(g), 그때의 포화습도 H<sub>s</sub> = ${HsTs.toFixed(4)}(f).`,
+    `<b>l, k → m → n</b>: T<sub>1</sub>에서 건조공기 부피 l = ${vl.toFixed(eng?2:3)}, 포화 부피 k = ${vk.toFixed(eng?2:3)}. m = l + H<sub>A</sub>(k − l) = ${vl.toFixed(eng?2:3)} + ${(HA/100).toFixed(3)} × (${vk.toFixed(eng?2:3)} − ${vl.toFixed(eng?2:3)}) = ${vm.toFixed(eng?2:3)} ${vU} → n에서 v<sub>H</sub>.`,
+    `<b>c → o → p</b>: H<sub>1</sub> 수평선이 습윤비열–습도 직선과 만나는 o에서 위로 올라가 p에서 c<sub>s</sub> = ${csv.toFixed(3)} ${cU}.`,
+  ].map(t=>`<li>${t}</li>`).join('');
+}
+
+function draw(S){
+  if(chartMode==='mc')return drawMc(S);
+  setRange(S);
+  const wide=TMAX-TMIN>70;
+  let g='<defs><clipPath id="clip"><rect x="'+m.l+'" y="'+m.t+'" width="'+(W-m.l-m.r)+'" height="'+(H-m.t-m.b)+'"/></clipPath></defs>';
+  g+=`<rect x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}" fill="var(--surface2)"/>`;
+  const st=TU().tick*(wide?2:1), dmin=TU().to(TMIN), dmax=TU().to(TMAX);
+  for(let v=Math.ceil(dmin/st-1e-9)*st;v<=dmax+1e-9;v+=st){const t=TU().from(v);
+    g+=`<line x1="${sx(t)}" x2="${sx(t)}" y1="${m.t}" y2="${H-m.b}" stroke="var(--grid)"/><text x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${+v.toFixed(2)}</text>`;}
+  for(let i=0;i*XSTEP<=XMAX+1e-9;i++){const x=i*XSTEP;g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${sy(x)}" y2="${sy(x)}" stroke="var(--grid)"/><text x="${W-m.r+6}" y="${sy(x)+4}">${x.toFixed(XSTEP<0.01?3:2)}</text>`;}
+  g+=`<text class="ttl" x="${(m.l+W-m.r)/2}" y="${H-6}" text-anchor="middle">건구온도 [${TU().s}]</text>`;
+  g+=`<text class="ttl" x="${W-12}" y="${(m.t+H-m.b)/2}" text-anchor="middle" transform="rotate(90 ${W-12} ${(m.t+H-m.b)/2})">절대습도 [kg/kg']</text>`;
+  g+='<g clip-path="url(#clip)">';
+  // wet-bulb lines
+  const wstep=wide?10:5;
+  for(let tw=Math.ceil((TMIN+5)/wstep)*wstep;tw<=Math.min(TMAX-10,90);tw+=wstep){const pts=[];for(let t=tw;t<=TMAX+10;t+=0.5){const x=xDbWb(t,tw);if(x<0)break;pts.push([t,x]);}
+    g+=`<path d="${path(pts)}" fill="none" stroke="var(--grid2)" stroke-dasharray="4 4"/>`;}
+  $('wbLegend').textContent=`습구온도 ${tu==='F'?wstep*9/5+' ℉':tu==='K'?wstep+' K':wstep+' ℃'} 간격`;
+  // RH curves
+  for(let rh=10;rh<=100;rh+=10){const pts=[];for(let t=TMIN;t<=TMAX;t+=0.5)pts.push([t,xDbRh(t,rh)]);
+    g+=`<path d="${path(pts)}" fill="none" stroke="var(--wet)" stroke-width="${rh===100?2.2:0.9}" opacity="${rh===100?1:0.55}"/>`;}
+  g+='</g>';
+  // RH labels
+  for(let rh=10;rh<100;rh+=10){let t=TMAX-1;while((xDbRh(t,rh)>XMAX*0.97||xDbRh(t,rh)<0)&&t>TMIN)t-=0.5;
+    g+=`<text x="${sx(t)-2}" y="${sy(xDbRh(t,rh))-3}" text-anchor="end" style="fill:var(--wet)">${rh}%</text>`;}
+  // state point
+  const inView=S.db>=TMIN&&S.db<=TMAX&&S.x>=0&&S.x<=XMAX;
+  if(inView){
+    const px=sx(S.db),py=sy(S.x);
+    g+=`<line x1="${px}" x2="${px}" y1="${py}" y2="${H-m.b}" stroke="var(--heat)" stroke-dasharray="3 3"/>`;
+    g+=`<line x1="${sx(Math.max(S.td,TMIN))}" x2="${W-m.r}" y1="${py}" y2="${py}" stroke="var(--wet)" stroke-dasharray="3 3"/>`;
+    if(S.td>=TMIN)g+=`<circle cx="${sx(S.td)}" cy="${py}" r="3.5" fill="var(--surface)" stroke="var(--wet)" stroke-width="1.5"/><text x="${sx(S.td)-6}" y="${py-6}" text-anchor="end" style="fill:var(--wet)">노점 ${tDisp(S.td)}</text>`;
+    const pts=[];for(let t=S.wb;t<=S.db+0.001;t+=Math.max((S.db-S.wb)/30,0.01))pts.push([t,xDbWb(t,S.wb)]);pts.push([S.db,S.x]);
+    g+=`<path d="${path(pts)}" fill="none" stroke="var(--heat)" stroke-width="1.8"/>`;
+    g+=`<circle cx="${sx(S.wb)}" cy="${sy(xFromPw(Pws(S.wb)))}" r="3.5" fill="var(--surface)" stroke="var(--heat)" stroke-width="1.5"/>`;
+    g+=`<text x="${sx(S.wb)-6}" y="${sy(xFromPw(Pws(S.wb)))-8}" text-anchor="end" style="fill:var(--heat)">습구 ${tDisp(S.wb)}</text>`;
+    g+=`<circle cx="${px}" cy="${py}" r="6.5" fill="var(--heat)" stroke="var(--surface)" stroke-width="2"/>`;
+    const right=px>W-m.r-120;
+    g+=`<text class="ttl" x="${px+(right?-12:12)}" y="${py+18}" text-anchor="${right?'end':'start'}">${tDisp(S.db)} ${TU().s} · ${S.rh.toFixed(1)} %</text>`;
+  } else {
+    g+=`<text class="ttl" x="${(m.l+W-m.r)/2}" y="${m.t+24}" text-anchor="middle">상태점이 선도 범위(${tDisp(TMIN)}~${tDisp(TMAX)} ${TU().s}, x ≤ ${XMAX}) 밖에 있습니다</text>`;
+  }
+  $('chart').innerHTML=g;
+}
+$('alt').addEventListener('input',calc);
+applyTU();applyChartMode();syncSel();calc();
+</script>
+
+
+<a href="../" aria-label="Chemnote 홈으로" style="position:fixed;left:12px;bottom:12px;z-index:40;font:600 13px/1 'IBM Plex Sans KR','Malgun Gothic',system-ui,sans-serif;padding:8px 12px;border-radius:999px;background:rgba(23,33,43,.82);color:#fff;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.2)">← Chemnote</a>
+</body>
+</html>
