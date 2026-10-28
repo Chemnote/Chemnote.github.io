@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>화학분석기능사 실기 흡광도 검량선 연습 | Chemnote</title>
+<meta name="description" content="화학분석기능사 실기 KMnO₄ 표준용액 제조(메스피펫·부피 플라스크·큐벳) 과정을 애니메이션으로 보고, 흡광도로 검량선을 그려 미지시료 농도와 희석배수를 계산하는 무료 연습 도구.">
+<link rel="canonical" href="https://chemnote.github.io/absorbance/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://chemnote.github.io/absorbance/">
+<meta property="og:title" content="화학분석기능사 실기 흡광도 검량선 연습 | Chemnote">
+<meta property="og:description" content="화학분석기능사 실기 KMnO₄ 표준용액 제조(메스피펫·부피 플라스크·큐벳) 과정을 애니메이션으로 보고, 흡광도로 검량선을 그려 미지시료 농도와 희석배수를 계산하는 무료 연습 도구.">
+<script>
+  // 저장된 화면 모드를 그리기 전에 적용 (깜빡임 방지)
+  try { const t = localStorage.getItem('absorbance-theme'); if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  // 블로그 iframe(?embed)에서는 밝은 테마로 시작 — 테마 버튼 글자도 이 상태에 맞춰 그려진다
+  if (window.parent !== window && /[?&]embed\b/.test(location.search)) document.documentElement.setAttribute('data-theme', 'light');
+</script>
+<style>
+/* 글꼴: 같은 폴더의 fonts\ 에 있는 파일을 먼저 쓰고, 없으면 인터넷에서 받는다 */
+@font-face{font-family:"Pretendard Variable";font-weight:45 920;font-style:normal;font-display:swap;
+  src:url("fonts/PretendardVariable.woff2") format("woff2-variations"),url("fonts/PretendardVariable.woff2") format("woff2"),
+      url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/woff2/PretendardVariable.woff2") format("woff2")}
+
+:root{
+  --paper:#eef1f4; --sheet:#ffffff; --ink:#17212b; --muted:#5b6773; --faint:#8b96a1;
+  --rule:#d3dae2; --rule-soft:#e6ebf0; --label:#f3f6f9; --head:#e3eaf2;
+  --accent:#1f3a5f; --accent-2:#2e6da4; --accent-ink:#ffffff; --accent-soft:#e3edf7;
+  --input:#fff3c8; --input-ink:#4d3a00; --input-focus:#d99a00; --fixed:#edf0f3;
+  --result:#e8f0f9; --warn:#c2410c; --warn-soft:#fdebdc; --bad:#b3261e; --bad-soft:#fbe4e2; --ok:#2c7a4b;
+  --grid-major:#b9c3cd; --grid-minor:#e3e8ed;
+  --kmno4:#8e1b78; --water:#7fb9e6; --rubber:#b5483d; --glass:#7d8a97; --glass-fill:rgba(160,180,200,.10);
+  --shadow:0 1px 2px rgba(23,33,43,.06),0 8px 24px rgba(23,33,43,.06);
+  --sans:"Pretendard Variable",Pretendard,"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0f151b; --sheet:#161e26; --ink:#e4eaf0; --muted:#9aa7b3; --faint:#687582;
+    --rule:#2b3642; --rule-soft:#222c36; --label:#1b242d; --head:#20303f;
+    --accent:#8fb8e8; --accent-2:#6ea6e0; --accent-ink:#0c1620; --accent-soft:#1c2c3c;
+    --input:#3a3114; --input-ink:#f5dd98; --input-focus:#e0b53a; --fixed:#1d252e;
+    --result:#1a2836; --warn:#f0965a; --warn-soft:#3a2517; --bad:#ff8a7e; --bad-soft:#3a1d1b; --ok:#6fd49a;
+    --grid-major:#3b4754; --grid-minor:#222c36;
+    --kmno4:#c552ae; --water:#5f9fd0; --rubber:#d0665a; --glass:#8c9aa8; --glass-fill:rgba(160,180,200,.08);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0f151b; --sheet:#161e26; --ink:#e4eaf0; --muted:#9aa7b3; --faint:#687582;
+  --rule:#2b3642; --rule-soft:#222c36; --label:#1b242d; --head:#20303f;
+  --accent:#8fb8e8; --accent-2:#6ea6e0; --accent-ink:#0c1620; --accent-soft:#1c2c3c;
+  --input:#3a3114; --input-ink:#f5dd98; --input-focus:#e0b53a; --fixed:#1d252e;
+  --result:#1a2836; --warn:#f0965a; --warn-soft:#3a2517; --bad:#ff8a7e; --bad-soft:#3a1d1b; --ok:#6fd49a;
+  --grid-major:#3b4754; --grid-minor:#222c36;
+  --kmno4:#c552ae; --water:#5f9fd0; --rubber:#d0665a; --glass:#8c9aa8; --glass-fill:rgba(160,180,200,.08);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6}
+.page{max-width:1480px;margin:0 auto;padding-inline:20px;padding-block:28px 64px;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{margin:0;text-wrap:balance}
+button,input{font:inherit;color:inherit}
+.num{font-family:var(--sans);font-variant-numeric:tabular-nums}
+
+/* masthead */
+.mast{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;border-bottom:2px solid var(--accent);padding-bottom:16px}
+.eyebrow{margin:0 0 4px;font-size:13.5px;font-weight:600;letter-spacing:.08em;color:var(--accent-2)}
+h1{font-size:32px;font-weight:700;letter-spacing:-.01em}
+.lede{margin:8px 0 0;color:var(--muted);max-width:64ch;font-size:16px}
+
+.btn{border:1px solid var(--rule);background:var(--sheet);border-radius:6px;padding:9px 14px;cursor:pointer;font-size:15px;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--accent-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.danger:hover{filter:brightness(1.08)}
+.btn:focus-visible,.seg button:focus-visible,.in:focus-visible,.mode-btn:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+
+/* layout */
+.layout{display:grid;grid-template-columns:430px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.layout{grid-template-columns:1fr}}
+.right-col,.left-col{display:flex;flex-direction:column;gap:20px;min-width:0}
+
+/* 요구사항 핵심 */
+.req-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;font-size:14.5px;line-height:1.6;word-break:keep-all;overflow-wrap:break-word}
+.req-list > li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;align-items:start}
+.req-list > li + li{padding-top:12px;border-top:1px dashed var(--rule-soft)}
+.req-list .tag{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:var(--accent);color:var(--accent-ink);font-size:13px;font-weight:700;margin-top:1px}
+.req-list b{color:var(--accent);font-weight:700}
+.req-list ul{margin:6px 0 0;padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.req-list ul li::marker{color:var(--faint)}
+.req-warn{margin:6px 0 0;padding:5px 9px;border-radius:6px;background:var(--warn-soft);color:var(--warn);font-size:13.5px;font-weight:600}
+.req-warn b{color:inherit}
+.req-formula{margin:6px 0 0;padding:5px 9px;border-radius:6px;background:var(--result);font-size:14.5px;font-weight:600;font-variant-numeric:tabular-nums}
+
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;box-shadow:var(--shadow);padding:20px 20px 18px;min-width:0}
+.panel-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;margin-bottom:14px}
+.panel h2{font-size:19px;font-weight:700;color:var(--accent)}
+.sub-h{font-size:15px;font-weight:700;color:var(--muted);margin:0 0 10px}
+
+/* left controls */
+.mode-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.mode-btn{display:flex;align-items:baseline;gap:10px;width:100%;text-align:left;padding:11px 13px;border-radius:8px;border:1px solid var(--rule);background:var(--sheet);font-size:15.5px;font-weight:500;cursor:pointer}
+.mode-btn .n{font-family:var(--sans);font-weight:600;color:var(--faint);font-size:14px}
+.mode-btn:hover{border-color:var(--accent-2);background:var(--accent-soft)}
+.mode-btn.active{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+.mode-btn.active .n{color:var(--accent-ink)}
+.mode-btn.bad.active{border-color:var(--warn);background:var(--warn-soft);color:var(--warn)}
+.mode-btn.bad.active .n{color:var(--warn)}
+.reset-btn{width:100%;margin-bottom:20px;border-style:dashed;color:var(--muted)}
+.reset-btn:hover{color:var(--bad);border-color:var(--bad)}
+
+.field{display:grid;grid-template-columns:96px minmax(0,1fr);align-items:center;gap:10px;margin-bottom:8px}
+.field label{font-size:15px;font-weight:600}
+.in{width:100%;border:1px solid transparent;background:var(--input);color:var(--input-ink);border-radius:4px;padding:8px 10px;font-family:var(--sans);font-size:16px;font-variant-numeric:tabular-nums;text-align:center}
+.in:focus{outline:none;border-color:var(--input-focus);box-shadow:0 0 0 2px color-mix(in srgb,var(--input-focus) 30%,transparent)}
+.in:disabled{background:var(--fixed);color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:8px;background:var(--sheet);padding:3px;gap:2px;width:100%}
+.seg button{flex:1;border:0;background:transparent;border-radius:6px;padding:7px 14px;cursor:pointer;font-weight:500;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.run-btn{width:100%;margin-top:14px;padding:11px 14px}
+.hint{font-size:14px;color:var(--muted);line-height:1.6;margin:0}
+.warn-msg{margin-top:10px;padding:9px 12px;border-radius:6px;background:var(--warn-soft);color:var(--warn);font-size:14px;font-weight:600;display:none}
+.warn-msg.show{display:block}
+
+/* tables */
+.scroll{overflow-x:auto;border:1px solid var(--rule);border-radius:8px}
+table{border-collapse:collapse;width:100%}
+table.x th,table.x td{border-bottom:1px solid var(--rule-soft);padding:10px 10px;text-align:center;white-space:nowrap}
+table.x td + td,table.x th + th,table.x tbody th + td{border-left:1px solid var(--rule-soft)}
+table.x thead th{background:var(--accent);color:var(--accent-ink);font-size:14.5px;font-weight:600;line-height:1.35}
+table.x thead th + th{border-left:1px solid rgba(255,255,255,.25)}
+table.x tbody th{background:var(--label);font-size:15px;font-weight:600;color:var(--accent)}
+table.x tbody tr:last-child th,table.x tbody tr:last-child td{border-bottom:0}
+table.x td{font-family:var(--sans);font-size:17px;font-variant-numeric:tabular-nums;background:var(--result)}
+table.x td.blank{background:transparent}
+table.x td.ph{color:var(--faint)}
+/* 감독위원 날인: 값이 채워지면(.signed) 빨간 도장 서명 */
+table.x td.sign{background:transparent;height:58px;padding-block:6px}
+.seal{display:inline-flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--sans);font-size:13px;font-weight:500;letter-spacing:.03em;opacity:0;transition:opacity .2s}
+.measure.signed .seal{opacity:1}
+/* 큐벳 색: 용액이 담기면(.filled) 농도만큼 보라색 */
+table.x tr.cuv-row td{background:transparent;padding-block:10px}
+.mini-cuv{position:relative;display:inline-block;width:26px;height:50px;border:2px solid var(--glass);border-top-width:3px;border-radius:2px 2px 4px 4px;background:var(--glass-fill);vertical-align:middle;overflow:hidden}
+.mini-cuv::before,.mini-cuv b{content:"";position:absolute;left:0;right:0;bottom:0;height:0;transition:height .35s ease}
+.mini-cuv::before{background:var(--water);opacity:.25}
+.mini-cuv b{background:var(--kmno4);opacity:var(--a,0);transition:height .35s ease,opacity .35s ease}
+.mini-cuv.filled::before,.mini-cuv.filled b{height:75%}
+/* 재희석: 범위 밖 첫 측정값에 취소선 + 빨간 테두리 */
+table.x td.out{position:relative;color:var(--bad);background:var(--bad-soft);box-shadow:inset 0 0 0 2px var(--bad)}
+table.x td.out::after{content:"";position:absolute;left:18%;right:18%;top:50%;height:2px;background:var(--bad);transform:scaleX(0);transform-origin:left;animation:strike .35s ease forwards}
+@keyframes strike{to{transform:scaleX(1)}}
+table.x td.swap{animation:swapin .45s ease}
+@keyframes swapin{from{background:var(--accent-soft)}}
+.dil-note.redil{color:var(--bad)}
+.dil-note{margin:0;font-size:15px;font-weight:600;color:var(--muted)}
+.dil-note .num{color:var(--ink)}
+.measure{min-width:460px}
+.measure th,.measure td{padding-inline:6px}
+.report{min-width:640px}
+.report thead th{padding-inline:8px}
+
+/* chart */
+.chart-eq{font-family:var(--sans);font-size:15.5px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;word-spacing:.15em}
+.eq-wrap{display:flex;align-items:center;gap:10px}
+.help{position:relative;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1px solid var(--accent-2);color:var(--accent-2);font-size:13.5px;font-weight:700;cursor:help;flex:0 0 auto}
+.help:hover,.help:focus-visible{background:var(--accent-2);color:var(--accent-ink);outline:none}
+.help-tip{position:absolute;top:calc(100% + 8px);right:-8px;z-index:20;width:min(340px,80vw);padding:11px 13px;border-radius:8px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);box-shadow:0 10px 30px rgba(0,0,0,.18);font-size:14.5px;font-weight:400;line-height:1.65;text-align:left;word-break:keep-all;visibility:hidden;opacity:0;transition:opacity .15s}
+.help-tip b{color:var(--accent)}
+.help:hover .help-tip,.help:focus .help-tip{visibility:visible;opacity:1}
+#chartHolder svg{width:100%;height:auto;display:block}
+#chartHolder .t-sans{font-family:var(--sans);font-variant-numeric:tabular-nums}
+.chart-caption{text-align:center;color:var(--faint);font-size:13.5px;margin:4px 0 0}
+
+/* report */
+.pill{display:inline-flex;align-items:center;border-radius:999px;padding:5px 13px;font-size:14.5px;font-weight:600;margin-bottom:14px}
+.pill.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.pill.warn{color:var(--warn);background:var(--warn-soft)}
+.pill.info{color:var(--muted);background:var(--label)}
+.side-note{margin:-6px 0 14px;color:var(--muted);font-size:14.5px}
+.calc-block{margin-top:16px;padding:14px 16px;border-radius:8px;background:var(--label);border:1px solid var(--rule-soft)}
+.calc-block .label{font-size:14.5px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.calc-lines{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;row-gap:4px;font-size:17px;line-height:1.9;font-variant-numeric:tabular-nums}
+.calc-lines .k{font-weight:600;color:var(--muted)}
+.calc-lines .ans{font-weight:700;color:var(--accent)}
+/* 답 가림: 누르기 전엔 막대로 가리고, 누르면(.open) 보인다 */
+.mask{position:relative;display:inline-block;min-width:64px;border-radius:6px;cursor:pointer;color:transparent;background:var(--head);user-select:none;transition:background .15s,color .15s}
+.mask::after{content:"눌러서 보기";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--accent-2);white-space:nowrap}
+.mask:hover{background:var(--accent-soft)}
+.mask:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+.mask:not(.open){color:transparent!important}
+.mask.open{color:inherit;background:transparent;user-select:auto}
+.dil-note .mask.open{color:var(--ink)}
+.dil-note .mask{min-width:76px;vertical-align:-1px}
+.mask.open::after{content:none}
+.svg-mask{cursor:pointer;outline:none}
+.svg-mask:not(.open) .ans-t{opacity:0}
+.svg-mask.open .cover{display:none}
+.svg-mask:hover .cover rect{fill:var(--accent-soft)}
+.svg-mask:focus-visible .cover rect{stroke:var(--accent-2);stroke-width:2}
+.mask-hint{margin:0;padding:5px 12px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:14px;font-weight:600}
+.empty-note{color:var(--faint);font-size:15px;margin:0}
+
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--rule);margin-top:-6px}
+.tab{border:0;background:none;padding:10px 20px;font-size:17px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px;cursor:pointer}
+.tab:hover{color:var(--accent-2)}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.tab:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+
+/* 표준용액 제조 */
+.field3{display:grid;grid-template-columns:110px minmax(0,1fr) 40px;align-items:center;gap:10px;margin-bottom:8px}
+.field3 label{font-size:15px;font-weight:600}
+.field3 .u{color:var(--muted);font-size:14px}
+.preset{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.preset > span{font-size:14px;font-weight:600;color:var(--muted)}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;counter-reset:st}
+.steps button{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;width:100%;text-align:left;padding:9px 11px;border-radius:8px;border:1px solid var(--rule-soft);background:var(--sheet);cursor:pointer;font-size:14.5px;line-height:1.55;word-break:keep-all}
+.steps button:hover{border-color:var(--accent-2)}
+.steps .no{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--label);color:var(--muted);font-weight:700;font-size:13px}
+.steps button.done .no{background:var(--accent-soft);color:var(--accent)}
+.steps button.now{border-color:var(--accent);background:var(--accent-soft)}
+.steps button.now .no{background:var(--accent);color:var(--accent-ink)}
+.anim-ctl{display:flex;flex-wrap:wrap;gap:6px}
+.anim-ctl .btn{padding:7px 12px;font-size:14.5px}
+.ref-note{margin:0 0 10px;padding:8px 12px;border-radius:6px;border:1px solid var(--warn);background:var(--warn-soft);color:var(--warn);font-size:14px;font-weight:600;line-height:1.55;word-break:keep-all}
+.step-cap{margin:0 0 6px;padding:10px 14px;border-radius:8px;background:var(--label);border:1px solid var(--rule-soft);font-size:16px;line-height:1.6;word-break:keep-all;min-height:52px}
+.step-cap b{color:var(--accent)}
+#prepHolder svg{width:100%;height:auto;display:block;font-family:var(--sans);font-variant-numeric:tabular-nums}
+.live{min-width:420px}
+.eqline{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:18px;margin:6px 0 12px;font-variant-numeric:tabular-nums}
+.eqline .lab{font-size:14.5px;font-weight:600;color:var(--muted);min-width:64px}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.35}
+.frac > span:first-child{border-bottom:1.5px solid currentColor;padding:0 6px 2px}
+.frac > span:last-child{padding:2px 6px 0}
+.eqline .ans{font-weight:700;color:var(--accent)}
+.prep-how{margin:4px 0 0;padding:12px 14px;border-radius:8px;background:var(--result);font-size:15.5px;line-height:1.7;word-break:keep-all}
+.prep-how b{color:var(--accent)}
+.eqline .eq-main{white-space:nowrap}
+.eqline .why{display:flex;flex-direction:column;gap:2px;flex:0 1 auto;margin-left:auto;padding:7px 14px;border-left:3px solid var(--accent-2);background:var(--label);border-radius:0 6px 6px 0;font-size:14.5px;line-height:1.65;color:var(--muted);word-break:keep-all}
+.eqline .why b{color:var(--accent)}
+
+/* dialogs */
+dialog{border:1px solid var(--rule);border-radius:12px;padding:0;max-width:min(460px,calc(100vw - 32px));background:var(--sheet);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(10,16,22,.45)}
+.dlg{padding:22px 22px 18px;display:flex;flex-direction:column;gap:12px}
+.dlg h3{font-size:19px;color:var(--accent)}
+.dlg p{margin:0;color:var(--muted);font-size:15.5px;line-height:1.6}
+.dlg .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* 방명록 */
+.gb-lead{margin:-4px 0 14px;color:var(--muted);font-size:14.5px;line-height:1.65;word-break:keep-all}
+.gb{display:grid;grid-template-columns:minmax(260px,360px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.gb{grid-template-columns:1fr}}
+.gb-f{display:flex;flex-direction:column;gap:5px;font-size:14px;font-weight:600;color:var(--muted);margin-bottom:10px}
+.gb-f input,.gb-f textarea{font:inherit;font-size:15px;font-weight:400;color:var(--input-ink);background:var(--input);border:1px solid transparent;border-radius:6px;padding:8px 10px;resize:vertical}
+.gb-f input:focus,.gb-f textarea:focus{outline:none;border-color:var(--input-focus)}
+.gb-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.gb-n{font-size:13px;color:var(--faint);font-variant-numeric:tabular-nums}
+.gb-msg{margin:8px 0 0;font-size:14px;font-weight:600;color:var(--muted);min-height:1.4em}
+.gb-msg.bad{color:var(--bad)}
+.gb-msg.ok{color:var(--ok)}
+.gb-note{margin:12px 0 0;color:var(--faint);font-size:13px;line-height:1.6;word-break:keep-all}
+.gb-list{border:1px solid var(--rule-soft);border-radius:8px;padding:2px 14px;max-height:520px;overflow:auto}
+.gb-item{border-top:1px solid var(--rule-soft);padding:11px 0}
+.gb-item:first-child{border-top:0}
+.gb-h{display:flex;gap:10px;align-items:baseline;margin-bottom:3px}
+.gb-h b{font-size:15px;color:var(--ink)}
+.gb-h time{font-size:13px;color:var(--faint);font-variant-numeric:tabular-nums}
+.gb-b{margin:0;font-size:15px;line-height:1.65;color:var(--ink);white-space:pre-wrap;word-break:break-word}
+.gb-empty{margin:12px 0;color:var(--faint);font-size:14.5px}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="mast">
+    <div>
+      <p class="eyebrow">화학분석기능사 · 실기</p>
+      <h1>흡광도 검량선 연습</h1>
+      <p class="lede">KMnO₄ 표준용액 제조부터 검량선 작성, 미지시료의 표준용액(1,000 ppm) 대비 희석배수 계산까지 실기 과정을 연습하는 도구입니다. 노란 칸만 입력하면 됩니다.</p>
+    </div>
+    <button class="btn" id="themeBtn" type="button"></button>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" type="button" data-tab="tabCurve" aria-selected="true">검량선 연습</button>
+    <button class="tab" role="tab" type="button" data-tab="tabPrep" aria-selected="false">표준용액 제조</button>
+    <button class="tab" role="tab" type="button" data-tab="tabGuest" aria-selected="false">방명록</button>
+  </nav>
+
+  <section id="tabCurve" role="tabpanel">
+  <div class="layout">
+
+    <!-- LEFT: controls + 요구사항 -->
+    <div class="left-col">
+    <div class="panel">
+      <div class="panel-head"><h2>모드 선택</h2></div>
+      <div class="mode-list">
+        <button class="mode-btn" data-mode="manual" type="button"><span class="n">1</span> 직접 입력한 값으로 계산</button>
+        <button class="mode-btn" data-mode="good" type="button"><span class="n">2</span> 정상 데이터 생성 (R² ≥ 0.999)</button>
+        <button class="mode-btn bad" data-mode="bad" type="button"><span class="n">3</span> 오차 데이터 생성 (R² &lt; 0.99)</button>
+      </div>
+      <button class="btn reset-btn" id="resetBtn" type="button">초기화</button>
+
+      <div id="manualForm" hidden>
+        <p class="sub-h">표준용액 흡광도</p>
+        <div class="field"><label>Blank</label><input class="in" type="number" value="0.000" disabled></div>
+        <div class="field"><label for="inF">5 ppm</label><input class="in" type="number" id="inF" step="0.001" placeholder="0.000"></div>
+        <div class="field"><label for="inH">10 ppm</label><input class="in" type="number" id="inH" step="0.001" placeholder="0.000"></div>
+        <div class="field"><label for="inJ">15 ppm</label><input class="in" type="number" id="inJ" step="0.001" placeholder="0.000"></div>
+        <p class="sub-h" style="margin-top:18px;">미지시료</p>
+        <div class="field"><label for="inL">흡광도</label><input class="in" type="number" id="inL" step="0.001" placeholder="0.000"></div>
+        <div class="field">
+          <label>희석배수</label>
+          <div class="seg" id="dilSeg">
+            <button type="button" data-dil="5" aria-pressed="true">5배</button>
+            <button type="button" data-dil="10" aria-pressed="false">10배</button>
+          </div>
+        </div>
+        <button class="btn primary run-btn" id="manualRunBtn" type="button">계산 및 그래프 그리기</button>
+        <div class="warn-msg" id="manualWarn">표준용액 흡광도 3개와 미지시료 흡광도를 모두 입력해 주세요.</div>
+      </div>
+
+      <p id="genHint" class="hint">
+        정상/오차 모드는 버튼을 누를 때마다 임의의 실험 데이터를 새로 생성합니다. 실제 실기시험처럼 검량선을 읽고 계산 과정을 연습해 보세요.
+      </p>
+    </div>
+
+    <div class="panel req">
+      <div class="panel-head"><h2>요구사항 핵심</h2></div>
+      <ol class="req-list">
+        <li><span class="tag">가</span><div><b>Calibration</b> — 파장 <b>540 nm</b> 확인, 순수용액으로 <b>100%T</b> 또는 <b>0.0000 A</b> 확인</div></li>
+        <li><span class="tag">나</span><div><b>표준용액</b> — KMnO₄ <b>1000 ppm</b>으로 <b>blank, 5, 10, 15 ppm</b>을 <b>100 mL</b> 부피 플라스크로 제조 후 측정
+          <p class="req-warn">표준용액 흡광도 측정은 원칙적으로 <b>1회만</b> 허용</p></div></li>
+        <li><span class="tag">다</span><div><b>미지시료</b> — 농도 <b>20~80 ppm</b>. 흡광도가 <b>5~15 ppm 범위</b>에 들도록 희석해 측정 (희석·측정 횟수 제한 없음)
+          <p class="req-warn">범위를 벗어나면 <b>반드시 희석작업 재수행</b></p></div></li>
+        <li><span class="tag">라</span><div><b>분석그래프</b>
+          <ul>
+            <li>가로축 <b>농도</b>, 세로축 <b>흡광도</b> — 측정값을 모두 포함하도록 <b>눈금 단위(scale)</b> 기록</li>
+            <li>표준 점은 <b>점(·)</b>으로 찍고 <b>(농도, 흡광도)</b> 양식으로 기록</li>
+            <li>자를 이용해 모든 점과 근접한 <b>일직선</b> 검량선</li>
+            <li>미지시료 흡광도: 세로축에 <b>화살표(→)</b>, 값은 <b>그래프용지 좌측</b>에 기록</li>
+            <li>가로축과 평행한 <b>점선</b> → 검량선과의 접점 → 세로축과 평행한 <b>점선</b> → 가로축 하단에 <b>화살표(↑)</b></li>
+            <li>농도는 <b>소수점 둘째자리</b>까지 (0이어도 두 자리: 5.25, 6.30)</li>
+          </ul></div></li>
+        <li><span class="tag">마</span><div><b>희석배수</b> — 미지시료가 표준용액(1000 ppm)으로부터 <b>몇 배 희석</b>되었는지 계산
+          <p class="req-formula">1,000 ppm / 미지시료 원액 농도</p></div></li>
+      </ol>
+    </div>
+    </div>
+
+    <!-- RIGHT: table + chart + report -->
+    <div class="right-col">
+      <div class="panel">
+        <div class="panel-head"><h2>1. 흡광도 측정</h2><p class="dil-note" id="mtDil"></p></div>
+        <div class="scroll">
+          <table class="x measure" id="measureTable">
+            <thead>
+              <tr>
+                <th>농도(ppm)</th>
+                <th>Blank</th>
+                <th>5</th>
+                <th>10</th>
+                <th>15</th>
+                <th>미지시료<br>(최종값)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>흡광도값</th>
+                <td class="ph" id="mtD">—</td>
+                <td class="ph" id="mtF">—</td>
+                <td class="ph" id="mtH">—</td>
+                <td class="ph" id="mtJ">—</td>
+                <td class="ph" id="mtL">—</td>
+              </tr>
+              <tr>
+                <th>감독위원 날인</th>
+                <td class="sign"><span class="seal">Chemnote</span></td>
+                <td class="sign"><span class="seal">Chemnote</span></td>
+                <td class="sign"><span class="seal">Chemnote</span></td>
+                <td class="sign"><span class="seal">Chemnote</span></td>
+                <td class="sign"><span class="seal">Chemnote</span></td>
+              </tr>
+              <tr class="cuv-row">
+                <th>큐벳 색</th>
+                <td><span class="mini-cuv"><b></b></span></td>
+                <td><span class="mini-cuv"><b></b></span></td>
+                <td><span class="mini-cuv"><b></b></span></td>
+                <td><span class="mini-cuv"><b></b></span></td>
+                <td><span class="mini-cuv"><b></b></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>2. 검량선</h2>
+          <div class="eq-wrap">
+            <span class="help" tabindex="0" aria-describedby="eqHelp">?
+              <span class="help-tip" id="eqHelp" role="tooltip">실제 시험에서는 이 검량선 식을 구하지 않습니다. 표준 점을 그래프에 찍고, <b>자를 이용해 모든 점과 근접한 일직선</b>을 그려 검량선으로 쓰면 됩니다.<br>여기 나온 식과 R²는 <b>실험이 잘 됐는지 확인하는 검산용</b>으로만 활용하세요.</span>
+            </span>
+            <div class="chart-eq" id="chartEq">수식 대기 중…</div>
+          </div>
+        </div>
+        <div id="chartHolder"></div>
+        <p class="chart-caption">가로축 농도(ppm) · 세로축 흡광도(A)</p>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>3. 계산 결과</h2><p class="mask-hint" id="maskHint" hidden>직접 계산해 본 뒤, 가려진 칸을 누르면 답이 보입니다 (그래프 농도값·원액 농도 포함)</p></div>
+        <div id="reportBody">
+          <p class="empty-note">왼쪽에서 모드를 선택하면 결과가 여기에 표시됩니다.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  </section>
+
+  <!-- ===== 표준용액 제조 ===== -->
+  <section id="tabPrep" role="tabpanel" hidden>
+  <div class="layout">
+    <div class="left-col">
+      <div class="panel">
+        <div class="panel-head"><h2>제조 조건</h2></div>
+        <div class="field3"><label for="pX">원액 농도 X</label><input class="in" type="number" id="pX" value="1000" step="any" min="0"><span class="u">ppm</span></div>
+        <div class="field3"><label for="pY">목표 농도 Y</label><input class="in" type="number" id="pY" value="5" step="any" min="0"><span class="u">ppm</span></div>
+        <div class="field3"><label for="pZ">제조 부피 z</label><input class="in" type="number" id="pZ" value="100" step="any" min="0"><span class="u">mL</span></div>
+        <div class="preset">
+          <span>시험 표준용액</span>
+          <div class="seg" id="ySeg">
+            <button type="button" data-y="5" aria-pressed="true">5 ppm</button>
+            <button type="button" data-y="10" aria-pressed="false">10 ppm</button>
+            <button type="button" data-y="15" aria-pressed="false">15 ppm</button>
+          </div>
+        </div>
+        <div class="warn-msg" id="pWarn"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>제조 순서</h2></div>
+        <ol class="steps" id="stepList"></ol>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>제조 과정</h2>
+          <div class="anim-ctl">
+            <button class="btn" id="pPrev" type="button">◀ 이전</button>
+            <button class="btn primary" id="pPlay" type="button">▶ 재생</button>
+            <button class="btn" id="pNext" type="button">다음 ▶</button>
+            <button class="btn ghost" id="pReset" type="button">처음부터</button>
+          </div>
+        </div>
+        <p class="ref-note">※ 이해를 돕기 위한 참고 자료입니다. 실제 시험장의 실험 도구와 방법은 이와 다를 수 있으니 참고용으로만 활용해 주세요.</p>
+        <p class="step-cap" id="stepCap"></p>
+        <div id="prepHolder"></div>
+        <p class="chart-caption" id="toolNote"></p>
+        <div class="scroll" style="margin-top:14px">
+          <table class="x live">
+            <thead><tr><th>넣은 원액 (mL)</th><th>플라스크 속 용액 (mL)</th><th>플라스크 속 농도 (ppm)</th></tr></thead>
+            <tbody><tr><td id="lvStock">0.00</td><td id="lvVol">0.00</td><td id="lvConc">—</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>계산</h2></div>
+        <div id="prepCalc"></div>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <section id="tabGuest" role="tabpanel" hidden>
+  <section class="panel" aria-labelledby="gbTitle">
+    <div class="panel-head"><h2 id="gbTitle">방명록</h2><button class="btn" id="gbReload" type="button">새로고침</button></div>
+    <p class="gb-lead">사용 후기, 오류 제보, "이런 기능이 있으면 좋겠다" 하는 <b>기능 제안</b>까지 무엇이든 자유롭게 남겨 주세요. 남겨 주신 의견은 계산기를 고칠 때 참고합니다.</p>
+    <div class="gb">
+      <form id="gbForm" autocomplete="off">
+        <label class="gb-f">닉네임<input id="gbNick" maxlength="20" placeholder="20자까지"></label>
+        <label class="gb-f">내용<textarea id="gbBody" maxlength="500" rows="5" placeholder="후기 · 오류 제보 · 기능 제안 등 자유롭게 (500자까지)"></textarea></label>
+        <div class="gb-row"><span class="gb-n" id="gbCount">0 / 500</span><button class="btn primary" id="gbSend" type="submit">남기기</button></div>
+        <p class="gb-msg" id="gbMsg" role="status"></p>
+      </form>
+      <div>
+        <div class="gb-list" id="gbList"><p class="gb-empty">불러오는 중…</p></div>
+        <button class="btn" id="gbMore" type="button" hidden style="margin-top:10px">더 보기</button>
+      </div>
+    </div>
+    <p class="gb-note">링크는 남길 수 없고, 한 사람이 10분에 3개까지 쓸 수 있습니다. 남긴 글은 고치거나 지울 수 없으니 연락처 같은 개인정보는 적지 말아 주세요.</p>
+  </section>
+  </section>
+</div>
+
+<dialog id="confirmDialog" aria-labelledby="confirmTitle">
+  <form method="dialog" class="dlg">
+    <h3 id="confirmTitle"></h3>
+    <p id="confirmText"></p>
+    <div class="actions">
+      <button class="btn" value="cancel" type="submit" autofocus>취소</button>
+      <button class="btn primary" value="ok" type="submit" id="confirmOk"></button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function(){
+  const $ = (s, el) => (el||document).querySelector(s);
+  const $$ = (s, el) => Array.from((el||document).querySelectorAll(s));
+
+  // ---------- 다크/밝은 모드 전환 ----------
+  const themeBtn = $('#themeBtn');
+  const darkMq = window.matchMedia('(prefers-color-scheme: dark)');
+  function isDark() {
+    const t = document.documentElement.getAttribute('data-theme');
+    return t ? t === 'dark' : darkMq.matches;
+  }
+  function paintThemeBtn() {
+    themeBtn.textContent = isDark() ? '☀ 밝은 모드' : '☾ 다크 모드';
+  }
+  themeBtn.addEventListener('click', () => {
+    const next = isDark() ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('absorbance-theme', next); } catch (e) {}
+    paintThemeBtn();
+  });
+  darkMq.addEventListener('change', paintThemeBtn);
+  paintThemeBtn();
+
+  // ---------- 확인 창 ----------
+  const dlg = $('#confirmDialog');
+  function confirmBox(title, text, okLabel, danger) {
+    return new Promise(resolve => {
+      $('#confirmTitle').textContent = title;
+      $('#confirmText').textContent = text;
+      const ok = $('#confirmOk');
+      ok.textContent = okLabel;
+      ok.className = danger ? 'btn danger' : 'btn primary';
+      dlg.returnValue = '';
+      dlg.addEventListener('close', () => resolve(dlg.returnValue === 'ok'), { once: true });
+      dlg.showModal();
+    });
+  }
+  const MODE_ASK = {
+    manual: ['직접 입력 모드', '직접 입력한 흡광도 값으로 검량선을 그리고 희석배수를 계산하는 모드로 바꿀까요?', '바꾸기'],
+    good:   ['정상 데이터 생성', 'R² ≥ 0.999인 정상 실험 데이터를 새로 만들까요? 지금 화면의 값과 결과는 새 데이터로 바뀝니다.', '생성'],
+    bad:    ['오차 데이터 생성', '피펫팅·큐벳 오차로 R² < 0.99가 되는 실험 데이터를 새로 만들까요? 지금 화면의 값과 결과는 새 데이터로 바뀝니다.', '생성']
+  };
+
+  const modeBtns = $$('.mode-btn');
+  const manualForm = $('#manualForm');
+  const genHint = $('#genHint');
+  const dilSeg = $('#dilSeg');
+  let usedDilManual = 5;
+  let currentMode = null;
+
+  dilSeg.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    $$('button', dilSeg).forEach(x => x.setAttribute('aria-pressed', 'false'));
+    b.setAttribute('aria-pressed', 'true');
+    usedDilManual = parseInt(b.dataset.dil, 10);
+  });
+
+  modeBtns.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const mode = btn.dataset.mode;
+      const [title, text, okLabel] = MODE_ASK[mode];
+      if (!(await confirmBox(title, text, okLabel))) return;
+      modeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentMode = mode;
+      manualForm.hidden = currentMode !== 'manual';
+      genHint.hidden = currentMode === 'manual';
+      if (currentMode === 'good') runGood();
+      if (currentMode === 'bad') runBad();
+    });
+  });
+
+  $('#manualRunBtn').addEventListener('click', runManual);
+  $('#resetBtn').addEventListener('click', async () => {
+    if (await confirmBox('초기화', '정말 초기화 하시겠습니까? 입력한 값과 계산 결과가 모두 지워집니다.', '초기화', true)) resetAll();
+  });
+
+  // ---------- math helpers ----------
+  function round(v, d) {
+    const f = Math.pow(10, d);
+    return Math.round((v + Number.EPSILON) * f) / f;
+  }
+  function rnd() { return Math.random(); }
+
+  function linreg(xs, ys) {
+    const n = xs.length;
+    let sx=0, sy=0, sxy=0, sx2=0, sy2=0;
+    for (let i=0;i<n;i++){
+      sx+=xs[i]; sy+=ys[i]; sxy+=xs[i]*ys[i]; sx2+=xs[i]*xs[i]; sy2+=ys[i]*ys[i];
+    }
+    const slope = (n*sxy - sx*sy) / (n*sx2 - sx*sx);
+    const intercept = (sy - slope*sx) / n;
+    const num = (n*sxy - sx*sy);
+    const den = Math.sqrt((n*sx2 - sx*sx) * (n*sy2 - sy*sy));
+    const r = den === 0 ? 0 : num/den;
+    return { slope, intercept, r2: r*r };
+  }
+
+  function fmt(v, d) { return v.toFixed(d); }
+
+  // ---------- core: given standard array + final reading, compute everything ----------
+  function process(std, finalAbs, usedDilFactor, meta) {
+    const xs = [0,5,10,15];
+    const ys = std;
+    const reg = linreg(xs, ys);
+    const finalConc = round((finalAbs - reg.intercept) / reg.slope, 2);
+    const calcOrigConc = round(finalConc * usedDilFactor, 2);
+    const rawRatio = calcOrigConc !== 0 ? 1000 / calcOrigConc : NaN;
+    const finalRatio = round(rawRatio, 2);
+
+    const token = ++procToken;
+    const finish = (swapped) => {
+      if (token !== procToken) return;   // 그사이 다른 모드를 눌렀거나 초기화함
+      renderMeasureTable(std, finalAbs, usedDilFactor, meta, finalConc, false, swapped);
+      renderChart(xs, ys, reg, finalAbs, finalConc, meta.mode !== 'manual');
+      renderReport(reg, finalAbs, finalConc, usedDilFactor, calcOrigConc, rawRatio, finalRatio, meta);
+    };
+
+    if (meta.isRedil && meta.altInfo) {
+      // 1차 측정값을 먼저 보여 주고 → 취소선·빨간 테두리 → 재측정할지 물어본 뒤 결과 표시
+      const a = meta.altInfo;
+      const firstConc = (a.abs - reg.intercept) / reg.slope;
+      renderMeasureTable(std, a.abs, a.dil, meta, firstConc, true);
+      renderEmptyChart();
+      $('#chartEq').textContent = '재측정 대기 중…';
+      const ask = async () => {
+        if (token !== procToken) return;
+        if (dlg.open) { setTimeout(ask, 300); return; }   // 다른 확인 창이 떠 있으면 닫힌 뒤에
+        const ok = await confirmBox('표준용액 범위 밖',
+          `${a.dil}배 희석한 미지시료의 흡광도 ${fmt(a.abs, 3)}가 표준용액 범위(${fmt(std[1], 3)} ~ ${fmt(std[3], 3)})를 벗어났습니다. ${usedDilFactor}배로 다시 희석해 재측정하시겠습니까?`,
+          `${usedDilFactor}배로 재측정`);
+        if (token !== procToken) return;
+        if (ok) { finish(true); return; }
+        $('#reportBody').innerHTML = `<p class="empty-note" style="margin-bottom:12px">1차(${a.dil}배) 측정값이 표준용액 범위를 벗어났습니다. 재측정해야 검량선과 결과를 볼 수 있습니다.</p>
+          <button class="btn primary" type="button" id="redoBtn">${usedDilFactor}배로 재측정</button>`;
+        $('#redoBtn').addEventListener('click', ask);
+      };
+      $('#reportBody').innerHTML = `<p class="empty-note">1차(${a.dil}배) 측정값이 표준용액 범위를 벗어났습니다.</p>`;
+      setTimeout(ask, 800);   // 취소선이 그어지는 걸 본 뒤에 묻는다
+    } else {
+      finish(false);
+    }
+  }
+  let procToken = 0;
+
+  // 큐벳 색 진하기: 0·5·10·15 ppm 차이가 뚜렷하게 (제조 탭과 같은 기준)
+  const cuvAlpha = c => Math.max(0, Math.min(.92, c / 15 * .9));
+
+  // ---------- measurement table (exam answer-sheet style) ----------
+  function renderMeasureTable(std, absL, dil, meta, unkConc, isOut, swapped) {
+    const ids = ['mtD','mtF','mtH','mtJ'];
+    ids.forEach((id, i) => {
+      const el = $('#'+id);
+      el.textContent = fmt(std[i], 3);
+      el.classList.remove('ph');
+    });
+    const mtL = $('#mtL');
+    mtL.textContent = fmt(absL, 3);
+    mtL.classList.remove('ph', 'out', 'swap');
+    if (isOut) setTimeout(() => mtL.classList.add('out'), 300);
+    if (swapped) { void mtL.offsetWidth; mtL.classList.add('swap'); }
+
+    const note = $('#mtDil');
+    if (isOut) {
+      note.innerHTML = `미지시료 <span class="num">${dil}</span>배 희석 → 표준용액 범위 밖`;
+      note.classList.add('redil');
+    } else {
+      let dilText = `미지시료 <span class="num">${dil}</span>배 희석`;
+      if (meta.mode !== 'manual' && meta.origConc != null) {
+        dilText += ` (원액 농도 : <span class="num mask" role="button" tabindex="0" aria-label="눌러서 답 보기">${fmt(meta.origConc,2)}</span> ppm)`;
+      }
+      note.innerHTML = dilText;
+      note.classList.remove('redil');
+    }
+    $('#measureTable').classList.add('signed');
+
+    // 큐벳 색: 표준용액은 0·5·10·15 ppm, 미지시료는 검량선으로 읽은 (희석된) 농도
+    const concs = [0, 5, 10, 15, unkConc];
+    $$('#measureTable .mini-cuv').forEach((c, i) => {
+      c.classList.add('filled');
+      c.style.setProperty('--a', cuvAlpha(concs[i]).toFixed(3));
+    });
+  }
+
+  function resetMeasureTable() {
+    ['mtD','mtF','mtH','mtJ','mtL'].forEach(id => {
+      const el = $('#'+id);
+      el.textContent = '—';
+      el.classList.add('ph');
+      el.classList.remove('out', 'swap');
+    });
+    $('#mtDil').textContent = '';
+    $('#mtDil').classList.remove('redil');
+    $('#measureTable').classList.remove('signed');
+    $$('#measureTable .mini-cuv').forEach(c => { c.classList.remove('filled'); c.style.removeProperty('--a'); });
+  }
+
+  // ---------- Mode 1: manual ----------
+  function runManual() {
+    const F = parseFloat($('#inF').value);
+    const H = parseFloat($('#inH').value);
+    const J = parseFloat($('#inJ').value);
+    const L = parseFloat($('#inL').value);
+    const warn = $('#manualWarn');
+    if ([F,H,J,L].some(v => isNaN(v))) {
+      warn.classList.add('show');
+      return;
+    }
+    warn.classList.remove('show');
+    process([0,F,H,J], L, usedDilManual, { mode: 'manual' });
+  }
+
+  // ---------- Mode 2: normal random ----------
+  function runGood() {
+    const slope = 0.013 + rnd()*0.004;
+    const intercept = rnd()*0.002 - 0.001;
+    const n5 = rnd()*0.002 - 0.001, n10 = rnd()*0.002 - 0.001, n15 = rnd()*0.002 - 0.001;
+    const F = round(slope*5 + intercept + n5, 3);
+    const H = round(slope*10 + intercept + n10, 3);
+    const J = round(slope*15 + intercept + n15, 3);
+    const std = [0, F, H, J];
+
+    const origConc = 26 + rnd()*54;
+    const dilFactor1 = rnd() < 0.5 ? 5 : 10;
+    const conc1 = origConc / dilFactor1;
+    const abs1 = slope*conc1 + intercept + (rnd()*0.002 - 0.001);
+
+    const minAbs = F, maxAbs = J;
+    let finalAbs, usedDil, isRedil = false, altInfo = null;
+
+    if (abs1 >= minAbs && abs1 <= maxAbs) {
+      finalAbs = round(abs1, 3);
+      usedDil = dilFactor1;
+    } else {
+      isRedil = true;
+      altInfo = { abs: round(abs1,3), dil: dilFactor1 };
+      const dilFactor2 = dilFactor1 === 5 ? 10 : 5;
+      const conc2 = origConc / dilFactor2;
+      const abs2 = slope*conc2 + intercept + (rnd()*0.002 - 0.001);
+      finalAbs = round(abs2, 3);
+      usedDil = dilFactor2;
+    }
+
+    process(std, finalAbs, usedDil, {
+      mode: 'good', origConc, isRedil, dilFactor1, altInfo
+    });
+  }
+
+  // ---------- Mode 3: bad / noisy random ----------
+  function runBad() {
+    const slope = 0.013 + rnd()*0.004;
+    const intercept = rnd()*0.004 - 0.002;
+    let n5 = rnd()*0.01 - 0.005, n10 = rnd()*0.01 - 0.005, n15 = rnd()*0.01 - 0.005;
+
+    const badPoint = Math.floor(rnd()*3) + 1;
+    let bigError = rnd() < 0.5 ? (0.025 + rnd()*0.015) : -(0.025 + rnd()*0.015);
+    if (badPoint === 1) n5 += bigError;
+    else if (badPoint === 2) n10 += bigError;
+    else n15 += bigError;
+
+    let abs5 = slope*5 + intercept + n5;
+    let abs10 = slope*10 + intercept + n10;
+    let abs15 = slope*15 + intercept + n15;
+
+    if (abs5 < 0.02) abs5 = 0.035 + rnd()*0.01;
+    if (abs10 < abs5) abs10 = abs5 + 0.03 + rnd()*0.01;
+    if (abs15 < abs10) abs15 = abs10 + 0.03 + rnd()*0.01;
+
+    const F = round(abs5,3), H = round(abs10,3), J = round(abs15,3);
+    const std = [0, F, H, J];
+
+    const origConc = 26 + rnd()*54;
+    const dilFactor1 = rnd() < 0.5 ? 5 : 10;
+    const conc1 = origConc / dilFactor1;
+    const abs1 = slope*conc1 + intercept + (rnd()*0.004 - 0.002);
+
+    const minAbs = F, maxAbs = J;
+    let finalAbs, usedDil, isRedil = false, altInfo = null;
+
+    if (abs1 >= minAbs && abs1 <= maxAbs) {
+      finalAbs = round(abs1, 3);
+      usedDil = dilFactor1;
+    } else {
+      isRedil = true;
+      altInfo = { abs: round(abs1,3), dil: dilFactor1 };
+      const dilFactor2 = dilFactor1 === 5 ? 10 : 5;
+      const conc2 = origConc / dilFactor2;
+      const abs2 = slope*conc2 + intercept + (rnd()*0.004 - 0.002);
+      finalAbs = round(abs2, 3);
+      usedDil = dilFactor2;
+    }
+
+    process(std, finalAbs, usedDil, {
+      mode: 'bad', origConc, isRedil, dilFactor1, altInfo
+    });
+  }
+
+  // ---------- reset ----------
+  function resetAll() {
+    procToken++;          // 진행 중인 재희석 교체를 취소
+    currentMode = null;
+    modeBtns.forEach(b => b.classList.remove('active'));
+    manualForm.hidden = true;
+    genHint.hidden = false;
+    ['inF','inH','inJ','inL'].forEach(id => $('#'+id).value = '');
+    $('#manualWarn').classList.remove('show');
+    $('#chartEq').textContent = '수식 대기 중…';
+    $('#reportBody').innerHTML = '<p class="empty-note">왼쪽에서 모드를 선택하면 결과가 여기에 표시됩니다.</p>';
+    $('#maskHint').hidden = true;
+    renderEmptyChart();
+    resetMeasureTable();
+  }
+
+  // ---------- chart rendering ----------
+  const chartHolder = $('#chartHolder');
+  const M = { l: 108, r: 26, t: 26, b: 70 };
+  const PW = 560, PH = 340;
+  const VW = M.l + PW + M.r, VH = M.t + PH + M.b;
+  const XMAX = 15, YMAX = 0.3;
+  const px = (x) => M.l + (x / XMAX) * PW;
+  const py = (y) => M.t + PH - (y / YMAX) * PH;
+
+  function gridSVG() {
+    let s = '';
+    for (let x = 0; x <= XMAX; x += 1) {
+      const major = x % 5 === 0;
+      s += `<line x1="${px(x)}" y1="${M.t}" x2="${px(x)}" y2="${M.t+PH}" stroke="${major ? 'var(--grid-major)' : 'var(--grid-minor)'}" stroke-width="${major?1:0.7}"/>`;
+    }
+    for (let y = 0; y <= YMAX + 1e-9; y += 0.02) {
+      const major = Math.abs(Math.round(y*100) % 10) === 0;
+      s += `<line x1="${M.l}" y1="${py(y)}" x2="${M.l+PW}" y2="${py(y)}" stroke="${major ? 'var(--grid-major)' : 'var(--grid-minor)'}" stroke-width="${major?1:0.7}"/>`;
+    }
+    return s;
+  }
+
+  // unk: 미지시료 표시 위치 {x, y} — 그 근처의 눈금 숫자는 겹치지 않게 숨긴다
+  function axesSVG(unk) {
+    let s = `<line x1="${M.l}" y1="${M.t+PH}" x2="${M.l+PW}" y2="${M.t+PH}" stroke="var(--muted)" stroke-width="1.2"/>`;
+    s += `<line x1="${M.l}" y1="${M.t}" x2="${M.l}" y2="${M.t+PH}" stroke="var(--muted)" stroke-width="1.2"/>`;
+    for (let x=0; x<=XMAX; x+=5) {
+      if (unk && Math.abs(px(x) - px(unk.x)) < 34) continue;
+      s += `<text class="t-sans" x="${px(x)}" y="${M.t+PH+20}" font-size="13.5" fill="var(--muted)" text-anchor="middle">${x}</text>`;
+    }
+    for (let y=0; y<=YMAX+1e-9; y+=0.1) {
+      if (unk && Math.abs(py(y) - py(unk.y)) < 16) continue;
+      s += `<text class="t-sans" x="${M.l-9}" y="${py(y)+5}" font-size="13.5" fill="var(--muted)" text-anchor="end">${y.toFixed(1)}</text>`;
+    }
+    s += `<text class="t-sans" x="${M.l+PW}" y="${M.t+PH+62}" font-size="14" font-weight="600" fill="var(--muted)" text-anchor="end">농도(ppm)</text>`;
+    s += `<text class="t-sans" x="${M.l-48}" y="${M.t-10}" font-size="14" font-weight="600" fill="var(--muted)" text-anchor="start">흡광도(A)</text>`;
+    return s;
+  }
+
+  function renderEmptyChart() {
+    chartHolder.innerHTML = `<svg viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg">${gridSVG()}${axesSVG()}</svg>`;
+  }
+
+  function renderChart(xs, ys, reg, finalAbs, finalConc, hide) {
+    let s = `<svg viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg">`;
+    s += gridSVG();
+
+    // regression line, clipped to y in [0, YMAX]
+    let x0 = 0, y0v = reg.intercept;
+    let x1 = XMAX, y1v = reg.slope*XMAX + reg.intercept;
+    if (y0v < 0) { x0 = -reg.intercept/reg.slope; y0v = 0; }
+    if (y1v > YMAX) { x1 = (YMAX - reg.intercept)/reg.slope; y1v = YMAX; }
+    s += `<line x1="${px(x0)}" y1="${py(y0v)}" x2="${px(x1)}" y2="${py(y1v)}" stroke="var(--accent)" stroke-width="2"/>`;
+
+    // unknown guide lines (dashed) if in-range
+    const inRange = finalConc >= 0 && finalConc <= XMAX && finalAbs >= 0 && finalAbs <= YMAX;
+    if (inRange) {
+      s += `<line x1="${px(0)}" y1="${py(finalAbs)}" x2="${px(finalConc)}" y2="${py(finalAbs)}" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+      s += `<line x1="${px(finalConc)}" y1="${py(finalAbs)}" x2="${px(finalConc)}" y2="${py(0)}" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+      s += `<circle cx="${px(finalConc)}" cy="${py(finalAbs)}" r="5" fill="var(--warn)"/>`;
+      // 흡광도: 세로축 바깥, 점선 높이에 맞춰 (값)→
+      s += `<text class="t-sans" x="${M.l-5}" y="${py(finalAbs)}" dominant-baseline="central" font-size="14.5" font-weight="600" fill="var(--ink)" text-anchor="end">(${finalAbs.toFixed(3)})→</text>`;
+      // 농도: 가로축 바깥, 점선 바로 아래에 ↑ 와 (값)
+      s += `<text class="t-sans" x="${px(finalConc)}" y="${M.t+PH+17}" font-size="15" font-weight="600" fill="var(--ink)" text-anchor="middle">↑</text>`;
+      const val = `<text class="t-sans ans-t" x="${px(finalConc)}" y="${M.t+PH+37}" font-size="14.5" font-weight="600" fill="var(--ink)" text-anchor="middle">(${finalConc.toFixed(2)})</text>`;
+      if (hide) {
+        // 판독 농도는 직접 읽어 보도록 가림 — 누르면 보인다
+        const cx = px(finalConc);
+        s += `<g class="svg-mask" role="button" tabindex="0" aria-label="눌러서 답 보기">${val}
+          <g class="cover"><rect x="${cx - 38}" y="${M.t+PH+23}" width="76" height="20" rx="5" fill="var(--head)"/>
+          <text class="t-sans" x="${cx}" y="${M.t+PH+37}" font-size="11.5" font-weight="600" fill="var(--accent-2)" text-anchor="middle">눌러서 보기</text></g></g>`;
+      } else {
+        s += val;
+      }
+    }
+
+    // standard points
+    xs.forEach((x, i) => {
+      const y = ys[i];
+      s += `<circle cx="${px(x)}" cy="${py(y)}" r="5" fill="var(--ink)"/>`;
+      const anchor = i === 3 ? 'end' : 'start';
+      const dx = i === 3 ? -9 : 9;
+      s += `<text class="t-sans" x="${px(x)+dx}" y="${py(y)-9}" font-size="13" fill="var(--muted)" text-anchor="${anchor}">(${x}, ${y.toFixed(3)})</text>`;
+    });
+
+    s += axesSVG(inRange ? { x: finalConc, y: finalAbs } : null);
+    s += `</svg>`;
+    chartHolder.innerHTML = s;
+
+    const eqSign = reg.intercept >= 0 ? '+' : '-';
+    $('#chartEq').textContent = `y = ${reg.slope.toFixed(4)}x ${eqSign} ${Math.abs(reg.intercept).toFixed(4)}   R² = ${reg.r2.toFixed(4)}`;
+  }
+
+  // ---------- report rendering ----------
+  function renderReport(reg, finalAbs, finalConc, usedDilFactor, calcOrigConc, rawRatio, finalRatio, meta) {
+    const body = $('#reportBody');
+    let html = '';
+
+    if (meta.mode !== 'manual') {
+      const cls = meta.isRedil ? 'pill warn' : 'pill ok';
+      const text = meta.isRedil
+        ? `1차(${meta.dilFactor1}배) 측정값이 표준용액 범위를 벗어나 2차(${usedDilFactor}배)로 재희석했습니다.`
+        : `1차(${usedDilFactor}배) 측정이 표준용액 범위 안에 들어와 재희석 없이 사용했습니다.`;
+      html += `<div class="${cls}">${text}</div>`;
+      if (meta.isRedil && meta.altInfo) {
+        html += `<p class="side-note">1차 시도(${meta.altInfo.dil}배 희석) 흡광도: <span class="num">${meta.altInfo.abs.toFixed(3)}</span> — 범위 밖</p>`;
+      }
+    } else {
+      html += `<div class="pill info">직접 입력한 값을 분석한 결과입니다.</div>`;
+    }
+
+    // 데이터 생성 모드에서는 직접 계산할 값을 가려 두고, 누르면 보여 준다
+    const hide = meta.mode !== 'manual';
+    const m = v => hide ? `<span class="mask" role="button" tabindex="0" aria-label="눌러서 답 보기">${v}</span>` : v;
+    $('#maskHint').hidden = !hide;
+
+    const cols = [];
+    if (meta.mode !== 'manual') cols.push(['미지시료 참값 (ppm)', m(fmt(meta.origConc,2))]);
+    cols.push(['적용 희석배수 (배)', usedDilFactor]);
+    cols.push(['측정 흡광도 (A)', fmt(finalAbs,3)]);
+    cols.push(['희석 판독농도 (ppm)', m(fmt(finalConc,2))]);
+    cols.push(['미지시료 원액 (ppm)', m(fmt(calcOrigConc,2))]);
+    cols.push(['최종 계산희석 (배)', m(fmt(finalRatio,2))]);
+    html += `<div class="scroll"><table class="x report"><thead><tr>${cols.map(c => `<th>${c[0]}</th>`).join('')}</tr></thead>`
+          + `<tbody><tr>${cols.map(c => `<td>${c[1]}</td>`).join('')}</tr></tbody></table></div>`;
+
+    const step1 = `${fmt(finalConc,2)} ppm × ${usedDilFactor} = ${fmt(calcOrigConc,2)} ppm`;
+    const step2 = `1,000 ppm / ${fmt(calcOrigConc,2)} ppm = ${isFinite(rawRatio)?fmt(rawRatio,3):'—'} ≒ ${fmt(finalRatio,2)}`;
+
+    html += `<div class="calc-block">
+      <div class="label">희석배수 계산 — 지급된 미지시료를 표준용액(1,000 ppm) 기준으로 몇 배 희석되었는지</div>
+      <div class="calc-lines">
+        <span class="k">계산과정 :</span><span>${m(step1)}</span>
+        <span></span><span>${m(step2)}</span>
+        <span class="k ans">답 :</span><span class="ans">${m(fmt(finalRatio,2) + '배')}</span>
+      </div>
+    </div>`;
+
+    body.innerHTML = html;
+  }
+
+  // 가린 칸 누르면 답 보이기 (다시 누르면 다시 가림) — 결과 표, 측정 표 제목 줄, 그래프 모두
+  function toggleMask(e) {
+    const el = e.target.closest('.mask, .svg-mask');
+    if (!el) return;
+    if (e.type === 'keydown') { if (e.key !== 'Enter' && e.key !== ' ') return; e.preventDefault(); }
+    el.classList.toggle('open');
+  }
+  document.addEventListener('click', toggleMask);
+  document.addEventListener('keydown', toggleMask);
+
+  renderEmptyChart();
+})();
+</script>
+
+<script>
+// ===================== 탭 + 표준용액 제조 =====================
+(function(){
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+
+  // ---------- 탭 ----------
+  const tabs = $$('.tab');
+  function showTab(id) {
+    tabs.forEach(b => {
+      const on = b.dataset.tab === id;
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+      document.getElementById(b.dataset.tab).hidden = !on;
+    });
+    try { localStorage.setItem('absorbance-tab', id); } catch (e) {}
+    if (id === 'tabPrep') draw();
+  }
+  tabs.forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+
+  // ---------- 조건 ----------
+  const PIP_CAPS = [1, 2, 5, 10, 25];          // 메스피펫 규격 (mL)
+  const DUR = [1500, 2800, 2000, 3400, 4200, 5200, 5200, 3400, 5200, 0]; // 단계별 재생 시간 (ms)
+  const LAST = DUR.length - 1;                 // 마지막 단계 = 트레이 완성 장면
+  let P = null;                                // {X, Y, z, V, cap}
+  let step = 0, t = 0, playing = false, holdUntil = 0, lastTs = 0;
+
+  const f2 = v => (Math.round(v * 100) / 100).toFixed(2);
+  const fmtN = v => Number.isInteger(v) ? String(v) : String(+v.toFixed(3));
+
+  function readParams() {
+    const X = parseFloat($('#pX').value), Y = parseFloat($('#pY').value), z = parseFloat($('#pZ').value);
+    const warn = $('#pWarn');
+    let msg = '';
+    if (!(X > 0 && Y > 0 && z > 0)) msg = '원액 농도, 목표 농도, 제조 부피를 모두 0보다 크게 입력해 주세요.';
+    else if (Y >= X) msg = '목표 농도 Y는 원액 농도 X보다 작아야 희석할 수 있습니다.';
+    const V = msg ? 0 : Y * z / X;
+    if (!msg && V > 25) msg = `필요한 원액이 ${f2(V)} mL로 메스피펫(최대 25 mL) 한 번으로 옮기기 어렵습니다.`;
+    warn.textContent = msg;
+    warn.classList.toggle('show', !!msg);
+    P = msg ? null : { X, Y, z, V, cap: PIP_CAPS.find(c => c >= V - 1e-9) };
+    $$('#ySeg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.y === Y && X === 1000 && z === 100)));
+  }
+
+  // ---------- 단계 설명 ----------
+  function captions() {
+    const p = P || { X: '?', Y: '?', z: '?', V: 0, cap: '?' };
+    const V = P ? f2(p.V) : '?';
+    return [
+      { s: '안전 필러 공기 빼기', c: `안전 필러의 <b>A 밸브</b>를 누른 채 고무구를 쥐어 공기를 뺍니다.` },
+      { s: '원액 빨아올리기', c: `메스피펫 끝을 KMnO₄ ${fmtN(p.X)} ppm 원액에 담그고, <b>S 밸브</b>를 눌러 0 눈금보다 조금 위까지 빨아올립니다.` },
+      { s: '0 눈금 맞추기', c: `피펫을 꺼낸 뒤 <b>E 밸브</b>를 살짝 눌러 메니스커스 바닥을 <b>0 눈금</b>에 정확히 맞춥니다.` },
+      { s: `${V} mL 옮겨 넣기`, c: `${fmtN(p.z)} mL 부피 플라스크 입구로 옮겨, <b>E 밸브</b>를 눌러 <b>${V} mL 눈금</b>까지 흘려 넣습니다. (0 → ${V} mL 눈금, 옮긴 양 ${V} mL)` },
+      { s: '증류수로 표선 맞추기', c: `세척병으로 증류수를 넣어 <b>표선</b>까지 채웁니다. 표선 근처에서는 천천히 넣어 메니스커스 바닥을 표선에 맞춥니다. → KMnO₄ <b>${fmtN(p.Y)} ppm</b> 표준용액 <b>${fmtN(p.z)} mL</b> 완성` },
+      { s: '큐벳 세척 (1회)', c: `만든 용액을 플라스크에서 큐벳에 조금 붓고, 흔들어 안쪽을 헹군 뒤 <b>폐액 비커</b>에 버립니다. <b>(1회째)</b>` },
+      { s: '큐벳 세척 (2회)', c: `같은 방법으로 한 번 더 헹궈 큐벳 안에 남은 물기와 이전 용액을 없앱니다. <b>(2회째)</b>` },
+      { s: '큐벳 채우기', c: `플라스크에서 큐벳에 용액을 <b>약 3/4</b>까지 붓습니다.` },
+      { s: '킴와이프로 닦기', c: `<b>킴와이프</b>로 큐벳 바깥면(왼쪽 면 → 앞면 → 오른쪽 면)을 골고루 닦아 묻은 용액과 지문을 없앱니다.` },
+      { s: '트레이에 꽂기', c: `0(Blank)·5·10·15 ppm 큐벳을 트레이에 꽂으면 측정 준비 끝! 농도가 높을수록 보라색이 진합니다.` }
+    ];
+  }
+
+  function renderSteps() {
+    const caps = captions();
+    $('#stepList').innerHTML = caps.map((c, i) =>
+      `<li><button type="button" data-step="${i}" class="${i < step ? 'done' : ''}${i === step ? ' now' : ''}"><span class="no">${i + 1}</span><span>${c.s}</span></button></li>`
+    ).join('');
+    $('#stepCap').innerHTML = `<b>${step + 1}단계.</b> ${caps[step].c}`;
+  }
+  $('#stepList').addEventListener('click', e => {
+    const b = e.target.closest('button[data-step]');
+    if (!b || !P) return;
+    step = +b.dataset.step; t = 0; playing = step < LAST; holdUntil = 0;
+    renderSteps(); draw(); paintPlay();
+  });
+
+  // ---------- 계산 패널 ----------
+  function renderCalc() {
+    const box = $('#prepCalc');
+    if (!P) { box.innerHTML = '<p class="empty-note">조건을 올바르게 입력하면 계산 과정이 표시됩니다.</p>'; $('#toolNote').textContent = ''; return; }
+    const { X, Y, z, V, cap } = P;
+    box.innerHTML = `
+      <div class="eqline"><span class="lab">희석 공식</span><span class="eq-main">M₁V₁ = M₂V₂</span>
+        <span class="why"><span>희석해도 <b>용질(KMnO₄)의 양은 그대로</b></span><span>용질의 양 = 농도 × 부피 → <b>희석 전 M₁V₁ = 희석 후 M₂V₂</b></span></span></div>
+      <div class="eqline"><span class="lab">원액 부피</span>
+        <span>V₁ =</span><span class="frac"><span>M₂ × V₂</span><span>M₁</span></span>
+        <span>=</span><span class="frac"><span>${fmtN(Y)} ppm × ${fmtN(z)} mL</span><span>${fmtN(X)} ppm</span></span>
+        <span>=</span><span class="ans">${f2(V)} mL</span></div>
+      <p class="prep-how">KMnO₄ <b>${fmtN(X)} ppm</b> 원액을 메스피펫(${cap} mL)으로 <b>${f2(V)} mL</b> 취해 <b>${fmtN(z)} mL</b> 부피 플라스크에 넣고, 증류수로 표선까지 채우면 <b>${fmtN(Y)} ppm</b> 표준용액이 됩니다.</p>`;
+    $('#toolNote').textContent = `사용 기구 : 시약병(KMnO₄ ${fmtN(X)} ppm) · 메스피펫 ${cap} mL · 안전 필러 · 부피 플라스크 ${fmtN(z)} mL · 세척병(증류수)`;
+  }
+
+  // ---------- 그림 좌표 ----------
+  const B = 560;                       // 실험대 높이
+  const BX = 170, FX = 520;            // 시약병, 플라스크 중심
+  const NECK_TOP = 300, MARK_Y = 335, BULB_TOP = 450, FL_BOT = 556;
+  // 메스피펫 (끝 기준 위로 잰 거리)
+  const TUBE = 220, TAPER = 28, ZERO = 190, CAPO = 60;
+  const ease = u => u * u * (3 - 2 * u);
+  const seg = (u, a, b) => Math.min(1, Math.max(0, (u - a) / (b - a)));
+  const lerp = (a, b, u) => a + (b - a) * u;
+  const vOff = () => ZERO - (P.V / P.cap) * (ZERO - CAPO);
+  // 큐벳 (바닥 가운데 기준, 폭 36 · 높이 100), 폐액 비커, 킴와이프 상자
+  const CUV_X = 330, CUV_W = 36, CUV_H = 100;
+  const CUV_ML = 4;                                  // 큐벳 가득 ≈ 4 mL (세척 1/4 ≈ 1 mL, 채우기 3/4 ≈ 3 mL)
+  const WASTE_X = 170, DUMP_X = 257, DUMP_Y = 413;   // 버릴 때 큐벳 입구가 비커 위에 오는 자리
+  const KIM_X = 430;
+  const FL_POUR = { ang: -105, mouth: [CUV_X + 6, B - CUV_H - 20] };  // 플라스크 입구를 큐벳 위로
+  const rot = (x, y, deg) => { const a = deg * Math.PI / 180; return [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)]; };
+  const cuvAlpha = c => Math.min(.92, c / 15 * .9);   // 큐벳 색: 0·5·10·15 ppm 차이가 뚜렷하게
+
+  // 단계별 상태: 앞 단계의 끝 상태에서 이어진다
+  function stateAt(k, u) {
+    const s = { px: BX, py: 330, lvl: 0, sq: 0, valve: null, stock: 0, water: 0, wash: 0, pStream: false, wStream: false, drop: -1,
+                fade: 0,                                // 큐벳 단계에서 시약병·피펫·세척병을 치움
+                fp: 0, fStream: false,                  // 플라스크 기울이기(0~1), 붓는 줄기
+                cx: CUV_X, cy: B, ca: 0, cf: 0, cStream: false,  // 큐벳 위치·각도·채운 비율
+                waste: 0, wipe: -1, zoom: 0, tray: false,
+                out: 0 };                               // 플라스크에서 큐벳으로 부어 나간 양 (mL)
+    for (let i = 0; i <= k; i++) apply(s, i, i < k ? 1 : u);
+    return s;
+  }
+  function apply(s, i, u) {
+    if (i === 0) { s.sq = ease(u); s.valve = u < 1 ? 'A' : null; }
+    if (i === 1) {
+      const a = ease(seg(u, 0, .3)), b = ease(seg(u, .3, 1));
+      s.py = lerp(330, B - 25, a);
+      s.lvl = (ZERO + 10) * b; s.sq = 1 - b;
+      s.valve = u < 1 && u > .3 ? 'S' : null;
+    }
+    if (i === 2) {
+      const a = ease(seg(u, 0, .4)), b = ease(seg(u, .5, 1));
+      s.py = lerp(B - 25, 330, a);
+      s.lvl = ZERO + 10 - 10 * b;
+      s.valve = u > .5 && u < 1 ? 'E' : null;
+      s.drop = u > .5 && u < 1 ? seg(u, .5, 1) : -1;
+    }
+    if (i === 3) {
+      const a = seg(u, 0, .35), b = ease(seg(u, .4, 1));
+      // 위로 올려 플라스크 목을 넘은 뒤 내려 꽂는다
+      s.px = lerp(BX, FX, ease(seg(a, .15, .85)));
+      s.py = a < .15 ? lerp(330, 290, ease(a / .15)) : a < .85 ? 290 : lerp(290, 320, ease((a - .85) / .15));
+      s.lvl = lerp(ZERO, vOff(), b);
+      s.stock = P.V * b;
+      s.valve = u > .4 && u < 1 ? 'E' : null;
+      s.pStream = u > .4 && u < 1;
+    }
+    if (i === 4) {
+      const a = ease(seg(u, 0, .18));
+      s.px = lerp(FX, 360, a); s.py = lerp(320, B - 4, a);
+      const w = seg(u, .2, .3), back = seg(u, .88, 1);
+      s.wash = ease(w) * (1 - ease(back));
+      const fill = seg(u, .3, .86);
+      s.water = (P.z - P.V) * (1 - Math.pow(1 - fill, 2.2));   // 표선 근처에서 천천히
+      s.wStream = fill > 0 && fill < 1;
+      s.valve = null;
+    }
+    if (i === 5 || i === 6) {           // 큐벳 세척: 조금 붓기 → 흔들기 → 폐액 비커에 버리기
+      s.wStream = false;
+      s.fade = i === 5 ? ease(seg(u, 0, .12)) : 1;
+      s.fp = ease(seg(u, .1, .22)) * (1 - ease(seg(u, .32, .42)));
+      const pour = seg(u, .22, .32);
+      s.cf = .25 * pour;
+      s.out += CUV_ML * .25 * pour;
+      s.fStream = u > .22 && u < .32;
+      const w = seg(u, .44, .56);
+      s.ca = w > 0 && w < 1 ? 14 * Math.sin(w * Math.PI * 4) : 0;
+      const g = ease(seg(u, .58, .7)) * (1 - ease(seg(u, .85, .97)));
+      if (g > 0) { s.cx = lerp(CUV_X, DUMP_X, g); s.cy = lerp(B, DUMP_Y, g); s.ca = -125 * g; }
+      else { s.cx = CUV_X; s.cy = B; }
+      const dump = seg(u, .71, .83);
+      if (dump > 0) s.cf = .25 * (1 - dump);
+      s.cStream = u > .71 && u < .83;
+      s.waste += dump;
+    }
+    if (i === 7) {                      // 큐벳 약 3/4 채우기
+      s.fade = 1; s.cStream = false;
+      s.fp = ease(seg(u, 0, .15)) * (1 - ease(seg(u, .8, .95)));
+      s.cf = .75 * seg(u, .15, .78);
+      s.out += CUV_ML * s.cf;
+      s.fStream = u > .15 && u < .78;
+    }
+    if (i === 8) {                      // 킴와이프로 바깥면 닦기
+      s.fade = 1; s.fStream = false;
+      s.zoom = ease(seg(u, 0, .15));    // 기구가 모인 아래쪽으로 확대
+      s.wipe = u < 1 ? u : -1;
+    }
+    if (i === 9) s.tray = true;
+  }
+
+  // ---------- 그리기 ----------
+  const kAlpha = c => c <= 0 ? 0 : 1 - Math.exp(-c / 12);   // 농도 → 보라색 진하기
+
+  function flaskLevel(vol) {
+    if (vol <= 0) return null;
+    const f = vol / P.z;
+    if (f <= .93) return FL_BOT - Math.max(4, (FL_BOT - BULB_TOP) * Math.pow(f / .93, .7));
+    return BULB_TOP - (Math.min(f, 1) - .93) / .07 * (BULB_TOP - MARK_Y);
+  }
+
+  const FLASK_PATH = `M509,${NECK_TOP} L509,${BULB_TOP} C478,458 462,478 462,500 C462,534 486,${FL_BOT} 520,${FL_BOT} C554,${FL_BOT} 578,534 578,500 C578,478 562,458 531,${BULB_TOP} L531,${NECK_TOP} Z`;
+  const BOTTLE_PATH = `M110,550 Q110,560 120,560 L220,560 Q230,560 230,550 L230,410 Q230,390 210,380 L190,372 L190,340 L150,340 L150,372 L130,380 Q110,390 110,410 Z`;
+
+  function svgBottle() {
+    return `<defs><clipPath id="bClip"><path d="${BOTTLE_PATH}"/></clipPath></defs>
+      <rect x="100" y="412" width="140" height="150" fill="var(--kmno4)" clip-path="url(#bClip)"/>
+      <path d="${BOTTLE_PATH}" fill="var(--glass-fill)" stroke="var(--glass)" stroke-width="2"/>
+      <rect x="128" y="462" width="84" height="54" rx="4" fill="var(--sheet)" stroke="var(--rule)"/>
+      <text x="${BX}" y="484" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">KMnO₄</text>
+      <text x="${BX}" y="504" text-anchor="middle" font-size="13" fill="var(--muted)">${fmtN(P.X)} ppm</text>`;
+  }
+
+  function svgFlask(s) {
+    const made = s.stock + s.water;             // 만든 양 (농도는 이것으로)
+    const vol = made - s.out;                   // 큐벳으로 부어 나간 만큼 줄어든 현재 양
+    const y = flaskLevel(vol);
+    const conc = made > 0 ? P.X * s.stock / made : 0;
+    let liq = '';
+    if (y != null) {
+      liq = `<rect x="455" y="${y}" width="130" height="${FL_BOT - y + 2}" fill="var(--water)" fill-opacity=".28" clip-path="url(#fClip)"/>
+             <rect x="455" y="${y}" width="130" height="${FL_BOT - y + 2}" fill="var(--kmno4)" fill-opacity="${kAlpha(conc).toFixed(3)}" clip-path="url(#fClip)"/>`;
+    }
+    const fl = flaskPose(s.fp);
+    return `<g transform="translate(${fl.tx},${fl.ty}) rotate(${fl.ang},${FX},500)">
+      <defs><clipPath id="fClip"><path d="${FLASK_PATH}"/></clipPath></defs>
+      ${liq}
+      <path d="${FLASK_PATH}" fill="var(--glass-fill)" stroke="var(--glass)" stroke-width="2"/>
+      <rect x="505" y="${NECK_TOP - 6}" width="30" height="6" rx="2" fill="none" stroke="var(--glass)" stroke-width="2"/>
+      <ellipse cx="${FX}" cy="${MARK_Y}" rx="11" ry="2.5" fill="none" stroke="var(--ink)" stroke-width="1.6"/>
+      <g opacity="${(1 - Math.min(1, s.fp * 4)).toFixed(2)}">
+      <line x1="536" y1="${MARK_Y}" x2="560" y2="${MARK_Y}" stroke="var(--muted)" stroke-width="1"/>
+      <text x="564" y="${MARK_Y + 5}" font-size="14" font-weight="600" fill="var(--muted)">표선</text>
+      <text x="${FX}" y="${FL_BOT - 22}" text-anchor="middle" font-size="13" font-weight="600" fill="var(--muted)">${fmtN(P.z)} mL</text></g></g>`;
+  }
+
+  // 플라스크를 기울여 입구를 큐벳 위로: 바닥 근처(FX,500)를 축으로 돌리며 옮긴다
+  function flaskPose(e) {
+    const m = rot(0, NECK_TOP - 6 - 500, FL_POUR.ang);
+    const tx = FL_POUR.mouth[0] - m[0] - FX, ty = FL_POUR.mouth[1] - m[1] - 500;
+    const ang = FL_POUR.ang * e;
+    const mm = rot(0, NECK_TOP - 6 - 500, ang);
+    return { tx: tx * e, ty: ty * e, ang, mouth: [FX + tx * e + mm[0], 500 + ty * e + mm[1]] };
+  }
+
+  function cuvLiquid(f, tilted, conc, w, h) {
+    if (f <= 0) return '';
+    const ih = h - 6, lh = f * ih;
+    const y = tilted ? -h + 3 : -3 - lh;
+    return `<rect x="${-w / 2 + 3}" y="${y}" width="${w - 6}" height="${lh}" fill="var(--water)" fill-opacity=".25"/>
+            <rect x="${-w / 2 + 3}" y="${y}" width="${w - 6}" height="${lh}" fill="var(--kmno4)" fill-opacity="${cuvAlpha(conc).toFixed(3)}"/>`;
+  }
+  function cuvBody(w, h) {
+    // 투명한 큐벳 + 위쪽 테두리
+    return `<rect x="${-w / 2}" y="${-h}" width="${w}" height="${h}" rx="3" fill="var(--glass-fill)" stroke="var(--glass)" stroke-width="2"/>
+            <line x1="${-w / 2}" y1="${-h + 1}" x2="${w / 2}" y2="${-h + 1}" stroke="var(--glass)" stroke-width="3"/>`;
+  }
+
+  function svgCuvetteArea(s) {
+    const op = Math.min(1, s.fade);
+    if (op <= 0) return '';
+    let g = `<g opacity="${op.toFixed(2)}">`;
+    // 폐액 비커
+    const wl = s.waste > 0 ? 4 + s.waste * 7 : 0;
+    const bx0 = WASTE_X - 45, bx1 = WASTE_X + 45, bt = B - 90;
+    g += `<defs><clipPath id="wClip"><rect x="${bx0 + 2}" y="${bt}" width="86" height="88"/></clipPath></defs>`;
+    if (wl) g += `<rect x="${bx0 + 2}" y="${B - 2 - wl}" width="86" height="${wl}" fill="var(--kmno4)" fill-opacity="${(cuvAlpha(P.Y) * .8).toFixed(3)}" clip-path="url(#wClip)"/>`;
+    g += `<path d="M${bx0 - 6},${bt - 4} L${bx0},${bt + 4} L${bx0},${B - 4} Q${bx0},${B} ${bx0 + 4},${B} L${bx1 - 4},${B} Q${bx1},${B} ${bx1},${B - 4} L${bx1},${bt}" fill="var(--glass-fill)" stroke="var(--glass)" stroke-width="2"/>
+          <text x="${WASTE_X}" y="${B - 40}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--muted)">폐액</text>`;
+    // 킴와이프 상자
+    g += `<rect x="${KIM_X - 30}" y="${B - 34}" width="60" height="34" rx="3" fill="var(--sheet)" stroke="var(--rule)" stroke-width="1.5"/>
+          <path d="M${KIM_X - 8},${B - 34} L${KIM_X - 2},${B - 50} L${KIM_X + 9},${B - 44} L${KIM_X + 8},${B - 34}" fill="#fff" stroke="var(--rule)"/>
+          <text x="${KIM_X}" y="${B - 13}" text-anchor="middle" font-size="10.5" font-weight="600" fill="var(--muted)">Kimwipes</text>`;
+    // 큐벳
+    const tilted = s.ca < -60;
+    g += `<g transform="translate(${s.cx},${s.cy}) rotate(${s.ca})">${cuvLiquid(s.cf, tilted, P.Y, CUV_W, CUV_H)}${cuvBody(CUV_W, CUV_H)}</g>`;
+    if (s.cStream) {
+      const m = rot(0, -CUV_H, s.ca);
+      g += `<line x1="${s.cx + m[0]}" y1="${s.cy + m[1]}" x2="${s.cx + m[0]}" y2="${B - 4 - wl}" stroke="var(--kmno4)" stroke-opacity=".75" stroke-width="2.4" stroke-linecap="round"/>`;
+    }
+    g += `</g>`;
+    return g;
+  }
+
+  function svgFlaskStream(s) {
+    if (!s.fStream) return '';
+    const m = flaskPose(s.fp).mouth;
+    const top = B - 3 - s.cf * (CUV_H - 6);
+    return `<line x1="${m[0]}" y1="${m[1]}" x2="${m[0]}" y2="${top}" stroke="var(--kmno4)" stroke-opacity="${Math.max(.45, cuvAlpha(P.Y)).toFixed(2)}" stroke-width="2.4" stroke-linecap="round"/>`;
+  }
+
+  function svgTissue(s) {
+    if (s.wipe < 0) return '';
+    // 상자 → 왼쪽 면 → 앞면(큐벳을 감싸듯) → 오른쪽 면 → 상자
+    const u = s.wipe;
+    const sx = KIM_X + 2, sy = B - 50;
+    const lx = CUV_X - CUV_W / 2 - 7, rx = CUV_X + CUV_W / 2 + 7;
+    const ud = k => B - 55 - 30 * Math.cos(k * Math.PI * 4);   // 위아래로 두 번 문지르기
+    let x, y, op = 1, front = false;
+    if (u < .12)      { const e = ease(u / .12); x = lerp(sx, lx, e); y = lerp(sy, B - 85, e); }
+    else if (u < .34) { x = lx; y = ud((u - .12) / .22); }
+    else if (u < .38) { x = lerp(lx, CUV_X, ease((u - .34) / .04)); y = B - 85; front = true; }
+    else if (u < .60) { x = CUV_X; y = ud((u - .38) / .22); front = true; }
+    else if (u < .64) { x = lerp(CUV_X, rx, ease((u - .60) / .04)); y = B - 85; }
+    else if (u < .86) { x = rx; y = ud((u - .64) / .22); }
+    else              { const e = ease((u - .86) / .14); x = lerp(rx, sx, e); y = lerp(B - 85, sy, e); op = 1 - e; }
+    const lines = `<path d="M-6,-8 L6,-8 M-6,0 L6,0 M-6,8 L4,8" stroke="var(--rule)" stroke-width="1"/>`;
+    if (front) {
+      // 앞면: 큐벳 폭보다 조금 넓은 종이가 앞을 덮고 문지른다
+      return `<g transform="translate(${x},${y})" opacity="${op.toFixed(2)}">
+        <rect x="${-CUV_W / 2 - 5}" y="-17" width="${CUV_W + 10}" height="34" rx="4" fill="#fff" fill-opacity=".92" stroke="var(--glass)" stroke-width="1.2"/>${lines}</g>`;
+    }
+    return `<g transform="translate(${x},${y}) rotate(${x < CUV_X ? 8 : -8})" opacity="${op.toFixed(2)}">
+      <rect x="-12" y="-17" width="24" height="34" rx="3" fill="#fff" stroke="var(--glass)" stroke-width="1.2"/>${lines}</g>`;
+  }
+
+  function svgTray() {
+    const items = [0, 5, 10, 15], xs = [225, 375, 525, 675];
+    const w = 76, h = 210, bot = 500;
+    let g = `<text x="450" y="150" text-anchor="middle" font-size="22" font-weight="700" fill="var(--ink)">흡광도 측정 준비 완료</text>
+             <text x="450" y="180" text-anchor="middle" font-size="16" fill="var(--muted)">농도가 높을수록 보라색이 진합니다</text>
+             <rect x="140" y="${bot - 46}" width="620" height="14" rx="3" fill="var(--rule)"/>`;
+    items.forEach((c, k) => {
+      const mine = P.X === 1000 && c === P.Y;
+      g += `<g transform="translate(${xs[k]},${bot})">${cuvLiquid(.75, false, c, w, h)}${cuvBody(w, h)}</g>`;
+      g += `<text x="${xs[k]}" y="${bot + 56}" text-anchor="middle" font-size="19" font-weight="700" fill="${mine ? 'var(--accent)' : 'var(--ink)'}">${c === 0 ? 'Blank' : c + ' ppm'}</text>`;
+      if (c === 0) g += `<text x="${xs[k]}" y="${bot + 80}" text-anchor="middle" font-size="14" fill="var(--muted)">(0 ppm · 증류수)</text>`;
+      if (mine) g += `<rect x="${xs[k] - 56}" y="${bot - h - 44}" width="112" height="28" rx="14" fill="var(--accent)"/>
+                      <text x="${xs[k]}" y="${bot - h - 25}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent-ink)">방금 만든 용액</text>`;
+    });
+    // 트레이 앞판이 큐벳 아랫부분을 가린다
+    g += `<rect x="134" y="${bot - 34}" width="632" height="58" rx="8" fill="var(--head)" stroke="var(--rule)" stroke-width="1.5"/>
+          <text x="450" y="${bot + 2}" text-anchor="middle" font-size="14" font-weight="600" fill="var(--muted)">큐벳 트레이</text>`;
+    return g;
+  }
+
+  function svgPipette(s) {
+    const tx = s.px, ty = s.py;
+    let g = '';
+    // 액체
+    if (s.lvl > 0) {
+      const L = Math.min(s.lvl, TUBE - 2);
+      const w = o => o >= TAPER ? 3.6 : .6 + 3 * o / TAPER;
+      let pts = [[tx - .6, ty], [tx + .6, ty]];
+      if (L > TAPER) pts.push([tx + 3.6, ty - TAPER], [tx + 3.6, ty - L], [tx - 3.6, ty - L], [tx - 3.6, ty - TAPER]);
+      else pts.push([tx + w(L), ty - L], [tx - w(L), ty - L]);
+      g += `<polygon points="${pts.map(p => p.join(',')).join(' ')}" fill="var(--kmno4)"/>`;
+    }
+    // 유리관
+    g += `<path d="M${tx - 5},${ty - TUBE} L${tx - 5},${ty - TAPER} L${tx - 1},${ty} L${tx + 1},${ty} L${tx + 5},${ty - TAPER} L${tx + 5},${ty - TUBE}" fill="var(--glass-fill)" stroke="var(--glass)" stroke-width="1.6"/>`;
+    // 눈금 (0이 위, 용량이 아래)
+    for (let i = 0; i <= 10; i++) {
+      const y = ty - (ZERO - i / 10 * (ZERO - CAPO));
+      const big = i % 5 === 0;
+      g += `<line x1="${tx + 5}" y1="${y}" x2="${tx + (big ? 13 : 9)}" y2="${y}" stroke="var(--ink)" stroke-width="${big ? 1.3 : .9}"/>`;
+      if (big) g += `<text x="${tx - 9}" y="${y + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmtN(+(P.cap * i / 10).toFixed(2))}</text>`;
+    }
+    // 옮길 부피 눈금 표시
+    const yv = ty - vOff();
+    g += `<line x1="${tx + 5}" y1="${yv}" x2="${tx + 20}" y2="${yv}" stroke="var(--warn)" stroke-width="2"/>
+          <text x="${tx + 24}" y="${yv + 4}" font-size="12" font-weight="700" fill="var(--warn)">${f2(P.V)} mL</text>`;
+    // 안전 필러 (A 위, S 아래, E 옆)
+    const top = ty - TUBE;
+    const valve = (cx, cy, k) => {
+      const on = s.valve === k;
+      return `<circle cx="${cx}" cy="${cy}" r="7" fill="${on ? 'var(--accent-2)' : 'var(--sheet)'}" stroke="${on ? 'var(--accent-2)' : 'var(--rubber)'}" stroke-width="1.6"/>
+              <text x="${cx}" y="${cy + 3.5}" text-anchor="middle" font-size="9.5" font-weight="700" fill="${on ? '#fff' : 'var(--ink)'}">${k}</text>`;
+    };
+    const rx = 17 * (1 - .32 * s.sq), ry = 19 * (1 - .12 * s.sq);
+    g += `<rect x="${tx - 6}" y="${top - 16}" width="12" height="18" rx="3" fill="var(--rubber)"/>
+          <path d="M${tx + 6},${top - 8} L${tx + 18},${top - 8}" stroke="var(--rubber)" stroke-width="5" stroke-linecap="round"/>
+          <ellipse cx="${tx}" cy="${top - 36}" rx="${rx}" ry="${ry}" fill="var(--rubber)"/>
+          ${valve(tx, top - 8, 'S')}${valve(tx + 22, top - 8, 'E')}${valve(tx, top - 60, 'A')}`;
+    // 흘러나오는 원액
+    if (s.pStream) {
+      const yl = flaskLevel(s.stock) || FL_BOT - 4;
+      g += `<line x1="${tx}" y1="${ty}" x2="${tx}" y2="${yl}" stroke="var(--kmno4)" stroke-width="1.6"/>`;
+    }
+    if (s.drop >= 0) {
+      g += `<circle cx="${tx}" cy="${ty + 6 + s.drop * 40}" r="2.6" fill="var(--kmno4)" opacity="${(1 - s.drop).toFixed(2)}"/>`;
+    }
+    return g;
+  }
+
+  function svgWash(s) {
+    // 노즐 끝을 원점으로 그린 세척병을 쉬는 자리 ↔ 붓는 자리 사이에서 옮긴다
+    const u = s.wash;
+    const tx = lerp(690, FX, u), ty = lerp(B - 206, NECK_TOP - 6, u), ang = lerp(0, -30, u);
+    const sqz = s.wStream ? .9 : 1;
+    let g = `<g transform="translate(${tx},${ty}) rotate(${ang})">
+      <path d="M0,0 L3,-8 Q10,-30 40,-32 L62,-32 Q70,-32 70,-24 L70,42" fill="none" stroke="var(--glass)" stroke-width="4" stroke-linecap="round"/>
+      <rect x="58" y="40" width="24" height="16" rx="3" fill="var(--glass)"/>
+      <g transform="translate(70,0) scale(${sqz},1) translate(-70,0)">
+        <rect x="35" y="56" width="70" height="150" rx="16" fill="var(--glass-fill)" stroke="var(--glass)" stroke-width="2"/>
+        <rect x="37" y="92" width="66" height="112" rx="14" fill="var(--water)" fill-opacity=".45"/>
+        <text x="70" y="146" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">증류수</text>
+      </g></g>`;
+    if (s.wStream) {
+      const yl = flaskLevel(s.stock + s.water) || FL_BOT - 4;
+      g += `<line x1="${FX}" y1="${NECK_TOP - 4}" x2="${FX}" y2="${yl}" stroke="var(--water)" stroke-width="2.4" stroke-linecap="round"/>`;
+    }
+    return g;
+  }
+
+  function draw() {
+    renderSteps();
+    renderCalc();
+    const holder = $('#prepHolder');
+    if (!P) { holder.innerHTML = ''; ['#lvStock', '#lvVol'].forEach(id => $(id).textContent = '—'); $('#lvConc').textContent = '—'; return; }
+    const s = stateAt(step, step === LAST ? 1 : t);
+    // 확대할 때도 가로:세로 = 900:600 을 유지해 화면 높이가 출렁이지 않게 한다
+    const ZOOM_VB = [80, 230, 555, 370];
+    const vb = [0, 0, 900, 600].map((v, k) => lerp(v, ZOOM_VB[k], s.tray ? 0 : s.zoom).toFixed(1)).join(' ');
+    let g = `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg">`;
+    if (s.tray) {
+      g += svgTray();
+    } else {
+      const lab = (x, txt) => `<text x="${x}" y="${B + 28}" text-anchor="middle" font-size="14" font-weight="600" fill="var(--muted)">${txt}</text>`;
+      g += `<line x1="40" y1="${B}" x2="860" y2="${B}" stroke="var(--rule)" stroke-width="3" stroke-linecap="round"/>`;
+      // 제조 기구는 큐벳 단계로 넘어가면서 사라진다
+      if (s.fade < 1) {
+        const op = (1 - s.fade).toFixed(2);
+        g += `<g opacity="${op}">${svgBottle()}${svgPipette(s)}${svgWash(s)}${lab(BX, '시약병 (원액)')}${lab(725, '세척병')}</g>`;
+      }
+      g += svgCuvetteArea(s) + svgFlask(s) + svgFlaskStream(s) + svgTissue(s);
+      g += lab(FX, '부피 플라스크');
+      if (s.fade > 0) {
+        g += `<g opacity="${Math.min(1, s.fade).toFixed(2)}">${lab(WASTE_X, '폐액 비커')}${lab(CUV_X, '큐벳')}${lab(KIM_X, '킴와이프')}</g>`;
+      }
+    }
+    g += `</svg>`;
+    holder.innerHTML = g;
+    const made = s.stock + s.water;
+    $('#lvStock').textContent = f2(s.stock);
+    $('#lvVol').textContent = f2(made - s.out);
+    $('#lvConc').textContent = made > 0 ? f2(P.X * s.stock / made) : '—';
+  }
+
+  // ---------- 재생 ----------
+  const playBtn = $('#pPlay');
+  function paintPlay() { playBtn.textContent = playing ? '❚❚ 일시정지' : (step === LAST ? '↺ 다시 보기' : '▶ 재생'); }
+  function tick(ts) {
+    const dt = lastTs ? Math.min(ts - lastTs, 100) : 0;
+    lastTs = ts;
+    if (playing && P && !document.getElementById('tabPrep').hidden) {
+      if (holdUntil) {
+        if (ts >= holdUntil) { holdUntil = 0; step++; t = 0; if (step >= LAST) { step = LAST; playing = false; } draw(); paintPlay(); }
+      } else {
+        t = Math.min(1, t + dt / DUR[step]);
+        draw();
+        if (t >= 1) holdUntil = ts + 600;
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  playBtn.addEventListener('click', () => {
+    if (!P) return;
+    if (step === LAST) { step = 0; t = 0; playing = true; }
+    else playing = !playing;
+    holdUntil = 0; draw(); paintPlay();
+  });
+  $('#pNext').addEventListener('click', () => { if (!P) return; step = Math.min(LAST, step + 1); t = 0; holdUntil = 0; if (step === LAST) playing = false; draw(); paintPlay(); });
+  $('#pPrev').addEventListener('click', () => { if (!P) return; step = Math.max(0, step - 1); t = 0; holdUntil = 0; draw(); paintPlay(); });
+  $('#pReset').addEventListener('click', () => { step = 0; t = 0; playing = false; holdUntil = 0; draw(); paintPlay(); });
+
+  function onParam() { readParams(); step = 0; t = 0; playing = false; holdUntil = 0; draw(); paintPlay(); }
+  ['#pX', '#pY', '#pZ'].forEach(id => $(id).addEventListener('input', onParam));
+  $('#ySeg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    $('#pX').value = 1000; $('#pZ').value = 100; $('#pY').value = b.dataset.y;
+    onParam();
+  });
+
+  /* 블로그 등에 iframe으로 넣었을 때: 홈 버튼 숨김, 높이를 부모 창에 알림 (밝은 테마 고정은 <head>에서) */
+  if (window.parent !== window) {
+    const send = () => { try { parent.postMessage({ chemnoteHeight: Math.ceil(document.documentElement.scrollHeight) }, '*'); } catch (e) {} };
+    const hideHome = () => { const a = document.querySelector('a[aria-label="Chemnote 홈으로"]'); if (a) a.hidden = true; };
+    window.addEventListener('load', () => { hideHome(); send(); });
+    if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+    send();
+  }
+
+  readParams();
+  paintPlay();
+  let saved = null;
+  try { saved = localStorage.getItem('absorbance-tab'); } catch (e) {}
+  showTab(saved === 'tabPrep' ? 'tabPrep' : 'tabCurve');
+})();
+</script>
+<script>
+// ===================== 방명록 (Supabase 방명록 전용 프로젝트 · 이 계산기 전용 표) =====================
+(function(){
+  const $ = s => document.querySelector(s);
+  // 주소|공개 열쇠를 base64 로 바꿔 뒤집어 둔 것 (검색으로 바로 안 보이게만 — 실제 잠금은 서버 규칙: 읽기·새 글만 허용)
+  const [URL_, KEY] = atob('=EWaalzchlkUfdWYwYGdoRTSyxkY58EMiV2MM1WeRZ1XlxmYhh2cpxmY1B3XiNHflNmbhJmcvNnYh91av9mY0NXZ1d2LxY3L0NXZy9ybj5SZzFmYhBXdz5ibrFXb09GdrRXa2tmdllnesdWbv9yL6MHc0RHa'.split('').reverse().join('')).split('|');
+  const PAGE = 30; let last = null, loaded = false, busy = false;
+  const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const when = t => { const d = new Date(t), p = n => String(n).padStart(2, '0'); return d.getFullYear() + '.' + p(d.getMonth() + 1) + '.' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()); };
+  const say = (m, k) => { const e = $('#gbMsg'); e.textContent = m; e.className = 'gb-msg' + (k ? ' ' + k : ''); };
+  async function load(more) {
+    if (busy) return; busy = true;
+    const list = $('#gbList');
+    try {
+      let q = URL_ + '?select=id,nick,body,created_at&order=created_at.desc&limit=' + PAGE;
+      if (more && last) q += '&created_at=lt.' + encodeURIComponent(last);
+      const r = await fetch(q, { headers: { apikey: KEY } });
+      if (!r.ok) throw new Error(r.status);
+      const rows = await r.json();
+      const html = rows.map(x => '<div class="gb-item"><div class="gb-h"><b>' + esc(x.nick) + '</b><time>' + when(x.created_at) + '</time></div><p class="gb-b">' + esc(x.body) + '</p></div>').join('');
+      if (!more) list.innerHTML = html || '<p class="gb-empty">아직 남겨진 글이 없습니다. 첫 글을 남겨 주세요.</p>';
+      else list.insertAdjacentHTML('beforeend', html);
+      if (rows.length) last = rows[rows.length - 1].created_at;
+      $('#gbMore').hidden = rows.length < PAGE;
+      loaded = true;
+    } catch (e) {
+      if (!more) list.innerHTML = '<p class="gb-empty">방명록을 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 새로고침을 눌러 주세요.</p>';
+      else say('글을 더 불러오지 못했습니다. 잠시 후 다시 눌러 주세요.', 'bad');
+    } finally { busy = false; }
+  }
+  load(false);
+  $('#gbReload').addEventListener('click', () => { last = null; load(false); });
+  $('#gbMore').addEventListener('click', () => load(true));
+  $('#gbBody').addEventListener('input', e => { $('#gbCount').textContent = e.target.value.length + ' / 500'; });
+  try { $('#gbNick').value = localStorage.getItem('chemnote.gbnick') || ''; } catch (e) {}
+  $('#gbForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const nick = $('#gbNick').value.trim(), body = $('#gbBody').value.trim();
+    if (!nick || !body) { say('닉네임과 내용을 모두 적어 주세요.', 'bad'); return; }
+    if (/https?:\/\/|www\./i.test(nick + ' ' + body)) { say('링크는 남길 수 없습니다. 주소를 빼고 다시 남겨 주세요.', 'bad'); return; }
+    const btn = $('#gbSend'); btn.disabled = true; say('남기는 중…');
+    try {
+      const r = await fetch(URL_, { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify({ nick, body }) });
+      if (!r.ok) {
+        let m = ''; try { m = (await r.json()).message || ''; } catch (x) {}
+        say(/[가-힣]/.test(m) ? m : '글을 남기지 못했습니다. 잠시 후 다시 시도해 주세요.', 'bad');
+        return;
+      }
+      try { localStorage.setItem('chemnote.gbnick', nick); } catch (x) {}
+      $('#gbBody').value = ''; $('#gbCount').textContent = '0 / 500';
+      say('방명록에 글을 남겼습니다. 소중한 의견 감사합니다.', 'ok');
+      last = null; load(false);
+    } catch (x) {
+      say('글을 남기지 못했습니다. 인터넷 연결을 확인해 주세요.', 'bad');
+    } finally { btn.disabled = false; }
+  });
+})();
+</script>
+
+<a href="../" aria-label="Chemnote 홈으로" style="position:fixed;left:12px;bottom:12px;z-index:40;font:600 13px/1 'IBM Plex Sans KR','Malgun Gothic',system-ui,sans-serif;padding:8px 12px;border-radius:999px;background:rgba(23,33,43,.82);color:#fff;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.2)">← Chemnote</a>
+</body>
+</html>
